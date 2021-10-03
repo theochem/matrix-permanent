@@ -60,7 +60,7 @@ where the outer sum is over all $2^{N-1}$ vectors $\delta = \left\{\pm 1_1,\dots
 It is still not clear which algorithm is faster, but they both scale in time with
 $\mathcal{O}(2^N N^2)$ if implemented naively, and with $\mathcal{O}(2^N N)$ if the sets $S$ in
 Equation (\ref{eq:per2}) and $\delta$ in Equation (\ref{eq:per3}) are iterated over in Gray code
-order \cite{wiki:computing}.
+order \cite{wiki:computing,knuth2005}.
 
 At small values of $N$, the naive algorithm is actually the fastest, but it is outsped by the other
 two algorithms at around $N \approx 10$, according to my testing, and the difference in time between
@@ -86,16 +86,16 @@ identity (shown here for $M \geq N$),
 \begin{equation}
     {\text{per}}\left(
         \begin{matrix}
-            a_{1,1} & \cdots & a_{1,N} & 1_{N+1} & \cdots & 1_M \\
-            \vdots & \ddots & \vdots & \vdots & \ddots & 1_M \\
-            a_{M,1} & \cdots & a_{1,N} & 1_{N+1} & \cdots & 1_M \\
+            a_{1,1} & \cdots & a_{1,N} & 1_{1,N+1} & \cdots & 1_{1,M} \\
+            \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
+            a_{M,1} & \cdots & a_{M,N} & 1_{M,N+1} & \cdots & 1_{M,M} \\
         \end{matrix}
     \right)
     = \frac{1}{\left(M - N + 1\right)!} \cdot {\text{per}}\left(
         \begin{matrix}
             a_{1,1} & \cdots & a_{1,N} \\
             \vdots & \ddots & \vdots \\
-            a_{M,1} & \cdots & a_{1,N} \\
+            a_{M,1} & \cdots & a_{M,N} \\
         \end{matrix}
     \right),
 \end{equation}
