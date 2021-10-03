@@ -1,0 +1,116 @@
+\documentclass{article}
+
+
+\usepackage[margin=1.1in]{geometry}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage[english]{babel}
+
+\usepackage{indentfirst}
+
+\usepackage{amsmath}
+\usepackage{physics}
+\usepackage{url}
+
+
+\title{Permanents}
+
+\linespread{1.25}
+
+\begin{document}
+
+\section*{Permanents}
+
+The permanent of an $N$-by-$N$ square matrix $A = \left(a_{i,j}\right)$ is defined as
+\begin{equation} \label{eq:per1}
+    \text{per}(A) = \sum_{\sigma \in P_N}{\prod_{i=1}^N{a_{i,{\sigma(i)}}}}
+\end{equation}
+where $P_N$ is the set of permutations of the $N$-set $\left\{1,\dots,N\right\}$ \cite{wiki:permanent}.
+Equation (\ref{eq:per1}) is similar to the definition of the determinant,
+\begin{equation} \label{eq:det1}
+    \text{det}(A) = \sum_{\sigma \in P_N}{\text{sgn}(\sigma) \prod_{i=1}^N{a_{i,{\sigma(i)}}}},
+\end{equation}
+except that the signatures of the permutations are not taken into account; this exclusion notably
+makes the permanent much more difficult to compute than the determinant, because it means that
+decomposition methods can no longer be used \cite{wiki:computing}. In 1979, Valiant published his
+theorem stating that the computation of the permanent is in the complexity class \#P-hard, i.e.
+neither in P nor in NP \cite{valiant1979}. The permanent, however, commonly appears in problems
+related to quantum mechanics, so it is still worthwhile to pursue more efficient algorithms than the
+naive ones suggested by the permanent's definition, which has time complexity $\mathcal{O}(N!N)$.
+
+To date, there are two general algorithms considered to be the fastest; one due to Ryser (1963), \cite{ryser1963} and
+one due to Glynn (2010, although it was found independently by several others prior to this) \cite{wiki:computing,glynn2010}.
+The Ryser algorithm is based on the inclusion-exclusion principle and is given by the formula
+\begin{equation} \label{eq:per2}
+    \text{per}(A) = \sum_{S \subseteq \left\{1,\dots,N\right\}}{
+        {\left(-1\right)}^{\left|S\right|} \prod_{i=1}^N{\sum_{j=1}^{\left|S\right|}{a_{i,{S(j)}}}}
+    }.
+\end{equation}
+The Glynn algorithm is based on invariant theory, derived from the polarization identity for
+a symmetric tensor, and is given by the formula
+\begin{equation} \label{eq:per3}
+    \text{per}(A) = \frac{1}{2^{N-1}} \cdot \sum_{\delta}{
+        \left(\sum_{k=1}^N{\delta_k}\right)
+        \prod_{j=1}^N{\sum_{i=1}^N{\delta_i a_{i,j}}}
+    }
+\end{equation}
+where the outer sum is over all $2^{N-1}$ vectors $\delta = \left\{\pm 1_1,\dots,\pm 1_N\right\}$.
+It is still not clear which algorithm is faster, but they both scale in time with
+$\mathcal{O}(2^N N^2)$ if implemented naively, and with $\mathcal{O}(2^N N)$ if the sets $S$ in
+Equation (\ref{eq:per2}) and $\delta$ in Equation (\ref{eq:per3}) are iterated over in Gray code
+order \cite{wiki:computing}.
+
+At small values of $N$, the naive algorithm is actually the fastest, but it is outsped by the other
+two algorithms at around $N \approx 10$, according to my testing, and the difference in time between
+the algorithms at large values of $N$ is several orders of magnitude. We haven't been able to find
+any fast C/++ code for these algorithms, though, in order to properly determine which algorithm is
+best at which values of $N$. It would be nice to have a good C/++ implementation of the permanent
+function which automatically deploys the fastest algorithm for the size of the input matrix.
+
+\section*{Permanents of rectangular matrices}
+
+The definition of the permanent can be generalized to work with $M$-by-$N$ rectangular
+matrices with $M \leq N$, giving us the formula
+\begin{equation} \label{eq:rectper1}
+    \text{per}(A) = \sum_{\sigma \in P_{NM}}{\prod_{i=1}^M{a_{i,{\sigma(i)}}}}
+\end{equation}
+where $P_N$ is the set of $M$-permutations of the $N$-set $\left\{1,\dots,N\right\}$ \cite{wiki:permanent}.
+Since $\text{per}(A) = \text{per}(A^T)$, this is sufficient for computing the permanent of all
+rectangular matrices. Ryser also extended his own algorithm to rectangular permanents in the same
+original 1963 article \cite{wiki:computing,ryser1963}.
+
+The Glynn algorithm can be generalized to work with rectangular permanents by use of the
+identity (shown here for $M \geq N$),
+\begin{equation}
+    {\text{per}}\left(
+        \begin{matrix}
+            a_{1,1} & \cdots & a_{1,N} & 1_{N+1} & \cdots & 1_M \\
+            \vdots & \ddots & \vdots & \vdots & \ddots & 1_M \\
+            a_{M,1} & \cdots & a_{1,N} & 1_{N+1} & \cdots & 1_M \\
+        \end{matrix}
+    \right)
+    = \frac{1}{\left(M - N + 1\right)!} \cdot {\text{per}}\left(
+        \begin{matrix}
+            a_{1,1} & \cdots & a_{1,N} \\
+            \vdots & \ddots & \vdots \\
+            a_{M,1} & \cdots & a_{1,N} \\
+        \end{matrix}
+    \right),
+\end{equation}
+which can be trivially fit into Equation (\ref{eq:per3}) by extending the sum over $\delta$:
+\begin{equation} \label{eq:rectper3}
+    \text{per}(A) = \frac{1}{2^{N-1}} \cdot \frac{1}{\left(M - N + 1\right)!} \cdot \sum_{\delta}{
+        \left(\sum_{k=1}^N{\delta_k}\right)
+        \prod_{j=1}^M{\left(\sum_{i=1}^M{\delta_i a_{i,j}} + \sum_{i=M+1}^N{\delta_i}\right)}
+    }.
+\end{equation}
+
+Now, our problem is more complicated, since we want to determine the best algorithm for each value
+of $M$ and $N$.
+
+\bibliography{main}
+\bibliographystyle{ieeetr}
+
+\end{document}
+
