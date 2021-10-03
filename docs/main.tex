@@ -1,7 +1,7 @@
 \documentclass{article}
 
 
-\usepackage[margin=1.1in]{geometry}
+\usepackage[margin=1.2in]{geometry}
 
 \usepackage[utf8]{inputenc}
 
@@ -41,8 +41,8 @@ naive ones suggested by the permanent's definition, which has time complexity $\
 
 To date, there are two general algorithms considered to be the fastest; one due to Ryser (1963),
 \cite{ryser1963} and one due to Glynn (2010, although it was found independently by several others
-prior to this) \cite{wiki:computing,glynn2010}.  The Ryser algorithm is based on the
-inclusion-exclusion principle and is given by the formula
+prior to this) \cite{wiki:computing,glynn2010}.
+The Ryser algorithm is based on the inclusion-exclusion principle and is given by the formula
 \begin{equation} \label{eq:per2}
     \text{per}(A) = \sum_{S \subseteq \left\{1,\dots,N\right\}}{
         {\left(-1\right)}^{\left|S\right|} \prod_{i=1}^N{\sum_{j=1}^{\left|S\right|}{a_{i,{S(j)}}}}
@@ -62,12 +62,12 @@ $\mathcal{O}(2^N N^2)$ if implemented naively, and with $\mathcal{O}(2^N N)$ if 
 Equation (\ref{eq:per2}) and $\delta$ in Equation (\ref{eq:per3}) are iterated over in Gray code
 order \cite{wiki:computing,knuth2005}.
 
-At small values of $N$, the naive algorithm is actually the fastest, but it is outsped by the other
-two algorithms at around $N \approx 10$, according to my testing, and the difference in time between
-the algorithms at large values of $N$ is several orders of magnitude. We haven't been able to find
-any fast C/++ code for these algorithms, though, in order to properly determine which algorithm is
-best at which values of $N$. It would be nice to have a good C/++ implementation of the permanent
-function which automatically deploys the fastest algorithm for the size of the input matrix.
+At small values of $N$, the naive algorithm is actually the fastest, but it is quickly outpaced by
+the other two algorithms, and the difference in time between the algorithms at large values of $N$
+is several orders of magnitude. We haven't been able to find any fast C/++ code for these
+algorithms, though, in order to properly determine which algorithm is best at which values of $N$.
+It would be nice to have a good C/++ implementation of the permanent function which automatically
+deploys the fastest algorithm for the size of the input matrix.
 
 \section*{Permanents of rectangular matrices}
 
@@ -79,39 +79,38 @@ matrices with $M \leq N$, giving us the formula
 where $P_{NM}$ is the set of $M$-permutations of the $N$-set $\left\{1,\dots,N\right\}$
 \cite{wiki:permanent}.  Since $\text{per}(A) = \text{per}(A^T)$, this is sufficient for computing
 the permanent of all rectangular matrices. Ryser also extended his own algorithm to rectangular
-permanents in the same original 1963 article \cite{wiki:computing,ryser1963}.
-
+permanents in the same 1963 publication \cite{wiki:computing,ryser1963}.
 The Glynn algorithm can be generalized to work with rectangular permanents by use of the
 identity (shown here for $M \geq N$),
 \begin{equation}
     {\text{per}}\left(
         \begin{matrix}
-            a_{1,1} & \cdots & a_{1,N} & 1_{1,N+1} & \cdots & 1_{1,M} \\
-            \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
-            a_{M,1} & \cdots & a_{M,N} & 1_{M,N+1} & \cdots & 1_{M,M} \\
-        \end{matrix}
-    \right)
-    = \frac{1}{\left(M - N + 1\right)!} \cdot {\text{per}}\left(
-        \begin{matrix}
             a_{1,1} & \cdots & a_{1,N} \\
             \vdots & \ddots & \vdots \\
             a_{M,1} & \cdots & a_{M,N} \\
         \end{matrix}
+    \right)
+    = \frac{1}{\left(M - N + 1\right)!} \cdot {\text{per}}\left(
+        \begin{matrix}
+            a_{1,1} & \cdots & a_{1,N} & 1_{1,N+1} & \cdots & 1_{1,M} \\
+            \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
+            a_{M,1} & \cdots & a_{M,N} & 1_{M,N+1} & \cdots & 1_{M,M} \\
+        \end{matrix}
     \right),
 \end{equation}
-which can be trivially fit into Equation (\ref{eq:per3}) by extending the sum over $\delta$:
+which can be easily fit into Equation (\ref{eq:per3}) by extending the sum over $\delta$:
 \begin{equation} \label{eq:rectper3}
     \text{per}(A) = \frac{1}{2^{N-1}} \cdot \frac{1}{\left(N - M + 1\right)!} \cdot \sum_{\delta}{
         \left(\sum_{k=1}^N{\delta_k}\right)
         \prod_{j=1}^M{\left(\sum_{i=1}^M{\delta_i a_{i,j}} + \sum_{i=M+1}^N{\delta_i}\right)}
     }.
 \end{equation}
-
 Now, our problem is more complicated, since we want to determine the best algorithm for each value
-of $M$ and $N$.
+of $M$ and $N$. It seems to me that for large rectangular matrices with $M$ and $N$ close in value,
+the Glynn algorithm should be fastest; and for large highly rectangular matrices where the
+difference between $M$ and $N$ is large, the Ryser algorithm should be fastest.
 
 \bibliography{main}
 \bibliographystyle{ieeetr}
 
 \end{document}
-
