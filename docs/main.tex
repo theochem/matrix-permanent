@@ -37,12 +37,17 @@ To date, there are two general algorithms considered to be the fastest; one due 
 prior to this) \cite{wiki:computing,glynn2010}. The Ryser algorithm is based on the
 inclusion-exclusion principle and is given by the formula
 \begin{equation} \label{eq:per2}
-    \text{per}(A) = \sum_{k=1}^M{
-        ~\sum_{\sigma \in P(k)}{
-            {\left(-1\right)}^{\left|S\right|} \prod_{i=1}^N{\sum_{j=1}^{\left|S\right|}{a_{i,{\sigma(j)}}}}
+    \text{per}(A) = \left(-1\right)^N \sum_{k=1}^N{
+        \sum_{\sigma \in P(N,k)}{
+            {\left(-1\right)}^{k}
+            \prod_{i=1}^N{
+                \sum_{j=1}^{k}{a_{i,{\sigma(j)}}}
+            }
         }
-    }.
+    }
 \end{equation}
+where $P(N,k)$ is the set of $k$-permutations of the $N$-set $\left\{1,\dots,N\right\}$
+
 The Glynn algorithm is based on invariant theory, derived from the polarization identity for
 a symmetric tensor, and is given by the formula
 \begin{equation} \label{eq:per3}
@@ -53,7 +58,7 @@ a symmetric tensor, and is given by the formula
 \end{equation}
 where the outer sum is over all $2^{N-1}$ vectors $\delta = \left\{\pm 1_1,\dots,\pm 1_N\right\}$.
 It is still not clear which algorithm is faster, but they both scale in time with $\mathcal{O}(2^N
-N^2)$ if implemented naively, and with $\mathcal{O}(2^N N)$ if the sets $P(k)$ in Equation
+N^2)$ if implemented naively, and with $\mathcal{O}(2^N N)$ if the sets $P(N,k)$ in Equation
 (\ref{eq:per2}) and $\delta$ in Equation (\ref{eq:per3}) are iterated over in Gray code order
 \cite{wiki:computing,knuth2005}.
 
@@ -67,19 +72,20 @@ deploys the fastest algorithm for the size of the input matrix.
 \section*{Permanents of rectangular matrices}
 
 The definition of the permanent can be generalized to work with $M$-by-$N$ rectangular matrices with
-$M \leq N$, giving us the formula
+$M \leq N$ \cite{wiki:permanent}, giving us the formula
 \begin{equation} \label{eq:rectper1}
-    \text{per}(A) = \sum_{\sigma \in P(N,M)}{\prod_{i=1}^M{a_{i,{\sigma(i)}}}}
+    \text{per}(A) = \sum_{\sigma \in P(N,M)}{\prod_{i=1}^M{a_{i,{\sigma(i)}}}}.
 \end{equation}
-where $P(N,M)$ is the set of $M$-permutations of the $N$-set $\left\{1,\dots,N\right\}$
-\cite{wiki:permanent}. Since $\text{per}(A) = \text{per}(A^T)$, this is sufficient for computing
+Since $\text{per}(A) = \text{per}(A^T)$, this is sufficient for computing
 the permanent of all rectangular matrices. Ryser also generalized his algorithm to work with
 rectangular permanents in the same 1963 publication \cite{wiki:permanent,ryser1963},
 \begin{equation} \label{eq:rectper2}
     \text{per}(A) = \sum_{k=1}^{M}{
-        ~\sum_{\sigma \in P(N,M-k)}{
+        \sum_{\sigma \in P(N,M-k)}{
             {\left(-1\right)}^{k-1} \left(\begin{matrix}N - M - k - 1\\ k - 1\end{matrix}\right)
-            \prod_{i=1}^M{\sum_{j=1}^{M - k}{a_{i,{\sigma(j)}}}}
+            \prod_{i=1}^M{
+                \sum_{j=1}^{M-k}{a_{i,{\sigma(j)}}}
+            }
         }
     }.
 \end{equation}
