@@ -10,10 +10,14 @@ Many of the overlap formulas used in the Flexible Ansatz for N-electron Configur
 
 Evaluating the derivative of a permanent with respect to a parameter is a stretch goal.
 
-# Notes
+# Resources
 
-[Michael's notes](docs/main.pdf?raw=true)
+- [Michael's notes](docs/main.pdf?raw=true)
 
-[Example Python code (combinatoric and Glynn algorithms)](example.py)
+- [Michael's Python code (combinatoric and Glynn algorithms)](example.py)
 
-[David's Ryser code](https://github.com/QuantumElephant/fanpy/blob/master/wfns/backend/math_tools.py)
+- [David's Ryser algorithm code](https://github.com/QuantumElephant/fanpy/blob/master/wfns/backend/math_tools.py)
+
+- [Jorg Ardnt's book on combinatorial generation](https://www.jjj.de/fxt/fxtbook.pdf) (See chapters 8.2, 10.5--10.7, 12.2)
+
+- [Jorg's C++ combinatorics library](https://www.jjj.de/fxt/fxtpage.html#fxt)
