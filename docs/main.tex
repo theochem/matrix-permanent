@@ -2,10 +2,8 @@
 
 \usepackage[margin=1.25in]{geometry}
 \usepackage[utf8]{inputenc}
-\usepackage[english]{babel}
 
 \usepackage{amsmath}
-\usepackage{indentfirst}
 \usepackage{physics}
 \usepackage{url}
 
@@ -64,8 +62,6 @@ algorithms, though, in order to properly determine which algorithm is best at wh
 It would be nice to have a good C/++ implementation of the permanent function which automatically
 deploys the fastest algorithm for the size of the input matrix.
 
-\pagebreak
-
 \section*{Permanents of rectangular matrices}
 
 The definition of the permanent can be generalized to work with $M$-by-$N$ rectangular matrices with
@@ -75,8 +71,8 @@ $M \leq N$, giving us the formula
 \end{equation}
 where $P_{NM}$ is the set of $M$-permutations of the $N$-set $\left\{1,\dots,N\right\}$
 \cite{wiki:permanent}.  Since $\text{per}(A) = \text{per}(A^T)$, this is sufficient for computing
-the permanent of all rectangular matrices. Ryser also extended his own algorithm to rectangular
-permanents in the same 1963 publication \cite{wiki:computing,ryser1963}.
+the permanent of all rectangular matrices. Ryser also generalized his algorithm to work with
+rectangular permanents in the same 1963 publication \cite{wiki:permanent,ryser1963}.
 
 The Glynn algorithm can be generalized to work with rectangular permanents by use of the identity
 (shown here for $M \geq N$),
@@ -109,8 +105,6 @@ of $M$ and $N$. It seems to me that for large rectangular matrices with $M$ and 
 the Glynn algorithm should be fastest; and for large highly rectangular matrices where the
 difference between $M$ and $N$ is large, the Ryser algorithm should be fastest.
 
-\pagebreak
-
 \section*{Derivatives of Permanents}
 
 We can compute the derivative of a permanent with respect to a general parameter $t$ by using
@@ -118,9 +112,10 @@ a formula analogous to Jacobi's formula \cite{carvalho2014},
 \begin{equation} \label{eq:jacobis}
     \frac{d}{dt}\text{per}(A(t)) = \text{tr}\left(\text{adj}_{+}(A(t))\frac{dA(t)}{dt}\right).
 \end{equation}
-where $\text{adj}_{+}$ is the permanental adjugate, wherein the $i,j$-minors of $A$ are computed
-with permanents instead of determinants.  We can also compute the derivative of a permanent with
-respect to a matrix element $a_{ij}$ by using a special case of Equation (\ref{eq:jacobis}),
+The function $\text{adj}_{+}(A)$ in Equation (\ref{eq:jacobis}) is the permanental adjugate, wherein
+the $i,j$-minors of $A$ are computed with permanents instead of determinants.  We can also compute
+the derivative of a permanent with respect to a matrix element $a_{ij}$ by using a special case of
+Equation (\ref{eq:jacobis}),
 \begin{equation}
     \frac{d}{d{a_{ij}}}\text{per}(A) = {\text{adj}_{+}(A)}_{ji}.
 \end{equation}
