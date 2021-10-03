@@ -34,11 +34,11 @@ naive ones suggested by the permanent's definition, which has time complexity $\
 
 To date, there are two general algorithms considered to be the fastest; one due to Ryser (1963)
 \cite{ryser1963}, and one due to Glynn (2010, although it was found independently by several others
-prior to this) \cite{wiki:computing,glynn2010}. The Ryser algorithm is based on the
-inclusion-exclusion principle and is given by the formula
+prior to this) \cite{wiki:computing,glynn2010}.
+The Ryser algorithm is based on the inclusion-exclusion principle and is given by the formula
 \begin{equation} \label{eq:per2}
     \text{per}(A) = \left(-1\right)^N \sum_{k=1}^N{
-        \sum_{\sigma \in P(N,k)}{
+        ~\sum_{\sigma \in P(N,k)}{
             {\left(-1\right)}^{k}
             \prod_{i=1}^N{
                 \sum_{j=1}^{k}{a_{i,{\sigma(j)}}}
@@ -46,8 +46,7 @@ inclusion-exclusion principle and is given by the formula
         }
     }
 \end{equation}
-where $P(N,k)$ is the set of $k$-permutations of the $N$-set $\left\{1,\dots,N\right\}$
-
+where $P(N,k)$ is the set of $k$-permutations of the $N$-set $\left\{1,\dots,N\right\}$.
 The Glynn algorithm is based on invariant theory, derived from the polarization identity for
 a symmetric tensor, and is given by the formula
 \begin{equation} \label{eq:per3}
@@ -81,7 +80,7 @@ the permanent of all rectangular matrices. Ryser also generalized his algorithm 
 rectangular permanents in the same 1963 publication \cite{wiki:permanent,ryser1963},
 \begin{equation} \label{eq:rectper2}
     \text{per}(A) = \sum_{k=1}^{M}{
-        \sum_{\sigma \in P(N,M-k)}{
+        ~\sum_{\sigma \in P(N,M-k)}{
             {\left(-1\right)}^{k-1} \left(\begin{matrix}N - M - k - 1\\ k - 1\end{matrix}\right)
             \prod_{i=1}^M{
                 \sum_{j=1}^{M-k}{a_{i,{\sigma(j)}}}
@@ -130,7 +129,7 @@ a formula analogous to Jacobi's formula \cite{carvalho2014},
 \end{equation}
 The function $\text{adj}_{+}(A)$ in Equation (\ref{eq:jacobis}) is the permanental adjugate, wherein
 the $i,j$-minors of $A$ are computed with permanents instead of determinants. We can also compute
-the derivative of a permanent with respect to a matrix element $a_{ij}$ by using a special case of
+the derivative of a permanent with respect to a matrix element $a_{i,j}$ by using a special case of
 Equation (\ref{eq:jacobis}),
 \begin{equation}
     \frac{d}{d{a_{i,j}}}\text{per}(A) = {\text{adj}_{+}(A)}_{j,i}.
