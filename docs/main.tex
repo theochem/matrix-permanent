@@ -3,24 +3,34 @@
 \usepackage[margin=1.25in]{geometry}
 \usepackage[utf8]{inputenc}
 
+\usepackage{indentfirst}
 \usepackage{amsmath}
 \usepackage{physics}
 \usepackage{url}
 
 \title{Permanents}
 
-\linespread{1.25}
+\linespread{1.15}
+\setlength{\parskip}{1em}
 
 \begin{document}
 
-\section*{Permanents}
+\section*{Computing the Permanent}
 
 The permanent of an $N$-by-$N$ square matrix $A = \left(a_{i,j}\right)$ is defined as
 \begin{equation} \label{eq:per1}
     \text{per}(A) = \sum_{\sigma \in P(N)}{\prod_{i=1}^N{a_{i,{\sigma(i)}}}}
 \end{equation}
 where $P(N)$ is the set of permutations of the $N$-set $\left\{1,\dots,N\right\}$
-\cite{wiki:permanent}. Equation (\ref{eq:per1}) is similar to the definition of the determinant,
+\cite{wiki:permanent}. The definition can be extended to $M$-by-$N$ rectangular matrices with
+$M \leq N$ \cite{wiki:permanent}, 
+\begin{equation} \label{eq:rectper1}
+    \text{per}(A) = \sum_{\sigma \in P(N,M)}{\prod_{i=1}^M{a_{i,{\sigma(i)}}}}.
+\end{equation}
+Since $\text{per}(A) = \text{per}(A^T)$, this is sufficient for computing the permanent of all
+rectangular matrices.
+
+Equation (\ref{eq:per1}) is similar to the definition of the determinant,
 \begin{equation} \label{eq:det1}
     \text{det}(A) = \sum_{\sigma \in P(N)}{\text{sgn}(\sigma) \prod_{i=1}^N{a_{i,{\sigma(i)}}}},
 \end{equation}
@@ -28,14 +38,18 @@ except that the signatures of the permutations are not taken into account; this 
 makes the permanent much more difficult to compute than the determinant, because it means that
 decomposition methods can no longer be used \cite{wiki:computing}. In 1979, Valiant published his
 theorem stating that the computation of the permanent is in the complexity class \#P-complete, i.e.
-neither in P nor in NP \cite{valiant1979}. The permanent, however, commonly appears in problems
-related to quantum mechanics, so it is still worthwhile to pursue more efficient algorithms than the
-naive ones suggested by the permanent's definition, which has time complexity $\mathcal{O}(N!N)$.
+neither in P nor in NP \cite{valiant1979}.
 
-To date, there are two general algorithms considered to be the fastest; one due to Ryser (1963)
-\cite{ryser1963}, and one due to Glynn (2010, although it was found independently by several others
-prior to this) \cite{wiki:computing,glynn2010}.
+The permanent commonly appears in problems related to quantum mechanics,
+notably in our recent Coupled Cluster and quasi-particle ansatz for $N$-electron systems
+\cite{limacher2013,johnson2017,kim2021}, so it is still worthwhile to pursue more efficient
+algorithms than the naive one suggested by Equation (\ref{eq:per1}), which has time complexity
+$\mathcal{O}(N!N)$. To date, there are two classes of algorithm considered to be the fastest; one
+due to Ryser in 1963 \cite{ryser1963}, and one due to Glynn in 2010 (although it was found
+independently by several others prior to this) \cite{wiki:computing,glynn2010}.
+
 The Ryser algorithm is based on the inclusion-exclusion principle and is given by the formula
+(for $N$-by-$N$ square matrices)
 \begin{equation} \label{eq:per2}
     \text{per}(A) = \left(-1\right)^N \sum_{k=1}^N{
         ~\sum_{\sigma \in P(N,k)}{
@@ -46,38 +60,9 @@ The Ryser algorithm is based on the inclusion-exclusion principle and is given b
         }
     }
 \end{equation}
-where $P(N,k)$ is the set of $k$-permutations of the $N$-set $\left\{1,\dots,N\right\}$.
-The Glynn algorithm is based on invariant theory, derived from the polarization identity for
-a symmetric tensor, and is given by the formula
-\begin{equation} \label{eq:per3}
-    \text{per}(A) = \frac{1}{2^{N-1}} \cdot \sum_{\delta}{
-        \left(\sum_{k=1}^N{\delta_k}\right)
-        \prod_{j=1}^N{\sum_{i=1}^N{\delta_i a_{i,j}}}
-    }
-\end{equation}
-where the outer sum is over all $2^{N-1}$ vectors $\delta = \left\{\pm 1_1,\dots,\pm 1_N\right\}$.
-It is still not clear which algorithm is faster, but they both scale in time with $\mathcal{O}(2^N
-N^2)$ if implemented naively, and with $\mathcal{O}(2^N N)$ if the sets $P(N,k)$ in Equation
-(\ref{eq:per2}) and $\delta$ in Equation (\ref{eq:per3}) are iterated over in Gray code order
-\cite{wiki:computing,knuth2005}.
-
-At small values of $N$, the naive algorithm is actually the fastest, but it is quickly outpaced by
-the other two algorithms, and the difference in time between the algorithms at large values of $N$
-is several orders of magnitude. We haven't been able to find any fast C/++ code for these
-algorithms, though, in order to properly determine which algorithm is best at which values of $N$.
-It would be nice to have a good C/++ implementation of the permanent function which automatically
-deploys the fastest algorithm for the size of the input matrix.
-
-\section*{Permanents of rectangular matrices}
-
-The definition of the permanent can be generalized to work with $M$-by-$N$ rectangular matrices with
-$M \leq N$ \cite{wiki:permanent}, giving us the formula
-\begin{equation} \label{eq:rectper1}
-    \text{per}(A) = \sum_{\sigma \in P(N,M)}{\prod_{i=1}^M{a_{i,{\sigma(i)}}}}.
-\end{equation}
-Since $\text{per}(A) = \text{per}(A^T)$, this is sufficient for computing
-the permanent of all rectangular matrices. Ryser also generalized his algorithm to work with
-rectangular permanents in the same 1963 publication \cite{wiki:permanent,ryser1963},
+where $P(N,k)$ is the set of $k$-permutations of the $N$-set $\left\{1,\dots,N\right\}$
+\cite{wiki:permanent}.  Equation (\ref{eq:per2}) is a special case of Ryser's original formula,
+which he had defined for $M$-by-$N$ rectangular matrices with $M \leq N$ \cite{ryser1963}: 
 \begin{equation} \label{eq:rectper2}
     \text{per}(A) = \sum_{k=1}^{M}{
         ~\sum_{\sigma \in P(N,M-k)}{
@@ -89,8 +74,17 @@ rectangular permanents in the same 1963 publication \cite{wiki:permanent,ryser19
     }.
 \end{equation}
 
-The Glynn algorithm can be generalized to work with rectangular permanents by use of the identity
-(shown here for $M \geq N$),
+The Glynn algorithm is based on invariant theory, derived from the polarization identity for
+a symmetric tensor, and is given by the formula (for $N$-by-$N$ square matrices)
+\begin{equation} \label{eq:per3}
+    \text{per}(A) = \frac{1}{2^{N-1}} \cdot \sum_{\delta}{
+        \left(\sum_{k=1}^N{\delta_k}\right)
+        \prod_{j=1}^N{\sum_{i=1}^N{\delta_i a_{i,j}}}
+    }
+\end{equation}
+where the outer sum is over all $2^{N-1}$ vectors $\delta = \left\{\pm 1_1,\dots,\pm 1_N\right\}$.
+The Glynn algorithm can be generalized to work with $M$-by-$N$ rectangular permanents with $M \leq
+N$ by use of the following identity (shown here for $M \geq N$):
 \begin{equation} \label{eq:padidentity}
     {\text{per}}\left(
         \begin{matrix}
@@ -105,9 +99,10 @@ The Glynn algorithm can be generalized to work with rectangular permanents by us
             \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
             a_{M,1} & \cdots & a_{M,N} & 1_{M,N+1} & \cdots & 1_{M,M} \\
         \end{matrix}
-    \right),
+    \right).
 \end{equation}
-which can be neatly fit into Equation (\ref{eq:per3}) by extending the sum over $\delta$:
+This can be neatly fit into Equation (\ref{eq:per3}) by extending the inner sum over $\delta$ from
+$\left[1,M\right]$ to $\left[1,N\right]$:
 \begin{equation} \label{eq:rectper3}
     \text{per}(A) = \frac{1}{2^{N-1}} \cdot \frac{1}{\left(N - M + 1\right)!} \cdot \sum_{\delta}{
         \left(\sum_{k=1}^N{\delta_k}\right)
@@ -115,12 +110,19 @@ which can be neatly fit into Equation (\ref{eq:per3}) by extending the sum over 
     }.
 \end{equation}
 
-Now, our problem is more complicated, since we want to determine the best algorithm for each value
-of $M$ and $N$. It seems to me that for large rectangular matrices with $M$ and $N$ close in value,
-the Glynn algorithm should be fastest; and for large highly rectangular matrices where the
-difference between $M$ and $N$ is large, the Ryser algorithm should be fastest.
+It is still not clear which algorithm is faster, but for square matrices, they both scale in time
+with $\mathcal{O}(2^N N^2)$ if implemented naively, and with $\mathcal{O}(2^N N)$ if the sets
+$P(N,k)$ in Equation (\ref{eq:per2}) and $\delta$ in Equation (\ref{eq:per3}) are iterated over in
+Gray code order \cite{wiki:computing,knuth2005}.  At small values of $N$, the naive algorithm is
+actually the fastest, but it is quickly outpaced by the other two algorithms, and the difference in
+time between the algorithms at large values of $N$ is several orders of magnitude. Our goal is to
+determine which algorithm for square and rectangular matrices is fastest for each value of $M$ and
+$N$, and to write a function which deploys the appropriate algorithm for the input matrix.  It seems
+to me that for large rectangular matrices with $M$ and $N$ close in value, the Glynn algorithm
+should be fastest; and for large highly rectangular matrices where the difference between $M$ and
+$N$ is large, the Ryser algorithm should be fastest.
 
-\section*{Derivatives of Permanents}
+\section*{Computing the Derivatives of Permanents}
 
 We can compute the derivative of a permanent with respect to a general parameter $t$ by using
 a formula analogous to Jacobi's formula \cite{carvalho2014},
@@ -129,13 +131,29 @@ a formula analogous to Jacobi's formula \cite{carvalho2014},
 \end{equation}
 The function $\text{adj}_{+}(A)$ in Equation (\ref{eq:jacobis}) is the permanental adjugate, wherein
 the $i,j$-minors of $A$ are computed with permanents instead of determinants. We can also compute
-the derivative of a permanent with respect to a matrix element $a_{i,j}$ by using a special case of
-Equation (\ref{eq:jacobis}),
+the derivative of a permanent with respect to a matrix element $a_{i,j}$ by reducing Equation
+(\ref{eq:jacobis}) to a special case:
 \begin{equation}
     \frac{d}{d{a_{i,j}}}\text{per}(A) = {\text{adj}_{+}(A)}_{j,i}.
 \end{equation}
+Carvalho's 2014 paper also gives a more general formula for the $k$-th derivative of the
+permanent \cite{carvalho2014}.
 
-\pagebreak
+\section*{Combinatorial Generation}
+
+Implementing these permanent functions will require the following combinatorial generation
+algorithms:
+\begin{itemize}
+    \item All $k$-permutations of the $N$-set $\left\{1,\dots,N\right\}$
+          for Equations (\ref{eq:per1}) and (\ref{eq:rectper1})
+    \item All subsets of the $N$-set $\left\{1,\dots,N\right\}$ for Equations (\ref{eq:per2}) and
+          (\ref{eq:rectper2})
+    \item Gray code generation for Equations (\ref{eq:per3}) and (\ref{eq:rectper3})
+\end{itemize}
+The first two should also be implemented in some minimal-change or Gray code ordering.  J\"{o}rg
+Arndt's book \emph{Matters Computational} contains explanations, C++ code, and benchmarks for all of
+these \cite{arndt2010}. The relevant chapters are 8.2, 10.5--10.7, and 12.2. My example code for the
+Glynn algorithm also shows how the Gray code generation can work.
 
 \bibliography{main}
 \bibliographystyle{ieeetr}
