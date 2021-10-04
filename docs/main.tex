@@ -82,7 +82,7 @@ a symmetric tensor, and is given by the formula (for $N$-by-$N$ square matrices)
         \prod_{j=1}^N{\sum_{i=1}^N{\delta_i a_{i,j}}}
     }
 \end{equation}
-where the outer sum is over all $2^{N-1}$ vectors $\delta = \left\{\pm 1_1,\dots,\pm 1_N\right\}$.
+where the outer sum is over all $2^{N-1}$ vectors $\delta = \left\{{+} 1_1,\dots,\pm 1_N\right\}$.
 The Glynn algorithm can be generalized to work with $M$-by-$N$ rectangular permanents with $M \leq
 N$ by use of the following identity (shown here for $M \geq N$):
 \begin{equation} \label{eq:padidentity}
@@ -137,11 +137,11 @@ the derivative of a permanent with respect to a matrix element $a_{i,j}$ by redu
     \frac{d}{d{a_{i,j}}}\text{per}(A) = {\text{adj}_{+}(A)}_{j,i}.
 \end{equation}
 Carvalho's 2014 paper also gives a more general formula for the $k$-th derivative of the
-permanent \cite{carvalho2014}.
+permanent \cite{carvalho2014}. As Paul says, derivatives of permanents are a "stretch goal".
 
-\section*{Combinatorial Generation}
+\section*{Code Structure}
 
-Implementing these permanent functions will require the following combinatorial generation
+Implementing the discussed permanent algorithms will require the following combinatorial generation
 algorithms:
 \begin{itemize}
     \item All $k$-permutations of the $N$-set $\left\{1,\dots,N\right\}$
@@ -152,8 +152,16 @@ algorithms:
 \end{itemize}
 The first two should also be implemented in some minimal-change or Gray code ordering.  J\"{o}rg
 Arndt's book \emph{Matters Computational} contains explanations, C++ code, and benchmarks for all of
-these \cite{arndt2010}. The relevant chapters are 8.2, 10.5--10.7, and 12.2. My example code for the
-Glynn algorithm also shows how the Gray code generation can work.
+these \cite{arndt2010}. The relevant chapters are 8.2, 10.5--10.7, and 12.2. All of the code from the book
+is also available as a library on Arndt's website (\url{https://jjj.de/fxt/fxtpage.html}). We should
+probably use it. My example code for the Glynn algorithm also shows how the Gray code generation can work.
+
+Ideally, our code should work with an input matrix in the form of either a raw pointer/std::array,
+an STL container, a Python/NumPy buffer, or whatever you prefer. We should leverage C++ abstractions
+to reduce code duplication where possible, while still allowing for efficient enough output to
+properly measure which algorithm is best at which values of $M$ and $N$.
+
+\pagebreak
 
 \bibliography{main}
 \bibliographystyle{ieeetr}
