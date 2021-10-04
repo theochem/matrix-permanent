@@ -1,6 +1,6 @@
 \documentclass{article}
 
-\usepackage[margin=1.25in]{geometry}
+\usepackage[margin=1.3in]{geometry}
 \usepackage[utf8]{inputenc}
 
 \usepackage{indentfirst}
@@ -11,6 +11,7 @@
 \title{Permanents}
 
 \linespread{1.15}
+\setlength\parindent{1em}
 \setlength{\parskip}{1em}
 
 \begin{document}
@@ -23,7 +24,7 @@ The permanent of an $N$-by-$N$ square matrix $A = \left(a_{i,j}\right)$ is defin
 \end{equation}
 where $P(N)$ is the set of permutations of the $N$-set $\left\{1,\dots,N\right\}$
 \cite{wiki:permanent}. The definition can be extended to $M$-by-$N$ rectangular matrices with
-$M \leq N$ \cite{wiki:permanent}, 
+$M \leq N$ \cite{wiki:permanent},
 \begin{equation} \label{eq:rectper1}
     \text{per}(A) = \sum_{\sigma \in P(N,M)}{\prod_{i=1}^M{a_{i,{\sigma(i)}}}}.
 \end{equation}
@@ -36,18 +37,19 @@ Equation (\ref{eq:per1}) is similar to the definition of the determinant,
 \end{equation}
 except that the signatures of the permutations are not taken into account; this exclusion notably
 makes the permanent much more difficult to compute than the determinant, because it means that
-decomposition methods can no longer be used \cite{wiki:computing}. In 1979, Valiant published his
-theorem stating that the computation of the permanent is in the complexity class \#P-complete, i.e.
-neither in P nor in NP \cite{valiant1979}.
+decomposition methods can no longer be used \cite{wiki:computing}. In fact, Valiant proved in 1979
+that the computation of the permanent is in the complexity class \#P-complete, i.e.  neither in
+P nor in NP \cite{valiant1979}.
 
 The permanent commonly appears in problems related to quantum mechanics,
 notably in our recent Coupled Cluster and quasi-particle ansatz for $N$-electron systems
 \cite{limacher2013,johnson2017,kim2021}, so it is still worthwhile to pursue more efficient
 algorithms than the naive one suggested by Equation (\ref{eq:per1}), which has time complexity
-$\mathcal{O}(N!N)$. To date, there are two classes of algorithm considered to be the fastest; one
-due to Ryser in 1963 \cite{ryser1963}, and one due to Glynn in 2010 (although it was found
-independently by several others prior to this) \cite{wiki:computing,glynn2010}.
+$\mathcal{O}(N!N)$.
 
+To date, there are two classes of algorithm considered to be the fastest; one
+due to Ryser in 1963 \cite{ryser1963}, and one due to Glynn in 2010 (although it was found
+independently by others prior to this) \cite{wiki:computing,glynn2010}.
 The Ryser algorithm is based on the inclusion-exclusion principle and is given by the formula
 (for $N$-by-$N$ square matrices)
 \begin{equation} \label{eq:per2}
@@ -62,18 +64,17 @@ The Ryser algorithm is based on the inclusion-exclusion principle and is given b
 \end{equation}
 where $P(N,k)$ is the set of $k$-permutations of the $N$-set $\left\{1,\dots,N\right\}$
 \cite{wiki:permanent}.  Equation (\ref{eq:per2}) is a special case of Ryser's original formula,
-which he had defined for $M$-by-$N$ rectangular matrices with $M \leq N$ \cite{ryser1963}: 
+which he had defined for $M$-by-$N$ rectangular matrices with $M \leq N$ \cite{ryser1963}:
 \begin{equation} \label{eq:rectper2}
-    \text{per}(A) = \sum_{k=1}^{M}{
+    \text{per}(A) = \sum_{k=0}^{M-1}{
         ~\sum_{\sigma \in P(N,M-k)}{
-            {\left(-1\right)}^{k-1} \left(\begin{matrix}N - M - k - 1\\ k - 1\end{matrix}\right)
+            {\left(-1\right)}^k \left(\begin{matrix}N - M + k\\ k\end{matrix}\right)
             \prod_{i=1}^M{
                 \sum_{j=1}^{M-k}{a_{i,{\sigma(j)}}}
             }
         }
     }.
 \end{equation}
-
 The Glynn algorithm is based on invariant theory, derived from the polarization identity for
 a symmetric tensor, and is given by the formula (for $N$-by-$N$ square matrices)
 \begin{equation} \label{eq:per3}
@@ -82,9 +83,9 @@ a symmetric tensor, and is given by the formula (for $N$-by-$N$ square matrices)
         \prod_{j=1}^N{\sum_{i=1}^N{\delta_i a_{i,j}}}
     }
 \end{equation}
-where the outer sum is over all $2^{N-1}$ vectors $\delta = \left\{{+} 1_1,\dots,\pm 1_N\right\}$.
-The Glynn algorithm can be generalized to work with $M$-by-$N$ rectangular permanents with $M \leq
-N$ by use of the following identity (shown here for $M \geq N$):
+where the outer sum is over all $2^{N-1}$ vectors $\delta = \left\{{+} 1_1,\pm 1_2,\dots,\pm 1_N\right\}$.
+The Glynn algorithm can be generalized to work with $M$-by-$N$ rectangular permanents with
+$M \leq N$ by use of the following identity (shown here for $M \geq N$):
 \begin{equation} \label{eq:padidentity}
     {\text{per}}\left(
         \begin{matrix}
@@ -101,7 +102,7 @@ N$ by use of the following identity (shown here for $M \geq N$):
         \end{matrix}
     \right).
 \end{equation}
-This can be neatly fit into Equation (\ref{eq:per3}) by extending the inner sum over $\delta$ from
+This can be neatly fit into Equation (\ref{eq:per3}) by extending the inner sums over $\delta$ from
 $\left[1,M\right]$ to $\left[1,N\right]$:
 \begin{equation} \label{eq:rectper3}
     \text{per}(A) = \frac{1}{2^{N-1}} \cdot \frac{1}{\left(N - M + 1\right)!} \cdot \sum_{\delta}{
@@ -159,7 +160,21 @@ probably use it. My example code for the Glynn algorithm also shows how the Gray
 Ideally, our code should work with an input matrix in the form of either a raw pointer/std::array,
 an STL container, a Python/NumPy buffer, or whatever you prefer. We should leverage C++ abstractions
 to reduce code duplication where possible, while still allowing for efficient enough output to
-properly measure which algorithm is best at which values of $M$ and $N$.
+properly measure which algorithm is best at each value of $M$ and $N$. Here is a basic plan we can
+follow:
+\begin{enumerate}
+    \item Write template C++ functions for permanents; maybe write first implementations for some
+          STL container?
+    \item Test the code against the example Python code, and benchmark the code
+    \item Optimize the code and find the best algorithm for each value of $M$ and $N$
+    \item Write a C++ function which automatically calls the best algorithm based on the size of the
+          input matrix
+    \item Ensure the code works with Python or NumPy buffers (maybe)
+    \item Write functions for the derivative of the permanent with respect to a parameter (maybe)
+\end{enumerate}
+We should prioritize the combinatoric algorithm and the Glynn algorithm since I have good Python
+code we can follow. The Ryser algorithm would be nice to have, though, and David's code linked in the readme
+is a good starting point (in the case of square matrices, at least).
 
 \pagebreak
 
