@@ -1,12 +1,12 @@
-r"""Library for computing the permanents of matrices."""
+r"""Module for computing the permanents of matrices."""
 
 
 __all__ = [
+    "permanent",
     "combinatoric",
     "glynn",
     "ryser",
-    "permanent",
 ]
 
 
-from .permanent import combinatoric, glynn, ryser, permanent
+from .permanent import permanent, combinatoric, glynn, ryser
