@@ -8,6 +8,7 @@
 
 /* Include whatever NumPy C headers you'll need here. */
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#include "numpy/arrayobject.h"
 #include "numpy/ndarraytypes.h"
 #include "numpy/npy_3kcompat.h"
 #include "numpy/ufuncobject.h"
@@ -25,27 +26,47 @@
 /* ********************************* */
 
 
-static PyObject* combinatoric(PyObject *module, PyObject *matrix)
+static PyObject* combinatoric(PyObject *module, PyObject *object)
 {
-    return PyInt_FromLong(0L);
+    /* Cast PyObject* to PyArrayObject*. */
+    PyArrayObject *matrix = (PyArrayObject *)object;
+
+    /* Return element (0, 0) of the matrix. */
+    double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
+    return PyFloat_FromDouble(*ptr);
 }
 
 
-static PyObject* glynn(PyObject *module, PyObject *matrix)
+static PyObject* glynn(PyObject *module, PyObject *object)
 {
-    return PyInt_FromLong(0L);
+    /* Cast PyObject* to PyArrayObject*. */
+    PyArrayObject *matrix = (PyArrayObject *)object;
+
+    /* Return element (0, 0) of the matrix. */
+    double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
+    return PyFloat_FromDouble(*ptr);
 }
 
 
-static PyObject* ryser(PyObject *module, PyObject *matrix)
+static PyObject* ryser(PyObject *module, PyObject *object)
 {
-    return PyInt_FromLong(0L);
+    /* Cast PyObject* to PyArrayObject*. */
+    PyArrayObject *matrix = (PyArrayObject *)object;
+
+    /* Return element (0, 0) of the matrix. */
+    double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
+    return PyFloat_FromDouble(*ptr);
 }
 
 
-static PyObject* permanent(PyObject *module, PyObject *matrix)
+static PyObject* permanent(PyObject *module, PyObject *object)
 {
-    return PyInt_FromLong(0L);
+    /* Cast PyObject* to PyArrayObject*. */
+    PyArrayObject *matrix = (PyArrayObject *)object;
+
+    /* Return element (0, 0) of the matrix. */
+    double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
+    return PyFloat_FromDouble(*ptr);
 }
 
 
