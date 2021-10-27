@@ -24,6 +24,28 @@
 /* ********************************* */
 
 
+void swap2(uint64_t const curr_perm, uint64_t i, uint64_t j)
+// A function for swapping the values of two entries in an array while keeping the pointer the same
+{
+    const uint64_t temp = curr_perm[i];
+    curr_perm[i] = curr_perm[j];
+    curr_perm[j] = temp;
+}
+
+void re_sort(uint64_t const curr_perm, uint64_t start)
+// Re-sort the set to be in ascending order - this occurs after you have swapped adjacent values
+{
+    uint64_t i = start;
+    uint64_t j = 0;
+    while (i > j)
+    {
+        swap2(curr_perm, i, j);
+        i--;
+        j++;
+    }
+}
+
+
 static PyObject *combinatoric(PyObject *module, PyObject *object)
 {
     /* Cast PyObject* to PyArrayObject*. */
@@ -32,6 +54,65 @@ static PyObject *combinatoric(PyObject *module, PyObject *object)
     /* Return element (0, 0) of the matrix. */
     double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
     return PyFloat_FromDouble(*ptr);
+
+    /* Return the permanent of the matrix. */ 
+    uint64_t m_rows = PyArray_DIMS(matrix)[0];
+    uint64_t n_cols = PyArray_DIMS(matrix)[1];
+    double sum_permanent = 0.0;
+    double prod_permanent = 1.0;
+
+
+    uint64_t init_perm(const uint64_t N)
+    {
+        // generate the first permutation of the set {1, 2, .., N}
+        // return a pointer to the array
+        // first set is in ascending order
+
+        uint64_t the_set[N];
+        for (uint64_t i = 0; i < N; i++)
+        {
+            the_set[i] = i + 1
+        }
+        return the_set
+    }
+
+    void next_perm(uint64_t const curr_perm, const uint64_t length)
+    {
+        // use the current permutation to generate the next permutation lexicographically
+        // save memory by changing contents in init_perm while keeping pointer the same
+        // has time complexity O(n) in the worst case
+        uint64_t i = 1;
+        while (i < length - 2 && curr_perm[i] < curr_perm[i + 1])
+        {
+            i++;
+        }
+        if (i = length - 1)
+        {
+            uint64_t j = 0;
+            while (curr_perm[j] > curr_perm[i])
+            {
+                j--;
+            }
+            swap2(curr_perm, i, j);
+        }
+        re_sort(curr_perm, i - 1);
+    }
+
+    // generate a pointer to the set of elements {1, 2, .., N} in ascending order
+    // store the pointer to the array in variable curr_perm
+    uint64_t curr_perm = init_perm(n_cols)
+    while (curr_perm[0] < (n_cols - m_rows + 1))
+    {
+        for (uint64_t i = 0; i < m_rows; ++i)
+        {
+            prod_permanent *= (matrix[i, permutations[i]]);
+        }
+
+        sum_permanent += prod_permanent;
+        // generate next permutation lexicographically and update the array pointed to by curr_perm
+        next_perm(curr_perm, n_cols)
+    }
+    return sum_permanent;
 }
 
 
