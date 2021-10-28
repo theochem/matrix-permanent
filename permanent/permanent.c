@@ -69,7 +69,7 @@ void init_perm(const uint64_t N, const uint64_t M, uint64_t *the_curr_set, uint6
 }
 
 
-void next_perm(uint64_t *const curr_perm, uint64_t *const next_perm, uint64_t *const inv_perm, const uint64_t rows, const uint64_t cols)
+void gen_next_perm(uint64_t *const curr_perm, uint64_t *const next_perm, uint64_t *const inv_perm, const uint64_t rows, const uint64_t cols)
 {
     /* use the current permutation to check for next permutation lexicographically, if it exists
     update the curr_array by swapping the leftmost changed element (at position i < k).
@@ -135,12 +135,13 @@ static PyObject *combinatoric(PyObject *module, PyObject *object)
     uint64_t curr_perm[128];
     curr_perm[0] = 0;
     // sentinal value, thus we need to increment to look in the right place
-    ++curr_perm;
+    // ++curr_perm;
     uint64_t next_perm[128];
     uint64_t inv_perm[128];
     // inverse permutation is used to simplify the update of the permanent
 
-    init_perm(n_cols, m_rows, curr_perm, next_perm, inv_perm);
+    init_perm(n_cols, m_rows, curr_perm + 1, next_perm, inv_perm);
+    // while (curr_perm[1] < (n_cols - m_rows + 1))
     while (curr_perm[1] < (n_cols - m_rows + 1))
     {
         for (uint64_t i = 0; i < m_rows; ++i)
@@ -150,7 +151,7 @@ static PyObject *combinatoric(PyObject *module, PyObject *object)
 
         sum_permanent += prod_permanent;
         // generate next permutation (if it exists) lexicographically and update the array pointed to by curr_perm
-        next_perm(curr_perm, next_perm, inv_perm, m_rows, n_cols);
+        gen_next_perm(curr_perm, next_perm, inv_perm, m_rows, n_cols);
     }
     return PyFloat_FromDouble(sum_permanent);
 }
