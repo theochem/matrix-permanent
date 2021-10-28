@@ -24,61 +24,93 @@
 /* ********************************* */
 
 
-void swap2(uint64_t *const curr_perm, uint64_t i, uint64_t j)
+void swap2(uint64_t *perm, uint64_t i, uint64_t j)
 // A function for swapping the values of two entries in an array while keeping the pointer the same
 {
-    const uint64_t temp = curr_perm[i];
-    curr_perm[i] = curr_perm[j];
-    curr_perm[j] = temp;
+    const uint64_t temp = perm[i];
+    perm[i] = perm[j];
+    perm[j] = temp;
 }
 
-void re_sort(uint64_t *const curr_perm, uint64_t start)
+void re_sort(uint64_t *const curr_perm, uint64_t start, uint64_t length)
 // Re-sort the set to be in ascending order - this occurs after you have swapped adjacent values
 {
     uint64_t i = start;
-    uint64_t j = 0;
-    while (i > j)
+    uint64_t j = length - 1;
+    while (i < j)
     {
         swap2(curr_perm, i, j);
-        i--;
-        j++;
+        i++;
+        j--;
     }
 }
 
 
-void init_perm(const uint64_t N, uint64_t *the_set)
+void init_perm(const uint64_t N, const uint64_t M, uint64_t *the_curr_set, uint64_t *the_next_set, uint64_t *the_inv_set)
 {
-    // generate the first permutation of the set {1, 2, .., N}
-    // return a pointer to the array
-    // first set is in ascending order
+    // generate the set {1, 2, .., N} to permute
+    // update all relevent sets we must keep track up in order to siplify generation of next permutation
+    // update values pointed to by respective array pointers
+    // first set is in ascending order to ensure no smaller permutation is possible
 
+    uint64_t k = M;
+    uint64_t u = N - 1;
+    if (k < u)
+    {
+        u = k;
+    }
+    
     for (uint64_t i = 0; i < N; i++)
     {
-        the_set[i] = i + 1;
+        the_curr_set[i] = 0;
+        the_next_set[i] = i;
+        the_inv_set[i] = i;
     }
 }
 
 
-void next_perm(uint64_t *const curr_perm, const uint64_t length)
+void next_perm(uint64_t *const curr_perm, uint64_t *const next_perm, uint64_t *const inv_perm, const uint64_t rows, const uint64_t cols)
 {
-    // use the current permutation to generate the next permutation lexicographically
-    // save memory by changing contents in init_perm while keeping pointer the same
-    // has time complexity O(n) in the worst case
-    uint64_t i = 1;
-    while (i < length - 2 && curr_perm[i] < curr_perm[i + 1])
+    /* use the current permutation to check for next permutation lexicographically, if it exists
+    update the curr_array by swapping the leftmost changed element (at position i < k).
+    Replace the elements up to position k by the smallest element lying to the right of i.
+    Do not put remaining k, .., n - 1 positions in ascending order to improve efficiency
+    has time complexity O(n) in the worst case */
+    uint64_t i = rows - 1;
+    uint64_t m1 = cols - i - 1;
+    while (curr_perm[i] == m1)
+    // begin update of curr_perm and generate next permutation
     {
-        i++;
+        curr_perm[i] = 0;
+        ++m1;
+        --i;
     }
-    if (i == length - 1)
+    ++curr_perm[i];
+    // find smallest element p[i] < p[j] that lies to the right of pos i
+    uint64_t z = next_perm[i];
+    // update the permutation
+    do 
     {
-        uint64_t j = 0;
-        while (curr_perm[j] > curr_perm[i])
+        ++z;
+    } while (inv_perm[z] <= i);
+    const uint64_t j = inv_perm[z];
+    swap2(next_perm, i, j);
+    swap2(inv_perm, next_perm[i], next_perm[j]);
+    ++i;
+    z = 0;
+    uint64_t u_ = cols - 1;
+    while (i < u_)
+    {
+        // find smallest elements to the right of position i
+        while (inv_perm[z] < i)
         {
-            j--;
+            ++z;
         }
-        swap2(curr_perm, i, j);
+        const uint64_t j = inv_perm[z];
+        swap2(next_perm, i, j);
+        swap2(inv_perm, next_perm[i], next_perm[j]);
+        ++i;
     }
-    re_sort(curr_perm, i - 1);
 }
 
 
@@ -98,11 +130,18 @@ static PyObject *combinatoric(PyObject *module, PyObject *object)
     double prod_permanent = 1.0;
 
 
-    // generate a pointer to the set of elements {1, 2, .., N} in ascending order
+    // generate a pointer to the set of elements {1, 2, .., N} and determing the position of the leftmost change
     // store the pointer to the array in variable curr_perm
     uint64_t curr_perm[128];
-    init_perm(n_cols, curr_perm);
-    while (curr_perm[0] < (n_cols - m_rows + 1))
+    curr_perm[0] = 0;
+    // sentinal value, thus we need to increment to look in the right place
+    ++curr_perm;
+    uint64_t next_perm[128];
+    uint64_t inv_perm[128];
+    // inverse permutation is used to simplify the update of the permanent
+
+    init_perm(n_cols, m_rows, curr_perm, next_perm, inv_perm);
+    while (curr_perm[1] < (n_cols - m_rows + 1))
     {
         for (uint64_t i = 0; i < m_rows; ++i)
         {
@@ -110,8 +149,8 @@ static PyObject *combinatoric(PyObject *module, PyObject *object)
         }
 
         sum_permanent += prod_permanent;
-        // generate next permutation lexicographically and update the array pointed to by curr_perm
-        next_perm(curr_perm, n_cols);
+        // generate next permutation (if it exists) lexicographically and update the array pointed to by curr_perm
+        next_perm(curr_perm, next_perm, inv_perm, m_rows, n_cols);
     }
     return PyFloat_FromDouble(sum_permanent);
 }

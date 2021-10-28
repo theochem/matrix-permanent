@@ -2,11 +2,12 @@ import numpy as np
 
 import permanent
 
+def test_3by3_permanent():
 
-def test_placeholder():
+    matrix = np.arange(1, 10, dtype = np.double).reshape(3,3)
+    assert permanent.combinatoric(matrix) == 450
 
-    matrix = np.zeros((3, 3), dtype=np.double)
-    assert permanent.combinatoric(matrix) == 0.
+def test_4by4_permanent():
 
-    matrix = np.ones((3, 3), dtype=np.double)
-    assert permanent.combinatoric(matrix) == 1.
+    matrix = np.arange(1, 17, dtype = np.double).reshape(4,4)
+    assert permanent.combinatoric(matrix) == 55456
