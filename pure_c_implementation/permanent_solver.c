@@ -5,7 +5,7 @@ The goal is to optimize the code and find the best algorithm for each value of M
 
 This code works by reading a user defined input file matrix_dimensions.csv of format M, N, r for reading specifying the matrix size with M rows and N columns respresenting the largest desired matrix dimensions for solving the permanent. The program will solve the permanent of all matrices of sizes mxn the specified number of times by the user where: m = 2; m <= M; m++; n = m; n <= N; n++; and write out to the file fast_permanent.csv data regaring fastest algorithm for that matrix size. Data corresponding to M/N, Size, Fastest Algorithm, M, N, Mean Time to Solve, Standard Deviation, xFaster Combinatorial, xFaster Glynn, xFaster Ryser, Speed Combinatorial, Speed Glynn, Speed Ryser will be written to the output file.
 
-There is a provided Python code fastest_permanent_plotter.py that will visualize the data for your convenience. It will make it easier to decipher the pattern for which squareness and size combination each algorithm performs best.*/
+There is a provided Python code fastest_permanent_plotter.py that will visualize the data for your convenience. It will make it easier to decipher boundaries for which squareness and size combination each algorithm performs best.*/
 
 /* ******************************************** */
 
@@ -49,7 +49,7 @@ void bin_coeff(const uint64_t N, const uint64_t K, int64_t C[const N][K])
     }
 }
 
-/* A function for calculating the factorial of a given number. */
+/* A function for calculating the factorial of a given number. */ 
 
 int64_t factorial(int64_t f)
 {
@@ -369,11 +369,15 @@ double glynn(double *const matrix, const int64_t m, const int64_t n)
 
 /* Solve the permanent using the Ryser algorithm. */
 
-double ryser(double *const matrix, const int64_t m, const int64_t n)
+double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *const binc)
 {
     /* Store the pointer to the array in ptr. */
 
     double *ptr = matrix;
+
+    /* Store the pointer to the binomial coefficient table in C. */
+
+    int64_t *C = binc;
 
     /* Return the permanent of the matrix. */
 
@@ -387,6 +391,7 @@ double ryser(double *const matrix, const int64_t m, const int64_t n)
     int64_t perm_[128];
     int64_t inv_perm[128];
     double vec[128];
+
 
     if (m_rows == n_cols) // Dealing with a square matrix. This bit-hacking trick was modified from C++ code from Micahel Richer which he found online (lines 393-428)
     {
@@ -430,17 +435,12 @@ double ryser(double *const matrix, const int64_t m, const int64_t n)
     
     else // Dealing with a rectangle. Can't use bit hacking trick here.
     {
-        /* Generate the binomial coefficient table. */
-
-        int64_t C[20][20];
-        void bin_coeff();
-        bin_coeff(20, 20, C);
 
         for (int64_t k = 0; k <= m_rows - 1; k++)
         {
             /* Store the binomial coefficient for this k value bin_c. */
 
-            int64_t bin_c = C[n_cols - m_rows + k][k];
+            int64_t bin_c = C[20 * (n_cols - m_rows + k) + k];
 
             double sum_of_matrix_vals = 0.0;
             double prod_of_cols = 1.0;
@@ -455,9 +455,9 @@ double ryser(double *const matrix, const int64_t m, const int64_t n)
             /* sort up to position u + 1 where u = min(k, n_cols - 1). */
 
             int64_t sort_up_to = n_cols - 1;
-            if (m_rows - k < sort_up_to)
+            if (m_rows < sort_up_to)
             {
-                sort_up_to = m_rows - k;
+                sort_up_to = m_rows - k - 1;
             }
 
             for (int64_t i = 0; i < m_rows; i++)
@@ -620,6 +620,11 @@ int main(void)
         return -1;
     }
 
+    /* Generate the binomial coefficient table. */
+    int64_t C[20][20];
+    void bin_coeff();
+    bin_coeff(20, 20, C);
+
     /* Store the maximum desired matrix dimensions from the input file in M and N. */
 
     int64_t M = m;
@@ -721,7 +726,7 @@ int main(void)
             for (int64_t i = 0; i < r; i++)
             {
                 clock_t begin_3 = clock();
-                ryser((double *)matrix, m, n);
+                ryser((double *)matrix, m, n, (int64_t *)C);
                 clock_t end_3 = clock();
                 time_spent_on_ryser[i] = (double)(end_3 - begin_3) / CLOCKS_PER_SEC;
 
@@ -743,7 +748,7 @@ int main(void)
             }
             printf("\n\n");
 
-            printf("Ryser solution: %f \n\n", ryser((double *)matrix, m, n));
+            printf("Ryser solution: %f \n\n", ryser((double *)matrix, m, n, (int64_t *)C));
 
             double mean_time_comb = 0.0;
             double mean_time_glynn = 0.0;
