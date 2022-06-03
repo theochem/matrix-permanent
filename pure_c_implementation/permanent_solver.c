@@ -363,7 +363,7 @@ double glynn(double *const matrix, const int64_t m, const int64_t n)
 
         /* Divide by external factor and return permanent. */
 
-        return result / (pow(2.0, (double)bound) * (double)factorial(n_cols - m_rows + 1));
+        return result / (pow(2.0, (double)bound) * (double)factorial(n_cols - m_rows + 1)) * (n_cols - m_rows + 1);
     }
 }
 
