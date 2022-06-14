@@ -1,9 +1,9 @@
 /* ******************************************** */
-/* The permanent commonly appears in problems related to quantum mechanics, and the most common brute-force combinatorial method has time complexity O(N!N), thus it is useful to look for more efficient algorithms. The two algorithms considered to be the fastest are one by Ryser (based on the inclusion-exclusion principle), and one by Glynn (based on invariant theroy). All algorithms work for square NxN matrices, and are generalizable for MxN matrices.
+/* The permanent commonly appears in problems related to quantum mechanics, and the most common brute-force combinatorial method has time complexity O(N!N), thus it is useful to look for more efficient algorithms. The two algorithms considered to be the fastest are one by Ryser (based on the inclusion-exclusion principle), and one by Glynn (based on invariant theory). All algorithms work for square NxN matrices, and are generalizable for MxN matrices.
 
 The goal is to optimize the code and find the best algorithm for each value of M and N, and have a C++ function that will automatically find the best algorithm based on the size of the input matrix.
 
-This code works by reading a user defined input file matrix_dimensions.csv of format M, N, r for reading specifying the matrix size with M rows and N columns respresenting the largest desired matrix dimensions for solving the permanent. The program will solve the permanent of all matrices of sizes mxn the specified number of times by the user where: m = 2; m <= M; m++; n = m; n <= N; n++; and write out to the file fast_permanent.csv data regaring fastest algorithm for that matrix size. Data corresponding to M/N, Size, Fastest Algorithm, M, N, Mean Time to Solve, Standard Deviation, xFaster Combinatorial, xFaster Glynn, xFaster Ryser, Speed Combinatorial, Speed Glynn, Speed Ryser will be written to the output file.
+This code works by reading a user defined input file matrix_dimensions.csv of format M, N, r for reading specifying the matrix size with M rows and N columns respresenting the largest desired matrix dimensions for solving the permanent. The program will solve the permanent of all matrices of sizes mxn the specified number of times by the user where: m = 2; m <= M; m++; n = m; n <= N; n++; and write out to the file fast_permanent.csv data regarding fastest algorithm for that matrix size. Data corresponding to M/N, Size, Fastest Algorithm, M, N, Mean Time to Solve, Standard Deviation, xFaster Combinatorial, xFaster Glynn, xFaster Ryser, Speed Combinatorial, Speed Glynn, Speed Ryser will be written to the output file.
 
 There is a provided Python code fastest_permanent_plotter.py that will visualize the data for your convenience. It will make it easier to decipher boundaries for which squareness and size combination each algorithm performs best.*/
 
@@ -43,24 +43,11 @@ void bin_coeff(const uint64_t N, const uint64_t K, int64_t C[const N][K])
     {
         for (int64_t k = 1; k <= 10; k++)
         {
-            /* Use recursion and the pattern defined in Pascal's triangle to populate the table of binomical coefficients. */
+            /* Use recursion and the pattern defined in Pascal's triangle to populate the table of binomial coefficients. */
             C[n][k] = C[n - 1][k - 1] + C[n - 1][k];
         }
     }
 }
-
-/* A function for calculating the factorial of a given number. */ 
-
-int64_t factorial(int64_t f)
-{
-    int64_t fact = 1;
-    for (int64_t i = 1; i <= f; i++)
-    {
-        fact *= i;
-    }
-    return fact;
-}
-
 
 /* A function for swapping the values of two entries in an array while maintaining value of the pointer. In class we went over a similar swapping function where the values stored in variables were swapped. Here matrix entries are swapped. */
 
@@ -70,17 +57,6 @@ void swap2(int64_t *perm, int64_t i, int64_t j)
     perm[i] = perm[j];
     perm[j] = temp;
 }
-
-/* Portable algorithm to generate a popcount for a contiguous range of numbers. Code snippet taken from https://stackoverflow.com/questions/109023/how-to-count-the-number-of-set-bits-in-a-32-bit-integer. */
-
-int numberOfSetBits(uint32_t i)
-{
-     i = i - ((i >> 1) & 0x55555555);        // add pairs of bits
-     i = (i & 0x33333333) + ((i >> 2) & 0x33333333);  // quads
-     i = (i + (i >> 4)) & 0x0F0F0F0F;        // groups of 8
-     return (i * 0x01010101) >> 24;          // horizontal sum of bytes
-}
-
 
 /* A function that will initialize the set to permute. This first set is used as the first permutation. The set is generated in ascending order to ensure there are no smaller permutations possible. We keep track of the inverse permutation in order to simplify the swap update when generating the next permutation. The ffactorial set is initialized to all zeroes and is used to know when we have generated all possible permutations. The idea for this function comes from the use of constructors and destructors in the class kperm_lex from "Matters Computational; Ideas, Algorithms, Source Code" by Jorg Arndt" Ch 12.1 https://www.jjj.de/fxt/fxtbook.pdf */
 
@@ -363,7 +339,7 @@ double glynn(double *const matrix, const int64_t m, const int64_t n)
 
         /* Divide by external factor and return permanent. */
 
-        return result / (pow(2.0, (double)bound) * (double)factorial(n_cols - m_rows + 1)) * (n_cols - m_rows + 1);
+        return result / (pow(2.0, (double)bound) * (double)tgamma(n_cols - m_rows + 1));
     }
 }
 
@@ -381,7 +357,7 @@ double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *co
 
     /* Return the permanent of the matrix. */
 
-    /* Initialize all relevent variables. See combinatorial algorithm for more details as it was already went over. */
+    /* Initialize all relevant variables. See combinatorial algorithm for more details as it was already went over. */
 
     int64_t m_rows = m;
     int64_t n_cols = n;
@@ -393,7 +369,7 @@ double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *co
     double vec[128];
 
 
-    if (m_rows == n_cols) // Dealing with a square matrix. This bit-hacking trick was modified from C++ code from Micahel Richer which he found online (lines 393-428)
+    if (m_rows == n_cols) // Dealing with a square matrix. This bit-hacking trick was modified from C++ code from Micahel Richer (lines 393-428)
     {
         int32_t i, j, k;
         int64_t sum = 0, rowsum, rowsumprod;
@@ -421,7 +397,7 @@ double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *co
                 rowsumprod *= rowsum;
             }
             /* Add term multiplied by the parity of the characteristic vector. */
-            sum += rowsumprod * (1 - ((numberOfSetBits(k) & 1) << 1));
+            sum += rowsumprod * (1 - ((__builtin_popcount(k) & 1) << 1));
         }
         /* Return answer with the correct sign (times -1 for odd n). */
         int32_t sign = 1;
@@ -436,7 +412,8 @@ double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *co
     else // Dealing with a rectangle. Can't use bit hacking trick here.
     {
 
-        for (int64_t k = 0; k <= m_rows - 1; k++)
+        int32_t value_sign = 1;
+        for (int64_t k = 0; k < m_rows; k++)
         {
             /* Store the binomial coefficient for this k value bin_c. */
 
@@ -445,19 +422,19 @@ double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *co
             double sum_of_matrix_vals = 0.0;
             double prod_of_cols = 1.0;
             double result = 0.0;
-            double value_sign = pow(-1.0, (double)k);
 
             /* (Re)initialize the set to permute for this k value. */
 
             init_perm(n_cols, falling_fact, perm_, inv_perm);
             bool gen_next_perm();
 
-            /* sort up to position u + 1 where u = min(k, n_cols - 1). */
+            /* sort up to position u + 1 where u = min(m_rows - k, n_cols - 1). */
 
             int64_t sort_up_to = n_cols - 1;
-            if (m_rows < sort_up_to)
+
+            if ((m_rows - k) < sort_up_to)
             {
-                sort_up_to = m_rows - k - 1;
+                sort_up_to = m_rows - k;
             }
 
             for (int64_t i = 0; i < m_rows; i++)
@@ -472,6 +449,7 @@ double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *co
             {
                 prod_of_cols *= vec[i];
             }
+
             result += value_sign * (double)bin_c * prod_of_cols;
             
             /* Iterate over second to last permutations of the set. */
@@ -492,10 +470,13 @@ double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *co
                 {
                     prod_of_cols *= vec[i];
                 }
+
                 result += value_sign * (double)bin_c * prod_of_cols;
             }
             sum_over_k_vals += result;
+            value_sign *= -1;
         }
+        
         return sum_over_k_vals;   
     }
 }
