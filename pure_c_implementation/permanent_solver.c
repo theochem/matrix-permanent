@@ -3,7 +3,7 @@
 
 The goal is to optimize the code and find the best algorithm for each value of M and N, and have a C++ function that will automatically find the best algorithm based on the size of the input matrix.
 
-This code works by reading a user defined input file matrix_dimensions.csv of format M, N, r for reading specifying the matrix size with M rows and N columns respresenting the largest desired matrix dimensions for solving the permanent. The program will solve the permanent of all matrices of sizes mxn the specified number of times by the user where: m = 2; m <= M; m++; n = m; n <= N; n++; and write out to the file fast_permanent.csv data regarding fastest algorithm for that matrix size. Data corresponding to M/N, Size, Fastest Algorithm, M, N, Mean Time to Solve, Standard Deviation, xFaster Combinatorial, xFaster Glynn, xFaster Ryser, Speed Combinatorial, Speed Glynn, Speed Ryser will be written to the output file.
+This code works by reading a user defined input file matrix_dimensions.csv of format M, N, r for reading specifying the matrix size with M rows and N columns representing the largest desired matrix dimensions for solving the permanent. The program will solve the permanent of all matrices of sizes mxn the specified number of times by the user where: m = 2; m <= M; m++; n = m; n <= N; n++; and write out to the file fast_permanent.csv data regarding fastest algorithm for that matrix size. Data corresponding to M/N, Size, Fastest Algorithm, M, N, Mean Time to Solve, Standard Deviation, xFaster Combinatorial, xFaster Glynn, xFaster Ryser, Speed Combinatorial, Speed Glynn, Speed Ryser will be written to the output file.
 
 There is a provided Python code fastest_permanent_plotter.py that will visualize the data for your convenience. It will make it easier to decipher boundaries for which squareness and size combination each algorithm performs best.*/
 
@@ -25,6 +25,7 @@ There is a provided Python code fastest_permanent_plotter.py that will visualize
 /* ******************************************** */
 
 /* A function to generate a table of binomial coefficients to be used in the Ryser formula for rectangular matrices. Maximum values of N and K are set to 10 since anything larger is unnecessary for our purposes. Recursion is inspired by Pascal's triangle. We pass in the array as a constant pointer and change the values inside the array. Many people have written this code. Mine turns out to be very similar to one found in a stackoverflow discussion: https://stackoverflow.com/questions/11032781/fastest-way-to-generate-binomial-coefficients */
+
 
 void bin_coeff(const uint64_t N, const uint64_t K, int64_t C[const N][K])
 {
@@ -177,7 +178,7 @@ double combinatorial(double *const matrix, const int64_t m, const int64_t n)
     return sum_permanent;
 }
 
-/* Solve the permanent using the Glynn algorithm. This trick used for updating the position and gray code was adapted + corrected from Michael Richer's sketch code (lines 262-293). He just sent it to me over Microsoft teams. */
+/* Solve the permanent using the Glynn algorithm. This trick used for updating the position and gray code was adapted + corrected from Michelle Richer's sketch code (lines 262-293). */
 
 double glynn(double *const matrix, const int64_t m, const int64_t n)
 {
@@ -361,7 +362,6 @@ double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *co
 
     int64_t m_rows = m;
     int64_t n_cols = n;
-    double sum_over_k_vals = 0.0;
     int64_t falling_fact[128];
     falling_fact[0] = 0;
     int64_t perm_[128];
@@ -369,7 +369,7 @@ double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *co
     double vec[128];
 
 
-    if (m_rows == n_cols) // Dealing with a square matrix. This bit-hacking trick was modified from C++ code from Micahel Richer (lines 393-428)
+    if (m_rows == n_cols) // Dealing with a square matrix. This bit-hacking trick was modified from C++ code from Michelle Richer (lines 393-428)
     {
         int32_t i, j, k;
         int64_t sum = 0, rowsum, rowsumprod;
@@ -408,17 +408,20 @@ double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *co
         }
         return sum * sign;
     }
+
     
     else // Dealing with a rectangle. Can't use bit hacking trick here.
     {
 
         int32_t value_sign = 1;
+        int32_t counter = 0; // Count how many permutations you have generated
+        double sum_over_k_vals = 0.0;
         for (int64_t k = 0; k < m_rows; k++)
         {
             /* Store the binomial coefficient for this k value bin_c. */
 
             int64_t bin_c = C[20 * (n_cols - m_rows + k) + k];
-
+            counter = 0;
             double sum_of_matrix_vals = 0.0;
             double prod_of_cols = 1.0;
             double result = 0.0;
@@ -434,16 +437,18 @@ double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *co
 
             if ((m_rows - k) < sort_up_to)
             {
-                sort_up_to = m_rows - k;
+                sort_up_to = (m_rows - k);
             }
 
             for (int64_t i = 0; i < m_rows; i++)
             {
-                for (int64_t j = 0; j < m_rows - k; j++)
+                sum_of_matrix_vals = 0.0;
+                for (int64_t j = 0; j < sort_up_to; j++)
                 {
                     sum_of_matrix_vals += (ptr[i * n_cols + perm_[j]]);
                 }
                 vec[i] = sum_of_matrix_vals;
+                sum_of_matrix_vals = 0.0;
             }
             for (int64_t i = 0; i < m_rows; i++)
             {
@@ -451,6 +456,8 @@ double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *co
             }
 
             result += value_sign * (double)bin_c * prod_of_cols;
+            counter += 1;
+    
             
             /* Iterate over second to last permutations of the set. */
 
@@ -459,11 +466,13 @@ double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *co
                 sum_of_matrix_vals = 0.0;
                 for (int64_t i = 0; i < m_rows; i++)
                 {
+                    sum_of_matrix_vals = 0.0;
                     for (int64_t j = 0; j < m_rows - k; j++)
                     {
                         sum_of_matrix_vals += (ptr[i * n_cols + perm_[j]]);
                     }
                     vec[i] = sum_of_matrix_vals;
+                    sum_of_matrix_vals = 0.0;
                 }
                 prod_of_cols = 1.0;
                 for (int64_t i = 0; i < m_rows; i++)
@@ -472,8 +481,9 @@ double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *co
                 }
 
                 result += value_sign * (double)bin_c * prod_of_cols;
+                counter += 1;
             }
-            sum_over_k_vals += result;
+            sum_over_k_vals += result / (counter / C[20 * n_cols + (m_rows - k)]);
             value_sign *= -1;
         }
         
