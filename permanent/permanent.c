@@ -138,6 +138,7 @@ bool gen_next_perm(int64_t *const falling_fact, int64_t *const perm_, int64_t *c
     return true;
 }
 
+/* Solve the permanent using the combinatorial algorithm. */
 
 static PyObject *combinatoric(PyObject *module, PyObject *object)
 {
@@ -189,83 +190,170 @@ static PyObject *combinatoric(PyObject *module, PyObject *object)
     return PyFloat_FromDouble(sum_permanent);
 }
 
-/* This code for generating the permanent of a square NxN matrix was adapted from Michael Richer's draft code. */
+
+/* Solve the permanent using the Glynn algorithm. This trick used for updating the position and gray code was adapted + corrected from Michelle Richer's sketch code (lines 262-293). */
+
 static PyObject *glynn(PyObject *module, PyObject *object)
 {
     /* Cast PyObject* to PyArrayObject*. */
+
     PyArrayObject *matrix = (PyArrayObject *)PyArray_FromAny(object, NULL, 2, 2, NPY_ARRAY_ALIGNED, NULL);
 
-    /* Return the permanent of a square NxN matrix. */
     double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
     int64_t m_rows = PyArray_DIMS(matrix)[0];
     int64_t n_cols = PyArray_DIMS(matrix)[1];
 
     /* Initialize gray code. */
+
     int64_t pos = 0;
     int64_t sign = 1;
     int64_t bound = n_cols - 1;
-    int64_t delta[n_cols];
-    /* Allocate and fill delta array (all +1 to start). */
-    for (int64_t i = 0; i < n_cols; ++i)
+    int64_t delta[128];
+    int64_t gray[128];
+
+    /* Allocate and fill delta array (all +1 to start), and gray array from 0 to n_cols. */
+
+    for (int64_t i = 0; i < n_cols; i++)
     {
         delta[i] = 1;
-    }
-    int64_t gray[n_cols];
-    /* Allocate and fill gray code from 0 to n_cols. */
-    for (int64_t i = 0; i < n_cols; ++i)
-    {
         gray[i] = i;
     }
-    /* Iterate over every delta. */
+
     /* Allocate matrix for result of manual multiplies. */
-    double vec[n_cols];
-    double *vec_end = vec + n_cols;
-    /* Handle first Gray code. */
-    double result = 1.0, sum_ = 0.0, *vec_it;
-    for (int64_t i = 0; i < n_cols; ++i)
+
+    double vec[128];
+
+    if (m_rows == n_cols) // Dealing with a square matrix
     {
-        for (int64_t j = 0; j < m_rows; ++j)
+        /* Handle first Gray code. */
+
+        double result = 1.0;
+        for (int64_t j = 0; j < n_cols; j++)
         {
-            sum_ += (ptr[i * n_cols + j] * delta[i]);
-        }
-        vec[i] = sum_;
-    }
-    for (vec_it = vec; vec_it != vec_end; ++vec_it)
-    {
-        result *= *vec_it;
-    }
-    /* Iterate over second to last Gray codes. */
-    double prod;
-    while (pos != bound) 
-    {
-        /* Update sign and delta. */
-        sign *= -1;
-        *(delta + bound - pos) *= -1;
-        /* Compute each Gray code term. */
-        sum_ = 0;
-        for (int64_t i = 0; i < n_cols; ++i)
-        {
-            for (int64_t j = 0; j < m_rows; ++j)
+            double sum_ = 0.0;
+            for (int64_t i = 0; i < n_cols; i++)
             {
-                sum_ += (ptr[i * n_cols + j] * delta[i]);
+                /* Sum over all the values in each column. */
+                sum_ += (ptr[i * n_cols + j] * (double)delta[i]);
             }
-            vec[i] = sum_;
+            vec[j] = sum_;
         }
-        prod = 1.0;
-        for (vec_it = vec; vec_it != vec_end; ++vec_it)
+
+        for (int64_t j = 0; j < n_cols; j++)
         {
-            prod *= *vec_it;
+            result *= vec[j];
         }
-        result += sign * prod;
-        /* Go to next Gray code. */
-        *gray = 0;
-        *(gray + pos) = *(gray + pos + 1);
-        ++pos;
-        *(gray + pos) = pos;
-        pos = *gray;
+        
+        /* Iterate over second to last Gray codes. */
+
+        while (pos != bound) 
+        {
+            /* Update sign and delta. */
+            sign *= -1;
+            *(delta + bound - pos) *= -1;
+
+            /* Compute each Gray code term. */
+
+            for (int64_t j = 0; j < n_cols; j++)
+            {
+                double sum_ = 0.0;
+                for (int64_t i = 0; i < n_cols; i++)
+                {
+                    sum_ += (ptr[i * n_cols + j] * (double)delta[i]);
+                }
+                vec[j] = sum_;
+            }
+            double prod = 1.0;
+            for (int64_t i = 0; i < n_cols; i++)
+            {
+                prod *= vec[i];
+            }
+            /* Multiply by the product of the vectors in delta. */
+            result += sign * prod;
+
+            /* Go to next Gray code. */
+
+            gray[0] = 0;
+            gray[pos] = gray[pos + 1];
+            ++pos;
+            gray[pos] = pos;
+            pos = gray[0];
+        }
+
+        /* Divide by external factor and return permanent. */
+
+        return PyFloat_FromDouble(result / pow(2.0, (double)bound));
     }
-    /* Divide by external factor and return permanent. */
-    return PyFloat_FromDouble(result / (double) pow(2, bound));
+
+    else // Dealing with a rectangle
+    {
+        /* Handle first Gray code. */
+
+        double result = 1.0;
+        for (int64_t j = 0; j < n_cols; j++)
+        {
+            double sum_ = 0.0;
+            for (int64_t i = 0; i < m_rows; i++)
+            {
+                sum_ += (ptr[i * n_cols + j] * (double)delta[i]);
+            }
+            for (int64_t k = m_rows; k < n_cols; k++)
+            {
+                sum_ += (double)delta[k];
+            }
+            vec[j] = sum_;
+        }
+
+        for (int64_t i = 0; i < n_cols; i++)
+        {
+            result *= vec[i];
+        }        
+
+        /* Iterate over second to last Gray codes. */
+
+        while (pos != bound) 
+        {
+            /* Update sign and delta. */
+            sign *= -1;
+            *(delta + bound - pos) *= -1;
+
+            /* Compute each Gray code term. */
+
+            for (int64_t j = 0; j < n_cols; j++)
+            {
+                double sum_ = 0.0;
+                for (int64_t i = 0; i < m_rows; i++)
+                {
+                    sum_ += (ptr[i * n_cols + j] * (double)delta[i]);
+                }
+
+                for (int64_t k = m_rows; k < n_cols; k++)
+                {
+                    sum_ += (double)delta[k];
+                }
+                vec[j] = sum_;
+            }
+            double prod = 1.0;
+            for (int64_t i = 0; i < n_cols; i++)
+            {
+                prod *= vec[i];
+            }
+        
+            result += sign * prod;
+
+            /* Go to next Gray code. */
+
+            *gray = 0;
+            *(gray + pos) = *(gray + pos + 1);
+            ++pos;
+            *(gray + pos) = pos;
+            pos = gray[0];
+        }
+
+        /* Divide by external factor and return permanent. */
+
+        return PyFloat_FromDouble(result / (pow(2.0, (double)bound) * (double)tgamma(n_cols - m_rows + 1)));
+    }
 }
 
 
