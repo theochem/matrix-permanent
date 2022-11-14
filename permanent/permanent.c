@@ -42,7 +42,7 @@ There is a provided Python code fastest_permanent_plotter.py that will visualize
 /* A function to generate a table of binomial coefficients to be used in the Ryser formula for rectangular matrices. Maximum values of N and K are set to 10 since anything larger is unnecessary for our purposes. Recursion is inspired by Pascal's triangle. We pass in the array as a constant pointer and change the values inside the array. Many people have written this code. Mine turns out to be very similar to one found in a stackoverflow discussion: https://stackoverflow.com/questions/11032781/fastest-way-to-generate-binomial-coefficients */
 
 
-void bin_coeff(const int64_t N, const int64_t K, int64_t C[const N][K])
+void bin_coeff(const int64_t N, const int64_t K, double C[const N][K])
 {
     for (int64_t k = 1; k <= K; k++)
     {
@@ -165,7 +165,7 @@ static PyObject *combinatoric(PyObject *module, PyObject *object)
     int64_t perm_[128];
     int64_t inv_perm[128];
 
-    init_perm(n_cols, m_rows, falling_fact, perm_, inv_perm); // Initialize the set to permute
+    init_perm(n_cols, falling_fact, perm_, inv_perm); // Initialize the set to permute
     bool gen_next_perm();
 
     /* Handle first permutation. */
@@ -178,7 +178,7 @@ static PyObject *combinatoric(PyObject *module, PyObject *object)
 
     /* Iterate over second to last permutations. */
     
-    while (gen_next_perm(falling_fact, perm_, inv_perm, m_rows, n_cols, sort_up_to))
+    while (gen_next_perm(falling_fact, perm_, inv_perm, n_cols, sort_up_to))
     {
         prod_permanent = 1.0;
         for (int64_t i = 0; i < m_rows; i++)
@@ -365,7 +365,7 @@ static PyObject *ryser(PyObject *module, PyObject *object, PyObject *object2)
     PyArrayObject *binomial_table = (PyArrayObject *)PyArray_FromAny(object2, NULL, 2, 2, NPY_ARRAY_ALIGNED, NULL);
 
     double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
-    int64_t *C = (double *)PyArray_GETPTR2(binomial_table, 0, 0);
+    double *C = (double *)PyArray_GETPTR2(binomial_table, 0, 0);
     int64_t m_rows = PyArray_DIMS(matrix)[0];
     int64_t n_cols = PyArray_DIMS(matrix)[1];
 
@@ -373,8 +373,6 @@ static PyObject *ryser(PyObject *module, PyObject *object, PyObject *object2)
 
     /* Initialize all relevant variables. See combinatorial algorithm for more details as it was already went over. */
 
-    int64_t m_rows = m;
-    int64_t n_cols = n;
     int64_t falling_fact[128];
     falling_fact[0] = 0;
     int64_t perm_[128];
@@ -402,7 +400,7 @@ static PyObject *ryser(PyObject *module, PyObject *object, PyObject *object2)
                     /* Add element to row sum if the row index is in the characteristic vector of the submatrix, which is the binary vector given by k. */
                     if (k & (1UL << j))
                     {
-                        rowsum += matrix[n_cols * i + j];
+                        rowsum += ptr[n_cols * i + j];
                     }
                 }
                 /* Update product of row sums. */
@@ -432,7 +430,7 @@ static PyObject *ryser(PyObject *module, PyObject *object, PyObject *object2)
         {
             /* Store the binomial coefficient for this k value bin_c. */
 
-            int64_t bin_c = C[20 * (n_cols - m_rows + k) + k];
+            double bin_c = C[100 * (n_cols - m_rows + k) + k];
             counter = 0;
             double sum_of_matrix_vals = 0.0;
             double prod_of_cols = 1.0;
@@ -501,6 +499,7 @@ static PyObject *ryser(PyObject *module, PyObject *object, PyObject *object2)
         
         return PyFloat_FromDouble(sum_over_k_vals);   
     }
+};
 
 
 enum winning_algorithm
@@ -536,9 +535,9 @@ static PyObject *permanent_races(PyObject *module, PyObject *object)
     }
 
     /* Generate the binomial coefficient table. */
-    int64_t C[20][20];
+    int64_t C[100][100];
     void bin_coeff();
-    bin_coeff(20, 20, C);
+    bin_coeff(100, 100, C);
 
     /* Store the maximum desired matrix dimensions from the input file in M and N. */
 
