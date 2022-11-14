@@ -1,31 +1,25 @@
-/* The permanent commonly appears in problems related to quantum mechanics, and the most common
-brute-force combinatorical method has time complexity O(N!N), thus it is useful to look
-for more efficient algorithms. The two algorithms considered to be the fastest are one by
-Ryser (based on the inclusion-exclusion principle), and one by Glynn (based on invariant theroy). 
-All algorithms work for square NxN matrices, and are generalizable for MxN matrices.
+/* ******************************************** */
+/* The permanent commonly appears in problems related to quantum mechanics, and the most common brute-force combinatorial method has time complexity O(N!N), thus it is useful to look for more efficient algorithms. The two algorithms considered to be the fastest are one by Ryser (based on the inclusion-exclusion principle), and one by Glynn (based on invariant theory). All algorithms work for square NxN matrices, and are generalizable for MxN matrices.
 
-The goal is to optimize the code and find the best algorithm for each value of M and N, and 
-have a C++ function that will automatically find the best algorithm based on the size of the 
-input matrix.
+The goal is to optimize the code and find the best algorithm for each value of M and N, and have a C++ function that will automatically find the best algorithm based on the size of the input matrix.
 
-This code works with an input matrix in the form of Python NumPy array.
+This code works by reading a user defined input file matrix_dimensions.csv of format M, N, r for reading specifying the matrix size with M rows and N columns representing the largest desired matrix dimensions for solving the permanent. The program will solve the permanent of all matrices of sizes mxn the specified number of times by the user where: m = 2; m <= M; m++; n = m; n <= N; n++; and write out to the file fast_permanent.csv data regarding fastest algorithm for that matrix size. Data corresponding to M/N, Size, Fastest Algorithm, M, N, Mean Time to Solve, Standard Deviation, xFaster Combinatorial, xFaster Glynn, xFaster Ryser, Speed Combinatorial, Speed Glynn, Speed Ryser will be written to the output file.
 
-The function for generating k-permtations lexicographically was adapted from
-"Matters Computational; Ideas, Algorithms, Source Code" by Jorg Arndt" Ch 12.1*/
-/* ******** */
+There is a provided Python code fastest_permanent_plotter.py that will visualize the data for your convenience. It will make it easier to decipher boundaries for which squareness and size combination each algorithm performs best.*/
 
-
-/* Python C header. */
-#include <Python.h>
-
+/* ******************************************** */
 
 /* C headers. */
+/* ******************************************** */
+#include <Python.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <tgmath.h>
 #include <stdint.h>
 #include <inttypes.h>
 #include <limits.h>
+#include <time.h>
+#include <stdlib.h>
 
 
 /* NumPy C headers. */
@@ -42,73 +36,37 @@ The function for generating k-permtations lexicographically was adapted from
 #define DOCSTRING_RYSER         "Compute the permanent of a matrix via Ryser's algorithm."
 
 
-/* C functions for the Python module */
-/* ********************************* */
+/* C functions. */
+/* ******************************************** */
 
-/* A function to determine the greatest common denominator.*/
-int64_t gcd(int64_t x, int64_t y) 
-{
-    int64_t t;
-    if (y < x) 
-    {
-        t = x;
-        x = y;
-        y = t;
-    }
-    while (y > 0) 
-    {
-        t = y;
-        y = x % y;
-        x = t;
-    }
-    return x;
-}
+/* A function to generate a table of binomial coefficients to be used in the Ryser formula for rectangular matrices. Maximum values of N and K are set to 10 since anything larger is unnecessary for our purposes. Recursion is inspired by Pascal's triangle. We pass in the array as a constant pointer and change the values inside the array. Many people have written this code. Mine turns out to be very similar to one found in a stackoverflow discussion: https://stackoverflow.com/questions/11032781/fastest-way-to-generate-binomial-coefficients */
 
-/* A function to determine the binomial coefficient. Adapted from Micheal Richer's code as reference. */
-int64_t bin_coeff(int64_t n, int64_t k)
+
+void bin_coeff(const uint64_t N, const uint64_t K, int64_t C[const N][K])
 {
-    if (k == 0)
+    for (int64_t k = 1; k <= 10; k++)
     {
-        return 1;
+        /* Set the value to 0 when we are choosing from an empty set. */
+        C[0][k] = 0;
     }
-    else if (k == 1)
+    for (int64_t n = 0; n <= 10; n++)
     {
-        return n;
+        /* Set the value to 1 when we are choosing 0 items from a set. */
+        C[n][0] = 1;
     }
-    else if (k >= n)
+
+    for (int64_t n = 1; n <= 10; n++)
     {
-        return (int64_t) k == n;
-    }
-    else if (k > n / 2)
-    {
-        k = n - k;
-    }
-    int64_t binom = 1, g, nr, dr;
-    int64_t gcd();
-    for (int64_t d = 1; d <= k; ++d) 
-    {
-        if (binom >= LONG_MAX / n) {
-            g = gcd(n, d);
-            nr = n / g;
-            dr = d / g;
-            g = gcd(binom, dr);
-            binom = binom / g;
-            dr = dr / g;
-            if (binom >= LONG_MAX / nr)
-            {
-                return LONG_MAX;
-            }
-            binom = binom * nr / dr;
-        } 
-        else
+        for (int64_t k = 1; k <= 10; k++)
         {
-            binom = binom * n-- / d;
+            /* Use recursion and the pattern defined in Pascal's triangle to populate the table of binomial coefficients. */
+            C[n][k] = C[n - 1][k - 1] + C[n - 1][k];
         }
     }
-    return binom;
 }
 
-/* A function for swapping the values of two entries in an array while maintaining value of the pointer. */
+/* A function for swapping the values of two entries in an array while maintaining value of the pointer. In class we went over a similar swapping function where the values stored in variables were swapped. Here matrix entries are swapped. */
+
 void swap2(int64_t *perm, int64_t i, int64_t j)
 {
     const int64_t temp = perm[i];
@@ -116,11 +74,9 @@ void swap2(int64_t *perm, int64_t i, int64_t j)
     perm[j] = temp;
 }
 
-/* A function that will initialize the set to permute. This first set is used as the first permutation. The
-set is generated in ascedning order to ensure there are no smaller permutations possible. We keep track of the 
-inverse permutation in order to simplify the swap update when generating the next permutation. The ffactorial
-set is initialized to all zeroes and is used to know when we have generated all possible permutations.*/
-void init_perm(const int64_t N, const int64_t M, int64_t *the_fact_set, int64_t *the_perm_set, int64_t *the_inv_set)
+/* A function that will initialize the set to permute. This first set is used as the first permutation. The set is generated in ascending order to ensure there are no smaller permutations possible. We keep track of the inverse permutation in order to simplify the swap update when generating the next permutation. The ffactorial set is initialized to all zeroes and is used to know when we have generated all possible permutations. The idea for this function comes from the use of constructors and destructors in the class kperm_lex from "Matters Computational; Ideas, Algorithms, Source Code" by Jorg Arndt" Ch 12.1 https://www.jjj.de/fxt/fxtbook.pdf */
+
+void init_perm(const int64_t N, int64_t *const the_fact_set, int64_t *const the_perm_set, int64_t *const the_inv_set)
 {
     for (int64_t i = 0; i < N; i++)
     {
@@ -130,21 +86,17 @@ void init_perm(const int64_t N, const int64_t M, int64_t *the_fact_set, int64_t 
     }
 }
 
-/* A function that will use the current state of the permutation perm_ and update it to reflect that of the next permutation.
-If the largest permutation has been generated, the function will return false, else it will determine the next permutation and 
-update all three arrays (falling_fact, perm_, inv_perm). This was adapted from Jorgs "Matters Computational" C++ reference.*/
-bool gen_next_perm(int64_t *const falling_fact, int64_t *const perm_, int64_t *const inv_perm, const int64_t rows, const int64_t cols, const int64_t u_)
+/* A function that will use the current state of the permutation perm_ and update it to reflect that of the next permutation. If the largest permutation has been generated the function will return false, else it will determine the next permutation and update all three arrays (falling_fact, perm_, inv_perm). This function was adapted from the function next() in "Matters Computational; Ideas, Algorithms, Source Code" by Jorg Arndt" Ch 12.1 https://www.jjj.de/fxt/fxtbook.pdf */
+
+bool gen_next_perm(int64_t *const falling_fact, int64_t *const perm_, int64_t *const inv_perm, const int64_t cols, const int64_t u_)
 {
-    /* Use the current permutation to check for next permutation lexicographically, if it exists
-    update the curr_array by swapping the leftmost changed element (at position i < k).
-    Replace the elements up to position k by the smallest element lying to the right of i.
-    Do not put remaining k, .., n - 1 positions in ascending order to improve efficiency
-    has time complexity O(n) in the worst case. */
-    int64_t i = rows - 1;
+    /* Use the current permutation to check for next permutation lexicographically, if it exists update the curr_array by swapping the leftmost changed element (at position i < k). Replace the elements up to position k by the smallest element lying to the right of i. Do not put remaining k, .., n - 1 positions in ascending order to improve efficiency has time complexity O(n) in the worst case. */
+
+    int64_t i = u_ - 1;
     int64_t m1 = cols - i - 1;
-    /* begin update of falling_fact - recall falling_fact[0] = 0, so increment index accordingly.
-    If i becomes negative during the check, you are pointing to the sentinal value, so you are
-    done generating permutations. */
+
+    /* Begin update of falling_fact - recall falling_fact[0] = 0, so increment index accordingly. If i becomes negative during the check, you are pointing to the sentinel value, so you are done generating permutations. */
+
     while (falling_fact[i + 1] == m1)
     {
         falling_fact[i + 1] = 0;
@@ -156,9 +108,10 @@ bool gen_next_perm(int64_t *const falling_fact, int64_t *const perm_, int64_t *c
         return false;
     }
     ++falling_fact[i + 1];
-    /* Find smallest element perm_[i] < perm_[j] that lies to the right of pos i,
-    and then update the state of the permutation using its inverse to generate next. */
-    int64_t z = perm_[i];
+
+    /* Find smallest element perm_[i] < perm_[j] that lies to the right of pos i, and then update the state of the permutation using its inverse to generate next. */
+
+    int64_t z = (int64_t)perm_[i];
     do 
     {
         ++z;
@@ -168,7 +121,9 @@ bool gen_next_perm(int64_t *const falling_fact, int64_t *const perm_, int64_t *c
     swap2(inv_perm, perm_[i], perm_[j]);
     ++i;
     int64_t y = 0;
+
     /* Find the smallest elements to the right of position i. */
+
     while (i < u_)
     {
         while (inv_perm[y] < i)
@@ -193,37 +148,39 @@ static PyObject *combinatoric(PyObject *module, PyObject *object)
     /* Return the permanent of the matrix. */
     int64_t m_rows = PyArray_DIMS(matrix)[0];
     int64_t n_cols = PyArray_DIMS(matrix)[1];
-    int64_t sort_up_to;
+    int64_t sort_up_to = n_cols - 1;
     /* sort up to position u + 1 where u = min(k, n_cols - 1). */
     if (m_rows < n_cols)
     {
         sort_up_to = m_rows;
     }
-    else
-    {
-        sort_up_to = n_cols - 1;
-    }
     double sum_permanent = 0.0;
     double prod_permanent = 1.0;
+
     /* Allocate falling_fact, perm_, and inv_perm arrays. */
     int64_t falling_fact[128];
     /* Set sentinal value. */
     falling_fact[0] = 0;
     int64_t perm_[128];
     int64_t inv_perm[128];
-    init_perm(n_cols, m_rows, falling_fact, perm_, inv_perm);
+
+    init_perm(n_cols, m_rows, falling_fact, perm_, inv_perm); // Initialize the set to permute
     bool gen_next_perm();
+
     /* Handle first permutation. */
+
     for (int64_t i = 0; i < m_rows; ++i)
         {
             prod_permanent *= (ptr[i * n_cols + perm_[i]]);
         }
     sum_permanent = prod_permanent;
+
     /* Iterate over second to last permutations. */
+    
     while (gen_next_perm(falling_fact, perm_, inv_perm, m_rows, n_cols, sort_up_to))
     {
         prod_permanent = 1.0;
-        for (int64_t i = 0; i < m_rows; ++i)
+        for (int64_t i = 0; i < m_rows; i++)
         {
             prod_permanent *= (ptr[i * n_cols + perm_[i]]);
         }
