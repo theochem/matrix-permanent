@@ -493,7 +493,7 @@ static PyObject *ryser(PyObject *module, PyObject *object, PyObject *object2)
                 result += value_sign * (double)bin_c * prod_of_cols;
                 counter += 1;
             }
-            sum_over_k_vals += result / (counter / C[20 * n_cols + (m_rows - k)]);
+            sum_over_k_vals += result / (counter / C[100 * n_cols + (m_rows - k)]);
             value_sign *= -1;
         }
         
@@ -511,7 +511,7 @@ static PyMethodDef methods[] = {
     /* Python function name     C function      Args flag   Docstring */
     { "combinatoric",           combinatoric,   METH_O,     DOCSTRING_COMBINATORIC },
     { "glynn",                  glynn,          METH_O,     DOCSTRING_GLYNN },
-    { "ryser",                  ryser,          METH_O,     DOCSTRING_RYSER },
+    { "ryser",                  ryser,                      DOCSTRING_RYSER },
     { NULL,                     NULL,           0,          NULL } /* sentinel value */
 };
 /* Note:  METH_O indicates that the Python function takes a single argument.
