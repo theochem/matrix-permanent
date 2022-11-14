@@ -357,19 +357,17 @@ static PyObject *glynn(PyObject *module, PyObject *object)
 }
 
 
-static PyObject *ryser(PyObject *module, PyObject *object)
+static PyObject *ryser(PyObject *module, PyObject *object, PyObject *object2)
 {
     /* Cast PyObject* to PyArrayObject*. */
 
     PyArrayObject *matrix = (PyArrayObject *)PyArray_FromAny(object, NULL, 2, 2, NPY_ARRAY_ALIGNED, NULL);
+    PyArrayObject *binomial_table = (PyArrayObject *)PyArray_FromAny(object2, NULL, 2, 2, NPY_ARRAY_ALIGNED, NULL);
 
     double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
+    int64_t *C = (double *)PyArray_GETPTR2(binomial_table, 0, 0);
     int64_t m_rows = PyArray_DIMS(matrix)[0];
     int64_t n_cols = PyArray_DIMS(matrix)[1];
-
-    /* Store the pointer to the binomial coefficient table in C. */
-
-    int64_t *C = binc;
 
     /* Return the permanent of the matrix. */
 
