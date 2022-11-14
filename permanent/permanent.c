@@ -42,22 +42,22 @@ There is a provided Python code fastest_permanent_plotter.py that will visualize
 /* A function to generate a table of binomial coefficients to be used in the Ryser formula for rectangular matrices. Maximum values of N and K are set to 10 since anything larger is unnecessary for our purposes. Recursion is inspired by Pascal's triangle. We pass in the array as a constant pointer and change the values inside the array. Many people have written this code. Mine turns out to be very similar to one found in a stackoverflow discussion: https://stackoverflow.com/questions/11032781/fastest-way-to-generate-binomial-coefficients */
 
 
-void bin_coeff(const uint64_t N, const uint64_t K, int64_t C[const N][K])
+void bin_coeff(const int64_t N, const int64_t K, int64_t C[const N][K])
 {
-    for (int64_t k = 1; k <= 10; k++)
+    for (int64_t k = 1; k <= K; k++)
     {
         /* Set the value to 0 when we are choosing from an empty set. */
         C[0][k] = 0;
     }
-    for (int64_t n = 0; n <= 10; n++)
+    for (int64_t n = 0; n <= N; n++)
     {
         /* Set the value to 1 when we are choosing 0 items from a set. */
         C[n][0] = 1;
     }
 
-    for (int64_t n = 1; n <= 10; n++)
+    for (int64_t n = 1; n <= N; n++)
     {
-        for (int64_t k = 1; k <= 10; k++)
+        for (int64_t k = 1; k <= K; k++)
         {
             /* Use recursion and the pattern defined in Pascal's triangle to populate the table of binomial coefficients. */
             C[n][k] = C[n - 1][k - 1] + C[n - 1][k];
