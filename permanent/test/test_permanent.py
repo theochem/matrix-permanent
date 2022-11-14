@@ -1,19 +1,6 @@
 import numpy as np
+
 import permanent
-
-def bin_coeff():
-    C = np.empty(shape=(100, 100), dtype='object')
-    for k in range(1, 101):
-        C[0][k] = 0
-    
-    for n in range(0, 101):
-        C[n][0] = 1
-
-    for n in range(1, 101):
-        for k in range(1, 101):
-            C[n][k] = C[n - 1][k - 1] + C[n - 1][k]
-    
-    return C
 
 
 def test_2by2_comb():
@@ -46,19 +33,19 @@ def test_4by4_glynn():
 
 def test_2by2_ryser():
     matrix = np.arange(1, 5, dtype=np.double).reshape(2,2)
-    assert permanent.ryser(matrix, bin_coeff())==10
+    assert permanent.ryser(matrix)==10
 
 def test_3by3_ryser():
     matrix = np.arange(1, 10, dtype=np.double).reshape(3,3)
-    assert permanent.ryser(matrix, bin_coeff())==450
+    assert permanent.ryser(matrix)==450
 
 def test_4by4_ryser():
     matrix = np.arange(1, 17, dtype=np.double).reshape(4,4)
-    assert permanent.ryser(matrix, bin_coeff())==55456
+    assert permanent.ryser(matrix)==55456
 
 def test_2by3_ryser():
     matrix = np.array([[1, 2, 3], [4, 5, 6]], dtype=np.double)
-    assert permanent.ryser(matrix, bin_coeff())==58.0
+    assert permanent.ryser(matrix)==58.0
 
 
 
@@ -88,7 +75,7 @@ def test_2by3_ryser():
 #         perror("Oh no! Cannot open file!");
 #         return -1;
 #     }
-    
+
 #     if (fprintf(file_ptr2, "M/N, Size, Fastest Algorithm, M, N, Mean Time(sec), Standard Deviation(sec), xFaster Combinatorial, xFaster Glynn, xFaster Ryser, Speed Combinatorial(sec), Speed Glynn(sec), Speed Ryser(sec) \n") < 0)
 #     {
 #         perror("Error occurred!");
@@ -164,7 +151,7 @@ def test_2by3_ryser():
 #             printf("\n\n");
 
 #             printf("Combinatorial solution: %f \n\n", combinatorial((double *)matrix));
-            
+
 #             printf("Solving the permanent of a %" PRId64 "-by-%" PRId64 " matrix using the Glynn algorithm 10 times.\n", m, n);
 
 #             progress = 0.0;
@@ -195,7 +182,7 @@ def test_2by3_ryser():
 #             printf("\n\n");
 
 #             printf("Glynn solution: %f \n\n", glynn((double *)matrix);
-            
+
 #             printf("Solving the permanent of a %" PRId64 "-by-%" PRId64 " matrix using the Ryser algorithm 10 times.\n", m, n);
 
 #             progress = 0.0;
@@ -252,7 +239,7 @@ def test_2by3_ryser():
 #             {
 #                 /* Sum all of the (values for runtime - mean runtime for each algorithm). */
 
-#                 sum_num_minus_mean_comb += pow(time_spent_on_comb[i] - mean_time_comb, 2.0); 
+#                 sum_num_minus_mean_comb += pow(time_spent_on_comb[i] - mean_time_comb, 2.0);
 #                 sum_num_minus_mean_glynn += pow(time_spent_on_glynn[i] - mean_time_glynn, 2.0);
 #                 sum_num_minus_mean_ryser += pow(time_spent_on_ryser[i] - mean_time_ryser, 2.0);
 #             }
@@ -263,7 +250,7 @@ def test_2by3_ryser():
 #             double st_dev_comb = sqrt(over_N * sum_num_minus_mean_comb);
 #             double st_dev_glynn = sqrt(over_N * sum_num_minus_mean_glynn);
 #             double st_dev_ryser = sqrt(over_N * sum_num_minus_mean_ryser);
-            
+
 #             /* Write all of the important information to the output file. */
 
 #             char s[] = "Fastest!";
@@ -277,7 +264,7 @@ def test_2by3_ryser():
 #             {
 #                 alg = GLYNN;
 #             }
-#             else 
+#             else
 #             {
 #                 alg = RYSER;
 #             }

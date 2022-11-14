@@ -1,13 +1,21 @@
+CC ?= gcc
+
+CFLAGS = -fPIC -Wall -Wextra -O2 -g
+
+SRCS = permanent/permanent.c
+OBJS = $(SRCS:.c=.o)
+
 .PHONY: all
-all:
-	python3 setup.py build_ext --inplace
+all: libpermanent.so
 
+libpermanent.so: $(OBJS)
+	$(CC) -shared -o $@ $^
 
-.PHONY: test
-test:
-	pytest -sv .
+$(SRCS:.c=.d):%.d:%.c
+	$(CC) $(CFLAGS) -MM $< >$@
 
+include $(SRCS:.c=.d)
 
 .PHONY: clean
 clean:
-	rm -rf build permanent/*.so
+	rm -f ${TARGET_LIB} ${OBJS} $(SRCS:.c=.d)

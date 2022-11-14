@@ -52,8 +52,9 @@ packages = [
 
 ext_modules = [
     Extension(
-        "permanent.permanent", ["permanent/permanent.c"],
-        include_dirs=[np.get_include()],
+        "permanent.permanent",
+        ["permanent/permanent.c", "permanent/py_permanent.c"],
+        include_dirs=[np.get_include(), "permanent"],
     ),
 ]
 
