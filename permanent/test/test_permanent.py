@@ -2,15 +2,15 @@ import numpy as np
 import permanent
 
 def bin_coeff():
-    C = np.empty(shape=(20, 20), dtype='object')
-    for k in range(1, 11):
+    C = np.empty(shape=(100, 100), dtype='object')
+    for k in range(1, 101):
         C[0][k] = 0
     
-    for n in range(0, 11):
+    for n in range(0, 101):
         C[n][0] = 1
 
-    for n in range(1, 11):
-        for k in range(1, 11):
+    for n in range(1, 101):
+        for k in range(1, 101):
             C[n][k] = C[n - 1][k - 1] + C[n - 1][k]
     
     return C
