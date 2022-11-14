@@ -360,63 +360,149 @@ static PyObject *glynn(PyObject *module, PyObject *object)
 static PyObject *ryser(PyObject *module, PyObject *object)
 {
     /* Cast PyObject* to PyArrayObject*. */
+
     PyArrayObject *matrix = (PyArrayObject *)PyArray_FromAny(object, NULL, 2, 2, NPY_ARRAY_ALIGNED, NULL);
 
-    /* Return the permanent of a rectangular matrix, where M < N. */
     double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
     int64_t m_rows = PyArray_DIMS(matrix)[0];
     int64_t n_cols = PyArray_DIMS(matrix)[1];
 
-    /* Notice we generate permutations of sets the same way as in combinatoric algorithm.
-    See above algorithm for comments on declared arrays and permutation generator. */
-    int64_t sort_up_to;
-    double sum_of_matrix_vals = 0.0;
-    double sum_over_k_vals = 0.0;
-    double sum_over_perms = 0.0;
-    double prod_of_cols = 1.0;
+    /* Store the pointer to the binomial coefficient table in C. */
+
+    int64_t *C = binc;
+
+    /* Return the permanent of the matrix. */
+
+    /* Initialize all relevant variables. See combinatorial algorithm for more details as it was already went over. */
+
+    int64_t m_rows = m;
+    int64_t n_cols = n;
     int64_t falling_fact[128];
     falling_fact[0] = 0;
     int64_t perm_[128];
     int64_t inv_perm[128];
+    double vec[128];
 
-    for (int64_t k = 0; k < m_rows - 1; ++k)
+    if (m_rows == n_cols) // Dealing with a square matrix. This bit-hacking trick was modified from C++ code from Michelle Richer (lines 393-428)
     {
-        init_perm(n_cols, m_rows - k, falling_fact, perm_, inv_perm);
-        bool gen_next_perm();
-        sort_up_to = m_rows - k;
+        int32_t i, j, k;
+        int64_t sum = 0, rowsum, rowsumprod;
 
-        for (int64_t i = 0; i < m_rows; ++i)
+        /* Iterate over c = pow(2, n) submatrices (equal to (1 << n)) submatrices. */ 
+        int32_t c = 1UL << n_cols;
+
+        /* Loop over columns of submatrix; compute product of row sums. */
+        for (k = 0; k < c; k++)
         {
-            for (int64_t j = 0; j < m_rows - k; ++j)
+            rowsumprod = 1;
+            for (i = 0; i < n_cols; i++)
             {
-                sum_of_matrix_vals += (ptr[i * n_cols + perm_[j]]);
+                /* Loop over rows of submatrix; compute row sum. */
+                rowsum = 0;
+                for (j = 0; j < n_cols; j++)
+                {
+                    /* Add element to row sum if the row index is in the characteristic vector of the submatrix, which is the binary vector given by k. */
+                    if (k & (1UL << j))
+                    {
+                        rowsum += matrix[n_cols * i + j];
+                    }
+                }
+                /* Update product of row sums. */
+                rowsumprod *= rowsum;
             }
-            prod_of_cols *= sum_of_matrix_vals;
+            /* Add term multiplied by the parity of the characteristic vector. */
+            sum += rowsumprod * (1 - ((__builtin_popcount(k) & 1) << 1));
         }
-        int64_t value_sign = pow(-1, k);
-        int64_t bin_coeff();
-        int64_t bin_c = bin_coeff(n_cols - m_rows + k, k); 
-        sum_over_perms += value_sign * bin_c * prod_of_cols;
-        while (gen_next_perm(falling_fact, perm_, inv_perm, m_rows - k, n_cols, sort_up_to))
+        /* Return answer with the correct sign (times -1 for odd n). */
+        int32_t sign = 1;
+        if (n_cols % 2 == 1)
         {
-            sum_of_matrix_vals = 0.0;
-            for (int64_t i = 0; i < m_rows; ++i)
+            /* n is odd. */
+            sign *= -1;
+        }
+        return PyFloat_FromDouble(sum * sign);
+    }
+
+    
+    else // Dealing with a rectangle. Can't use bit hacking trick here.
+    {
+
+        int32_t value_sign = 1;
+        int32_t counter = 0; // Count how many permutations you have generated
+        double sum_over_k_vals = 0.0;
+        for (int64_t k = 0; k < m_rows; k++)
+        {
+            /* Store the binomial coefficient for this k value bin_c. */
+
+            int64_t bin_c = C[20 * (n_cols - m_rows + k) + k];
+            counter = 0;
+            double sum_of_matrix_vals = 0.0;
+            double prod_of_cols = 1.0;
+            double result = 0.0;
+
+            /* (Re)initialize the set to permute for this k value. */
+
+            init_perm(n_cols, falling_fact, perm_, inv_perm);
+            bool gen_next_perm();
+
+            /* sort up to position u + 1 where u = min(m_rows - k, n_cols - 1). */
+
+            int64_t sort_up_to = n_cols - 1;
+
+            if ((m_rows - k) < sort_up_to)
             {
-                for (int64_t j = 0; j < m_rows - k; ++j)
+                sort_up_to = (m_rows - k);
+            }
+
+            for (int64_t i = 0; i < m_rows; i++)
+            {
+                sum_of_matrix_vals = 0.0;
+                for (int64_t j = 0; j < sort_up_to; j++)
                 {
                     sum_of_matrix_vals += (ptr[i * n_cols + perm_[j]]);
                 }
-                prod_of_cols *= sum_of_matrix_vals;
+                vec[i] = sum_of_matrix_vals;
+                sum_of_matrix_vals = 0.0;
             }
-            int64_t value_sign = pow(-1, k);
-            int64_t bin_coeff();
-            int64_t bin_c = bin_coeff(n_cols - m_rows + k, k); 
-            sum_over_perms += value_sign * bin_c * prod_of_cols;
+            for (int64_t i = 0; i < m_rows; i++)
+            {
+                prod_of_cols *= vec[i];
+            }
+
+            result += value_sign * (double)bin_c * prod_of_cols;
+            counter += 1;
+    
+            
+            /* Iterate over second to last permutations of the set. */
+
+            while (gen_next_perm(falling_fact, perm_, inv_perm, n_cols, sort_up_to))
+            {
+                sum_of_matrix_vals = 0.0;
+                for (int64_t i = 0; i < m_rows; i++)
+                {
+                    sum_of_matrix_vals = 0.0;
+                    for (int64_t j = 0; j < m_rows - k; j++)
+                    {
+                        sum_of_matrix_vals += (ptr[i * n_cols + perm_[j]]);
+                    }
+                    vec[i] = sum_of_matrix_vals;
+                    sum_of_matrix_vals = 0.0;
+                }
+                prod_of_cols = 1.0;
+                for (int64_t i = 0; i < m_rows; i++)
+                {
+                    prod_of_cols *= vec[i];
+                }
+
+                result += value_sign * (double)bin_c * prod_of_cols;
+                counter += 1;
+            }
+            sum_over_k_vals += result / (counter / C[20 * n_cols + (m_rows - k)]);
+            value_sign *= -1;
         }
-        sum_over_k_vals += sum_over_perms;
+        
+        return PyFloat_FromDouble(sum_over_k_vals);   
     }
-    return PyFloat_FromDouble(sum_over_k_vals);
-}
 
 
 static PyObject *permanent(PyObject *module, PyObject *object)
