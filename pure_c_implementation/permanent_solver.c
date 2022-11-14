@@ -24,25 +24,25 @@ There is a provided Python code fastest_permanent_plotter.py that will visualize
 /* C functions. */
 /* ******************************************** */
 
-/* A function to generate a table of binomial coefficients to be used in the Ryser formula for rectangular matrices. Maximum values of N and K are set to 10 since anything larger is unnecessary for our purposes. Recursion is inspired by Pascal's triangle. We pass in the array as a constant pointer and change the values inside the array. Many people have written this code. Mine turns out to be very similar to one found in a stackoverflow discussion: https://stackoverflow.com/questions/11032781/fastest-way-to-generate-binomial-coefficients */
+/* A function to generate a table of binomial coefficients to be used in the Ryser formula for rectangular matrices. Maximum values of N and K are set to 100 since anything larger is unnecessary for our purposes. Recursion is inspired by Pascal's triangle. We pass in the array as a constant pointer and change the values inside the array. Many people have written this code. Mine turns out to be very similar to one found in a stackoverflow discussion: https://stackoverflow.com/questions/11032781/fastest-way-to-generate-binomial-coefficients */
 
 
-void bin_coeff(const uint64_t N, const uint64_t K, int64_t C[const N][K])
+void bin_coeff(const int64_t N, const int64_t K, int64_t C[const N][K])
 {
-    for (int64_t k = 1; k <= 10; k++)
+    for (int64_t k = 1; k <= K; k++)
     {
         /* Set the value to 0 when we are choosing from an empty set. */
         C[0][k] = 0;
     }
-    for (int64_t n = 0; n <= 10; n++)
+    for (int64_t n = 0; n <= N; n++)
     {
         /* Set the value to 1 when we are choosing 0 items from a set. */
         C[n][0] = 1;
     }
 
-    for (int64_t n = 1; n <= 10; n++)
+    for (int64_t n = 1; n <= N; n++)
     {
-        for (int64_t k = 1; k <= 10; k++)
+        for (int64_t k = 1; k <= K; k++)
         {
             /* Use recursion and the pattern defined in Pascal's triangle to populate the table of binomial coefficients. */
             C[n][k] = C[n - 1][k - 1] + C[n - 1][k];
@@ -368,7 +368,6 @@ double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *co
     int64_t inv_perm[128];
     double vec[128];
 
-
     if (m_rows == n_cols) // Dealing with a square matrix. This bit-hacking trick was modified from C++ code from Michelle Richer (lines 393-428)
     {
         int32_t i, j, k;
@@ -420,7 +419,7 @@ double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *co
         {
             /* Store the binomial coefficient for this k value bin_c. */
 
-            int64_t bin_c = C[20 * (n_cols - m_rows + k) + k];
+            int64_t bin_c = C[100 * (n_cols - m_rows + k) + k];
             counter = 0;
             double sum_of_matrix_vals = 0.0;
             double prod_of_cols = 1.0;
@@ -483,7 +482,7 @@ double ryser(double *const matrix, const int64_t m, const int64_t n, int64_t *co
                 result += value_sign * (double)bin_c * prod_of_cols;
                 counter += 1;
             }
-            sum_over_k_vals += result / (counter / C[20 * n_cols + (m_rows - k)]);
+            sum_over_k_vals += result / (counter / C[100 * n_cols + (m_rows - k)]);
             value_sign *= -1;
         }
         
@@ -515,7 +514,7 @@ int main(void)
         return -1;
     }
 
-    char correct_input[] = "This program computes the permanent of a (not necessarily square) MxN matrix, where M <= N (since per(A) = per(A_transpose)). \nThe maximum values of M, N = 10, since anything larger is too computationally intensive. \nInput data types are as follows: \nint64_t M, N, r ------ where M is the largest number of rows of interest, N is the largest number of columns of interest, and r is the number of times to run each calculation. You must give a value of r between 10 and 100. \nExample csv: \n4, 6, 10; \nThe program will solve the permanent of all matrices of sizes mxn where \nm = 2; m <= M; m++; \n    n = m; n <= N; n++; \n r times for each algorithm and write information regarding computation time to a fast_permanent.csv file.";
+    char correct_input[] = "This program computes the permanent of a (not necessarily square) MxN matrix, where M <= N (since per(A) = per(A_transpose)). \nThe maximum values of M, N = 100, since anything larger is too computationally intensive. \nInput data types are as follows: \nint64_t M, N, r ------ where M is the largest number of rows of interest, N is the largest number of columns of interest, and r is the number of times to run each calculation. You must give a value of r between 10 and 100. \nExample csv: \n4, 6, 10; \nThe program will solve the permanent of all matrices of sizes mxn where \nm = 2; m <= M; m++; \n    n = m; n <= N; n++; \n r times for each algorithm and write information regarding computation time to a fast_permanent.csv file.";
 
     do
     {
@@ -544,9 +543,9 @@ int main(void)
             printf("%s\n", correct_input);
             return -1;
         }
-        else if (num_read == 3 && m > 10 || n > 10)
+        else if (num_read == 3 && m > 100 || n > 100)
         {
-            printf("Matrix dimensions must be less than 10! Larger values are too computationally intensive!! \n ------------------------------ \n");
+            printf("Matrix dimensions must be less than 100! Larger values are too computationally intensive!! \n ------------------------------ \n");
             printf("%s\n", correct_input);
             return -1;
         }
@@ -612,9 +611,9 @@ int main(void)
     }
 
     /* Generate the binomial coefficient table. */
-    int64_t C[20][20];
+    int64_t C[100][100];
     void bin_coeff();
-    bin_coeff(20, 20, C);
+    bin_coeff(100, 100, C);
 
     /* Store the maximum desired matrix dimensions from the input file in M and N. */
 
