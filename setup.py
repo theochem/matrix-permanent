@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from os.path import dirname
 
 from setuptools import Extension, setup
 
@@ -54,7 +55,7 @@ ext_modules = [
     Extension(
         "permanent.permanent",
         ["permanent/permanent.c", "permanent/py_permanent.c"],
-        include_dirs=[np.get_include(), "permanent"],
+        include_dirs=[np.get_include()],
     ),
 ]
 
