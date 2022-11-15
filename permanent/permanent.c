@@ -88,7 +88,14 @@ bool gen_next_perm(int64_t *const falling_fact, int64_t *const perm_, int64_t *c
 double opt(const int64_t m_rows, const int64_t n_cols, const double *ptr)
 {
     /* Use the fastest algorithm. */
-    return combinatoric(m_rows, n_cols, ptr);
+    /* NOTE: This is just nonsense to show how it's done... */
+    if (m_rows < PARAM_1) {
+        return combinatoric(m_rows, n_cols, ptr);
+    } else if (m_rows * n_cols < PARAM_2) {
+        return glynn(m_rows, n_cols, ptr);
+    } else {
+        return ryser(m_rows, n_cols, ptr);
+    }
 }
 
 

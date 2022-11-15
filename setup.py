@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from setuptools setup
+from setuptools import setup
 
 import numpy as np
 
@@ -56,7 +56,7 @@ packages = [
 
 
 package_data = {
-    "permanent": ["permanent.so", "*.h", "*.c"],
+    "permanent": ["permanent.so", "tuning.h"],
 }
 
 
@@ -76,4 +76,5 @@ if __name__ == "__main__":
         extras_require=extras_require,
         packages=packages,
         package_data=package_data,
+        include_package_data=True,
     )

@@ -1,4 +1,5 @@
 CC     ?= gcc
+AR     ?= ar
 PYTHON ?= python3
 
 CFLAGS := -Wall -Wextra -g -fPIC -O2
@@ -16,17 +17,19 @@ ifeq ($(PREFIX),)
 PREFIX := /usr/local
 endif
 
-# Build libraries
+# Build C and Python libraries
 .PHONY: all
-all: libpermanent.so permanent/permanent.so
+all: permanent/permanent.so libpermanent.a libpermanent.so
 
-# Install C library
+# Install C libraries
 .PHONY: install
-install: libpermanent.so
+install: permanent/tuning.h libpermanent.a libpermanent.so
 	install -d $(DESTDIR)$(PREFIX)/lib/
+	install -m 444 libpermanent.a $(DESTDIR)$(PREFIX)/lib/
 	install -m 555 libpermanent.so $(DESTDIR)$(PREFIX)/lib/
 	install -d $(DESTDIR)$(PREFIX)/include/permanent/
 	install -m 444 permanent/permanent.h $(DESTDIR)$(PREFIX)/include/permanent/
+	install -m 444 permanent/tuning.h $(DESTDIR)$(PREFIX)/include/permanent/
 
 # Run tests
 .PHONY: test
@@ -36,7 +39,8 @@ test: permanent/permanent.so
 # Clean directory
 .PHONY: clean
 clean:
-	rm -f libpermanent.so permanent/permanent.so permanent/run_tuning permanent/tuning.h
+	rm -f permanent/run_tuning permanent/tuning.h
+	rm -f permanent/permanent.so libpermanent.o libpermanent.a libpermanent.so
 
 # Tuning utility
 permanent/run_tuning:
@@ -46,10 +50,18 @@ permanent/run_tuning:
 permanent/tuning.h: permanent/run_tuning
 	./$^ > $@
 
-# C library
-libpermanent.so: permanent/tuning.h
-	$(CC) $(CFLAGS) -DTUNING_FILE=1 -shared -o $@ permanent/permanent.c
-
 # Python library
 permanent/permanent.so: permanent/tuning.h
 	$(CC) $(CFLAGS) -DTUNING_FILE=1 -shared -o $@ permanent/permanent.c permanent/py_permanent.c
+
+# C object code
+libpermanent.o: permanent/tuning.h
+	$(CC) $(CFLAGS) -DTUNING_FILE=1 -c -o $@ permanent/permanent.c
+
+# C static library
+libpermanent.a: libpermanent.o
+	$(AR) crs $@ $^
+
+# C shared library
+libpermanent.so: libpermanent.o
+	$(CC) $(CFLAGS) -shared -o $@ $^
