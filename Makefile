@@ -1,7 +1,10 @@
 CC     ?= gcc
 PYTHON ?= python3
 
-CFLAGS := -fPIC -Wall -Wextra -O2 -g -lm
+CFLAGS := -Wall -Wextra -g -fPIC -O2
+
+CFLAGS += -lm
+
 CFLAGS += -I$(shell $(PYTHON) -c "import sysconfig; print(sysconfig.get_paths()['include'])")
 CFLAGS += -I$(shell $(PYTHON) -c "import numpy; print(numpy.get_include())")
 
@@ -13,23 +16,22 @@ ifeq ($(PREFIX),)
 PREFIX := /usr/local
 endif
 
-# Build C library
+# Build libraries
 .PHONY: all
-all: libpermanent.so
-
-# Build Python library
-.PHONY: python
-python: permanent/permanent.so
+all: libpermanent.so permanent/permanent.so
 
 # Install C library
 .PHONY: install
-install: permanent/tuning.h libpermanent.so
+install: libpermanent.so
 	install -d $(DESTDIR)$(PREFIX)/lib/
 	install -m 555 libpermanent.so $(DESTDIR)$(PREFIX)/lib/
 	install -d $(DESTDIR)$(PREFIX)/include/permanent/
 	install -m 444 permanent/permanent.h $(DESTDIR)$(PREFIX)/include/permanent/
-	install -m 444 permanent/binom.h $(DESTDIR)$(PREFIX)/include/permanent/
-	install -m 444 permanent/tuning.h $(DESTDIR)$(PREFIX)/include/permanent/
+
+# Run tests
+.PHONY: test
+test: permanent/permanent.so
+	$(PYTHON) -m pytest -v .
 
 # Clean directory
 .PHONY: clean

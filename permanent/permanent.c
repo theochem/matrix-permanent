@@ -2,8 +2,17 @@
 #include <stdint.h>
 #include <tgmath.h>
 
-#include "binom.h"
 #include "permanent.h"
+#include "binom.h"
+
+#ifdef TUNING_FILE
+/* Include tuning file. */
+#include "tuning.h"
+#else
+/* Set default tuning parameters. */
+#define PARAM_1 3.1415926
+#define PARAM_2 8192
+#endif
 
 
 inline void swap2(int64_t *perm, int64_t i, int64_t j)

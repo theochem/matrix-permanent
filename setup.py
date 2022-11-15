@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-from os.path import dirname
-
-from setuptools import Extension, setup
+from setuptools setup
 
 import numpy as np
 
@@ -16,16 +14,16 @@ version = "0.1.0"
 licence = "GPLv3"
 
 
-author = "AUTHOR"
+author = "QC-Devs"
 
 
-author_email = "AUTHOR_EMAIL"
+author_email = "email@address.com"
 
 
-url = "URL"
+url = "https://permanent.qcdevs.org/"
 
 
-description = "DESCRIPTION"
+description = "Functions to compute the permanent of arbitrary matrices."
 
 
 long_description = open("README.md", "r", encoding="utf-8").read()
@@ -45,19 +43,21 @@ install_requires = [
 ]
 
 
+extras_require = {
+    "test": ["pytest"],
+    "docs": ["sphinx", "sphinx_rtd_theme"],
+}
+
+
 packages = [
     "permanent",
     "permanent.test",
 ]
 
 
-ext_modules = [
-    Extension(
-        "permanent.permanent",
-        ["permanent/permanent.c", "permanent/py_permanent.c"],
-        include_dirs=[np.get_include()],
-    ),
-]
+package_data = {
+    "permanent": ["permanent.so", "*.h", "*.c"],
+}
 
 
 if __name__ == "__main__":
@@ -73,6 +73,7 @@ if __name__ == "__main__":
         long_description=long_description,
         classifiers=classifiers,
         install_requires=install_requires,
+        extras_require=extras_require,
         packages=packages,
-        ext_modules=ext_modules,
+        package_data=package_data,
     )
