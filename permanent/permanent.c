@@ -76,6 +76,13 @@ bool gen_next_perm(int64_t *const falling_fact, int64_t *const perm_, int64_t *c
 }
 
 
+double opt(const int64_t m_rows, const int64_t n_cols, const double *ptr)
+{
+    /* Use the fastest algorithm. */
+    return combinatoric(m_rows, n_cols, ptr);
+}
+
+
 double combinatoric(const int64_t m_rows, const int64_t n_cols, const double *ptr)
 {
     /* sort up to position u + 1 where u = min(k, n_cols - 1). */

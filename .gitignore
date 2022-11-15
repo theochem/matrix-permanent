@@ -82,3 +82,7 @@ tags
 .spyderproject
 .spyproject
 .vscode/
+
+# Project files
+permanent/run_tuning
+permanent/tuning.h
