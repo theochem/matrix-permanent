@@ -17,4 +17,10 @@ double glynn(const int64_t, const int64_t, const double *);
 double ryser(const int64_t, const int64_t, const double *);
 
 
+double glynn_rectangle(const int64_t, const int64_t, const double *);
+
+
+double ryser_rectangle(const int64_t, const int64_t, const double *);
+
+
 #endif /* PERMANENT_H */

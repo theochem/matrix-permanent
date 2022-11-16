@@ -9,9 +9,9 @@
 
 #define DOCSTRING_MODULE        "Permanent C extension module."
 #define DOCSTRING_PERMANENT     "Compute the permanent of a matrix using the best algorithm."
-#define DOCSTRING_COMBINATORIC  "Compute the permanent of a matrix combinatorically."
-#define DOCSTRING_GLYNN         "Compute the permanent of a matrix via Glynn's algorithm."
-#define DOCSTRING_RYSER         "Compute the permanent of a matrix via Ryser's algorithm."
+#define DOCSTRING_COMBINATORIC  "Compute the permanent of a (rectangular) matrix combinatorically."
+#define DOCSTRING_GLYNN         "Compute the permanent of a (rectangular) matrix via Glynn's algorithm."
+#define DOCSTRING_RYSER         "Compute the permanent of a (rectangular) matrix via Ryser's algorithm."
 
 
 static PyObject *py_opt(PyObject *module, PyObject *object)
@@ -40,7 +40,9 @@ static PyObject *py_glynn(PyObject *module, PyObject *object)
     int64_t m_rows = PyArray_DIMS(matrix)[0];
     int64_t n_cols = PyArray_DIMS(matrix)[1];
     double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
-    return PyFloat_FromDouble(glynn(m_rows, n_cols, ptr));
+    if (m_rows == n_cols)
+        return PyFloat_FromDouble(glynn(m_rows, n_cols, ptr));
+    return PyFloat_FromDouble(glynn_rectangle(m_rows, n_cols, ptr));
 }
 
 
@@ -50,7 +52,9 @@ static PyObject *py_ryser(PyObject *module, PyObject *object)
     int64_t m_rows = PyArray_DIMS(matrix)[0];
     int64_t n_cols = PyArray_DIMS(matrix)[1];
     double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
-    return PyFloat_FromDouble(ryser(m_rows, n_cols, ptr));
+    if (m_rows == n_cols)
+        return PyFloat_FromDouble(ryser(m_rows, n_cols, ptr));
+    return PyFloat_FromDouble(ryser_rectangle(m_rows, n_cols, ptr));
 }
 
 

@@ -156,111 +156,161 @@ double glynn(const int64_t m_rows, const int64_t n_cols, const double *ptr)
     /* Allocate matrix for result of manual multiplies. */
     double vec[128];
 
-    /* Dealing with a square matrix */
-    if (m_rows == n_cols) {
-        /* Handle first Gray code. */
-        double result = 1.0;
+    /* Handle first Gray code. */
+    double result = 1.0;
+    for (int64_t j = 0; j < n_cols; j++) {
+        double sum_ = 0.0;
+        for (int64_t i = 0; i < n_cols; i++) {
+            /* Sum over all the values in each column. */
+            sum_ += (ptr[i * n_cols + j] * (double)delta[i]);
+        }
+        vec[j] = sum_;
+    }
+    for (int64_t j = 0; j < n_cols; j++) {
+        result *= vec[j];
+    }
+
+    /* Iterate over second to last Gray codes. */
+    while (pos != bound) {
+        /* Update sign and delta. */
+        sign *= -1;
+        *(delta + bound - pos) *= -1;
+        /* Compute each Gray code term. */
         for (int64_t j = 0; j < n_cols; j++) {
             double sum_ = 0.0;
             for (int64_t i = 0; i < n_cols; i++) {
-                /* Sum over all the values in each column. */
                 sum_ += (ptr[i * n_cols + j] * (double)delta[i]);
             }
             vec[j] = sum_;
         }
-        for (int64_t j = 0; j < n_cols; j++) {
-            result *= vec[j];
+        double prod = 1.0;
+        for (int64_t i = 0; i < n_cols; i++) {
+            prod *= vec[i];
         }
 
-        /* Iterate over second to last Gray codes. */
-        while (pos != bound) {
-            /* Update sign and delta. */
-            sign *= -1;
-            *(delta + bound - pos) *= -1;
-            /* Compute each Gray code term. */
-            for (int64_t j = 0; j < n_cols; j++) {
-                double sum_ = 0.0;
-                for (int64_t i = 0; i < n_cols; i++) {
-                    sum_ += (ptr[i * n_cols + j] * (double)delta[i]);
-                }
-                vec[j] = sum_;
-            }
-            double prod = 1.0;
-            for (int64_t i = 0; i < n_cols; i++) {
-                prod *= vec[i];
-            }
+        /* Multiply by the product of the vectors in delta. */
+        result += sign * prod;
 
-            /* Multiply by the product of the vectors in delta. */
-            result += sign * prod;
+        /* Go to next Gray code. */
+        gray[0] = 0;
+        gray[pos] = gray[pos + 1];
+        ++pos;
+        gray[pos] = pos;
+        pos = gray[0];
+    }
+    /* Divide by external factor and return permanent. */
+    return result / pow(2.0, (double)bound);
+}
 
-            /* Go to next Gray code. */
-            gray[0] = 0;
-            gray[pos] = gray[pos + 1];
-            ++pos;
-            gray[pos] = pos;
-            pos = gray[0];
-        }
 
-        /* Divide by external factor and return permanent. */
-        return result / pow(2.0, (double)bound);
+double glynn_rectangle(const int64_t m_rows, const int64_t n_cols, const double *ptr)
+{
+    /* Initialize gray code. */
+    int64_t pos = 0;
+    int64_t sign = 1;
+    int64_t bound = n_cols - 1;
+    int64_t delta[128];
+    int64_t gray[128];
+
+    /* Allocate and fill delta array (all +1 to start), and gray array from 0 to n_cols. */
+    for (int64_t i = 0; i < n_cols; i++) {
+        delta[i] = 1;
+        gray[i] = i;
     }
 
-    /* Dealing with a rectangle. */
-    else {
-        /* Handle first Gray code. */
-        double result = 1.0;
+    /* Allocate matrix for result of manual multiplies. */
+    double vec[128];
+
+    /* Handle first Gray code. */
+    double result = 1.0;
+    for (int64_t j = 0; j < n_cols; j++) {
+        double sum_ = 0.0;
+        for (int64_t i = 0; i < m_rows; i++) {
+            sum_ += (ptr[i * n_cols + j] * (double)delta[i]);
+        }
+        for (int64_t k = m_rows; k < n_cols; k++) {
+            sum_ += (double)delta[k];
+        }
+        vec[j] = sum_;
+    }
+    for (int64_t i = 0; i < n_cols; i++) {
+        result *= vec[i];
+    }
+
+    /* Iterate over second to last Gray codes. */
+    while (pos != bound) {
+        /* Update sign and delta. */
+        sign *= -1;
+        *(delta + bound - pos) *= -1;
+        /* Compute each Gray code term. */
         for (int64_t j = 0; j < n_cols; j++) {
             double sum_ = 0.0;
             for (int64_t i = 0; i < m_rows; i++) {
                 sum_ += (ptr[i * n_cols + j] * (double)delta[i]);
             }
+
             for (int64_t k = m_rows; k < n_cols; k++) {
                 sum_ += (double)delta[k];
             }
             vec[j] = sum_;
         }
+        double prod = 1.0;
         for (int64_t i = 0; i < n_cols; i++) {
-            result *= vec[i];
+            prod *= vec[i];
         }
+        result += sign * prod;
 
-        /* Iterate over second to last Gray codes. */
-        while (pos != bound) {
-            /* Update sign and delta. */
-            sign *= -1;
-            *(delta + bound - pos) *= -1;
-            /* Compute each Gray code term. */
-            for (int64_t j = 0; j < n_cols; j++) {
-                double sum_ = 0.0;
-                for (int64_t i = 0; i < m_rows; i++) {
-                    sum_ += (ptr[i * n_cols + j] * (double)delta[i]);
-                }
-
-                for (int64_t k = m_rows; k < n_cols; k++) {
-                    sum_ += (double)delta[k];
-                }
-                vec[j] = sum_;
-            }
-            double prod = 1.0;
-            for (int64_t i = 0; i < n_cols; i++) {
-                prod *= vec[i];
-            }
-            result += sign * prod;
-
-            /* Go to next Gray code. */
-            *gray = 0;
-            *(gray + pos) = *(gray + pos + 1);
-            ++pos;
-            *(gray + pos) = pos;
-            pos = gray[0];
-        }
-
-        /* Divide by external factor and return permanent. */
-        return result / (pow(2.0, (double)bound) * (double)tgamma(n_cols - m_rows + 1));
+        /* Go to next Gray code. */
+        *gray = 0;
+        *(gray + pos) = *(gray + pos + 1);
+        ++pos;
+        *(gray + pos) = pos;
+        pos = gray[0];
     }
+    /* Divide by external factor and return permanent. */
+    return result / (pow(2.0, (double)bound) * (double)tgamma(n_cols - m_rows + 1));
 }
 
 
 double ryser(const int64_t m_rows, const int64_t n_cols, const double *ptr)
+{
+    /* Dealing with a square matrix. This bit-hacking trick was modified from
+     * C++ code from Michelle Richer (lines 289-316) */
+    int32_t i, j, k;
+    int64_t sum = 0, rowsum, rowsumprod;
+
+    /* Iterate over c = pow(2, n) submatrices (equal to (1 << n)) submatrices. */
+    int32_t c = 1UL << n_cols;
+
+    /* Loop over columns of submatrix; compute product of row sums. */
+    for (k = 0; k < c; k++) {
+        rowsumprod = 1;
+        for (i = 0; i < n_cols; i++) {
+            /* Loop over rows of submatrix; compute row sum. */
+            rowsum = 0;
+            for (j = 0; j < n_cols; j++) {
+                /* Add element to row sum if the row index is in the characteristic vector of the submatrix, which is the binary vector given by k. */
+                if (k & (1UL << j)) {
+                    rowsum += ptr[n_cols * i + j];
+                }
+            }
+            /* Update product of row sums. */
+            rowsumprod *= rowsum;
+        }
+        /* Add term multiplied by the parity of the characteristic vector. */
+        sum += rowsumprod * (1 - ((__builtin_popcount(k) & 1) << 1));
+    }
+    /* Return answer with the correct sign (times -1 for odd n). */
+    int32_t sign = 1;
+    if (n_cols % 2 == 1) {
+        /* n is odd. */
+        sign *= -1;
+    }
+    return sum * sign;    
+}
+
+
+double ryser_rectangle(const int64_t m_rows, const int64_t n_cols, const double *ptr)
 {
     /* Initialize all relevant variables. See combinatorial algorithm for more
      * details as it was already went over. */
@@ -270,103 +320,64 @@ double ryser(const int64_t m_rows, const int64_t n_cols, const double *ptr)
     double vec[128];
     falling_fact[0] = 0;
 
-    /* Dealing with a square matrix. This bit-hacking trick was modified from
-     * C++ code from Michelle Richer (lines 280-298) */
-    if (m_rows == n_cols) {
-        int32_t i, j, k;
-        int64_t sum = 0, rowsum, rowsumprod;
-
-        /* Iterate over c = pow(2, n) submatrices (equal to (1 << n)) submatrices. */
-        int32_t c = 1UL << n_cols;
-
-        /* Loop over columns of submatrix; compute product of row sums. */
-        for (k = 0; k < c; k++) {
-            rowsumprod = 1;
-            for (i = 0; i < n_cols; i++) {
-                /* Loop over rows of submatrix; compute row sum. */
-                rowsum = 0;
-                for (j = 0; j < n_cols; j++) {
-                    /* Add element to row sum if the row index is in the characteristic vector of the submatrix, which is the binary vector given by k. */
-                    if (k & (1UL << j)) {
-                        rowsum += ptr[n_cols * i + j];
-                    }
-                }
-                /* Update product of row sums. */
-                rowsumprod *= rowsum;
-            }
-            /* Add term multiplied by the parity of the characteristic vector. */
-            sum += rowsumprod * (1 - ((__builtin_popcount(k) & 1) << 1));
-        }
-        /* Return answer with the correct sign (times -1 for odd n). */
-        int32_t sign = 1;
-        if (n_cols % 2 == 1) {
-            /* n is odd. */
-            sign *= -1;
-        }
-        return sum * sign;
-    }
-
     /* Dealing with a rectangle. Can't use bit hacking trick here. */
-    else {
-        int32_t value_sign = 1;
-        double sum_over_k_vals = 0.0;
-        for (int64_t k = 0; k < m_rows; k++) {
-            /* Store the binomial coefficient for this k value bin_c. */
-            double bin_c = BINOM((n_cols - m_rows + k), k);
-            int32_t counter = 0; // Count how many permutations you have generated
-            double sum_of_matrix_vals = 0.0;
-            double prod_of_cols = 1.0;
-            double result = 0.0;
+    int32_t value_sign = 1;
+    double sum_over_k_vals = 0.0;
+    for (int64_t k = 0; k < m_rows; k++) {
+        /* Store the binomial coefficient for this k value bin_c. */
+        double bin_c = BINOM((n_cols - m_rows + k), k);
+        int32_t counter = 0; // Count how many permutations you have generated
+        double sum_of_matrix_vals = 0.0;
+        double prod_of_cols = 1.0;
+        double result = 0.0;
 
-            /* (Re)initialize the set to permute for this k value. */
-            init_perm(n_cols, falling_fact, perm_, inv_perm);
-            bool gen_next_perm();
+        /* (Re)initialize the set to permute for this k value. */
+        init_perm(n_cols, falling_fact, perm_, inv_perm);
+        bool gen_next_perm();
 
-            /* sort up to position u + 1 where u = min(m_rows - k, n_cols - 1). */
-            int64_t sort_up_to = n_cols - 1;
+        /* sort up to position u + 1 where u = min(m_rows - k, n_cols - 1). */
+        int64_t sort_up_to = n_cols - 1;
 
-            if ((m_rows - k) < sort_up_to) {
-                sort_up_to = (m_rows - k);
+        if ((m_rows - k) < sort_up_to) {
+            sort_up_to = (m_rows - k);
+        }
+
+        for (int64_t i = 0; i < m_rows; i++) {
+            sum_of_matrix_vals = 0.0;
+            for (int64_t j = 0; j < sort_up_to; j++) {
+                sum_of_matrix_vals += (ptr[i * n_cols + perm_[j]]);
             }
+            vec[i] = sum_of_matrix_vals;
+            sum_of_matrix_vals = 0.0;
+        }
+        for (int64_t i = 0; i < m_rows; i++) {
+            prod_of_cols *= vec[i];
+        }
 
+        result += value_sign * bin_c * prod_of_cols;
+        counter += 1;
+
+        /* Iterate over second to last permutations of the set. */
+        while (gen_next_perm(falling_fact, perm_, inv_perm, n_cols, sort_up_to)) {
+            sum_of_matrix_vals = 0.0;
             for (int64_t i = 0; i < m_rows; i++) {
                 sum_of_matrix_vals = 0.0;
-                for (int64_t j = 0; j < sort_up_to; j++) {
+                for (int64_t j = 0; j < m_rows - k; j++) {
                     sum_of_matrix_vals += (ptr[i * n_cols + perm_[j]]);
                 }
                 vec[i] = sum_of_matrix_vals;
                 sum_of_matrix_vals = 0.0;
             }
+            prod_of_cols = 1.0;
             for (int64_t i = 0; i < m_rows; i++) {
                 prod_of_cols *= vec[i];
             }
 
             result += value_sign * bin_c * prod_of_cols;
             counter += 1;
-
-            /* Iterate over second to last permutations of the set. */
-            while (gen_next_perm(falling_fact, perm_, inv_perm, n_cols, sort_up_to)) {
-                sum_of_matrix_vals = 0.0;
-                for (int64_t i = 0; i < m_rows; i++) {
-                    sum_of_matrix_vals = 0.0;
-                    for (int64_t j = 0; j < m_rows - k; j++) {
-                        sum_of_matrix_vals += (ptr[i * n_cols + perm_[j]]);
-                    }
-                    vec[i] = sum_of_matrix_vals;
-                    sum_of_matrix_vals = 0.0;
-                }
-                prod_of_cols = 1.0;
-                for (int64_t i = 0; i < m_rows; i++) {
-                    prod_of_cols *= vec[i];
-                }
-
-                result += value_sign * bin_c * prod_of_cols;
-                counter += 1;
-            }
-            sum_over_k_vals += result / (counter / BINOM(n_cols, (m_rows - k)));
-            value_sign *= -1;
         }
-
-        return sum_over_k_vals;
+        sum_over_k_vals += result / (counter / BINOM(n_cols, (m_rows - k)));
+        value_sign *= -1;
     }
+    return sum_over_k_vals;
 }
