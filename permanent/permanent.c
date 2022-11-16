@@ -309,12 +309,11 @@ double ryser(const int64_t m_rows, const int64_t n_cols, const double *ptr)
     /* Dealing with a rectangle. Can't use bit hacking trick here. */
     else {
         int32_t value_sign = 1;
-        int32_t counter = 0; // Count how many permutations you have generated
         double sum_over_k_vals = 0.0;
         for (int64_t k = 0; k < m_rows; k++) {
             /* Store the binomial coefficient for this k value bin_c. */
-            double bin_c = BINOM(n_cols - m_rows + k, k);
-            counter = 0;
+            double bin_c = BINOM((n_cols - m_rows + k), k);
+            int32_t counter = 0; // Count how many permutations you have generated
             double sum_of_matrix_vals = 0.0;
             double prod_of_cols = 1.0;
             double result = 0.0;
@@ -342,7 +341,7 @@ double ryser(const int64_t m_rows, const int64_t n_cols, const double *ptr)
                 prod_of_cols *= vec[i];
             }
 
-            result += value_sign * (double)bin_c * prod_of_cols;
+            result += value_sign * bin_c * prod_of_cols;
             counter += 1;
 
             /* Iterate over second to last permutations of the set. */
@@ -361,14 +360,13 @@ double ryser(const int64_t m_rows, const int64_t n_cols, const double *ptr)
                     prod_of_cols *= vec[i];
                 }
 
-                result += value_sign * (double)bin_c * prod_of_cols;
+                result += value_sign * bin_c * prod_of_cols;
                 counter += 1;
             }
-            sum_over_k_vals += result / (counter / BINOM(n_cols, m_rows - k));
+            sum_over_k_vals += result / (counter / BINOM(n_cols, (m_rows - k)));
             value_sign *= -1;
         }
 
-        //return sum_over_k_vals;
-        return BINOM(3, 2);
+        return sum_over_k_vals;
     }
 }
