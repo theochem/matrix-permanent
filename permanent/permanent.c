@@ -271,7 +271,7 @@ double ryser(const int64_t m_rows, const int64_t n_cols, const double *ptr)
     falling_fact[0] = 0;
 
     /* Dealing with a square matrix. This bit-hacking trick was modified from
-     * C++ code from Michelle Richer (lines 393-428) */
+     * C++ code from Michelle Richer (lines 280-298) */
     if (m_rows == n_cols) {
         int32_t i, j, k;
         int64_t sum = 0, rowsum, rowsumprod;
@@ -368,6 +368,7 @@ double ryser(const int64_t m_rows, const int64_t n_cols, const double *ptr)
             value_sign *= -1;
         }
 
-        return sum_over_k_vals;
+        //return sum_over_k_vals;
+        return BINOM(3, 2);
     }
 }
