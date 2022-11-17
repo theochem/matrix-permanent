@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
+#include <tgmath.h>
 
 #include "permanent.h"
 
@@ -43,107 +45,49 @@ int main()
     double time_spent_on_glynn[128];
     double time_spent_on_ryser[128];
     int NUM_REPEATS = 3;
-    int MAX_MATRIX = 30;
+    int MAX_MATRIX = 20;
 
     for (int64_t m = 2; m <= MAX_MATRIX; m++)
     {
         for (int64_t n = m; n <= MAX_MATRIX; n++)
         {
             /* Populate the matrix of a given size randomly with 0-1. */
-            int sz = m*n;
-            int randArray[sz], i;
-            for(i=0; i<sz; i++)
-                randArray[i]= (rand() % 2); 
+            double randArray[256];
+            for (int64_t i = 0; i < m; i++)
+            {
+                for (int64_t j = 0; j < n; j++)
+                {
+                    randArray[i * n + j]= (rand() % 2);
+                }
+            }
 
             /* Solve the permanent using each algorithm the number of times specified. */
-            printf("Solving the permanent of a %d-by-%d matrix using the Combinatorial algorithm %d times.\n", m, n, NUM_REPEATS);
-
-            double progress = 0.0;
-            int64_t bar_width = 70;
             for (int64_t i = 0; i < NUM_REPEATS; i++)
             {
                 clock_t begin_1 = clock(); // Time how long it takes to solve
                 combinatoric(m, n, (double *)randArray);
                 clock_t end_1 = clock();
                 time_spent_on_comb[i] = (double)(end_1 - begin_1) / CLOCKS_PER_SEC;
-
-                /* Print progress bar. Adapted from C++ code found here: https://stackoverflow.com/questions/14539867/how-to-display-a-progress-indicator-in-pure-c-c-cout-printf */
-                printf("[");
-                progress += ((double)1 / (double)NUM_REPEATS);
-                int pos = bar_width * progress;
-                for (int64_t j = 0; j < bar_width; j++)
-                {
-                    if (j < pos)
-                    printf("#");
-                    else if (j == pos)
-                    printf("#");
-                    else
-                    printf(" ");
-                }
-                printf("] %.2f, %%\r", (progress * (double)100));
             }
-            printf("\n\n");            
-            printf("Solving the permanent of a %d-by-%d matrix using the Glynn algorithm %d times.\n", m, n, NUM_REPEATS);
-
-            progress = 0.0;
-            bar_width = 70;
             for (int64_t i = 0; i < NUM_REPEATS; i++)
             {
                 clock_t begin_2 = clock();
                 glynn(m, n, (double *)randArray);
                 clock_t end_2 = clock();
                 time_spent_on_glynn[i] = (double)(end_2 - begin_2) / CLOCKS_PER_SEC;
-
-                /* Print progress bar. */
-                printf("[");
-                progress += ((double)1 / (double)NUM_REPEATS);
-                int pos = bar_width * progress;
-                for (int64_t j = 0; j < bar_width; j++)
-                {
-                    if (j < pos)
-                    printf("#");
-                    else if (j == pos)
-                    printf("#");
-                    else
-                    printf(" ");
-                }
-                printf("] %.2f, %%\r", (progress * (double)100));
             }
-            printf("\n\n");            
-            printf("Solving the permanent of a %d-by-%d matrix using the Ryser algorithm %d times.\n", m, n, NUM_REPEATS);
-
-            progress = 0.0;
-            bar_width = 70;
             for (int64_t i = 0; i < NUM_REPEATS; i++)
             {
                 clock_t begin_3 = clock();
                 ryser(m, n, (double *)randArray);
                 clock_t end_3 = clock();
                 time_spent_on_ryser[i] = (double)(end_3 - begin_3) / CLOCKS_PER_SEC;
-
-                /* Print progress bar. */
-                printf("[");
-                progress += ((double)1 / (double)NUM_REPEATS);
-                int pos = bar_width * progress;
-                for (int64_t j = 0; j < bar_width; j++)
-                {
-                    if (j < pos)
-                    printf("#");
-                    else if (j == pos)
-                    printf("#");
-                    else
-                    printf(" ");
-                }
-                printf("] %.2f, %%\r", (progress * (double)100));
             }
-            printf("\n\n");
-
             double mean_time_comb = 0.0;
             double mean_time_glynn = 0.0;
             double mean_time_ryser = 0.0;
 
             /* Calculate the mean and standard deviation for the runtime of each algorithm. */
-
             for (int64_t i = 0; i < NUM_REPEATS; i++)
             {
                 mean_time_comb += time_spent_on_comb[i]; // Sum up all of the time values
@@ -192,7 +136,7 @@ int main()
             switch (alg)
             {
                 case COMBINATORIAL:
-                    if (fprintf(file_ptr, "%.4f, %f, Combinatorial,     %f, %f, %.10f, %.10f, %s, %.4fx, %.4fx, %.10f +- %.10f, %.10f +- %.10f, %.10f +- %.10f \n", (double)m/(double)n, n, m, n, mean_time_comb, st_dev_comb, s, (double)mean_time_glynn/(double)mean_time_comb, (double)mean_time_ryser/(double)mean_time_comb, mean_time_comb, st_dev_comb, mean_time_glynn, st_dev_glynn, mean_time_ryser, st_dev_ryser) < 0)
+                    if (fprintf(file_ptr, "%.4f, %lld, Combinatorial,     %lld, %lld, %.10f, %.10f, %s, %.4fx, %.4fx, %.10f +- %.10f, %.10f +- %.10f, %.10f +- %.10f \n", (double)m/(double)n, n, m, n, mean_time_comb, st_dev_comb, s, (double)mean_time_glynn/(double)mean_time_comb, (double)mean_time_ryser/(double)mean_time_comb, mean_time_comb, st_dev_comb, mean_time_glynn, st_dev_glynn, mean_time_ryser, st_dev_ryser) < 0)
                     {
                         perror("Error occurred!");
                         fclose(file_ptr);
@@ -200,7 +144,7 @@ int main()
                     }
                     break;
                 case GLYNN:
-                    if (fprintf(file_ptr, "%.4f, %f, Glynn,             %f, %f, %.10f, %.10f, %.4fx, %s, %.4fx, %.10f +- %.10f, %.10f +- %.10f, %.10f +- %.10f \n", (double)m/(double)n, n, m, n, mean_time_glynn, st_dev_glynn, (double)mean_time_comb/(double)mean_time_glynn, s, (double)mean_time_ryser/(double)mean_time_glynn, mean_time_comb, st_dev_comb, mean_time_glynn, st_dev_glynn, mean_time_ryser, st_dev_ryser) < 0)
+                    if (fprintf(file_ptr, "%.4f, %lld, Glynn,             %lld, %lld, %.10f, %.10f, %.4fx, %s, %.4fx, %.10f +- %.10f, %.10f +- %.10f, %.10f +- %.10f \n", (double)m/(double)n, n, m, n, mean_time_glynn, st_dev_glynn, (double)mean_time_comb/(double)mean_time_glynn, s, (double)mean_time_ryser/(double)mean_time_glynn, mean_time_comb, st_dev_comb, mean_time_glynn, st_dev_glynn, mean_time_ryser, st_dev_ryser) < 0)
                     {
                         perror("Error occurred!");
                         fclose(file_ptr);
@@ -208,7 +152,7 @@ int main()
                     }
                     break;
                 case RYSER:
-                    if (fprintf(file_ptr, "%.4f, %f, Ryser,             %f, %f, %.10f, %.10f, %.4fx, %.4fx, %s, %.10f +- %.10f, %.10f +- %.10f, %.10f +- %.10f \n", (double)m/(double)n, n, m, n, mean_time_ryser, st_dev_ryser, (double)mean_time_comb/(double)mean_time_ryser, (double)mean_time_glynn/(double)mean_time_ryser, s, mean_time_comb, st_dev_comb, mean_time_glynn, st_dev_glynn, mean_time_ryser, st_dev_ryser) < 0)
+                    if (fprintf(file_ptr, "%.4f, %lld, Ryser,             %lld, %lld, %.10f, %.10f, %.4fx, %.4fx, %s, %.10f +- %.10f, %.10f +- %.10f, %.10f +- %.10f \n", (double)m/(double)n, n, m, n, mean_time_ryser, st_dev_ryser, (double)mean_time_comb/(double)mean_time_ryser, (double)mean_time_glynn/(double)mean_time_ryser, s, mean_time_comb, st_dev_comb, mean_time_glynn, st_dev_glynn, mean_time_ryser, st_dev_ryser) < 0)
                     {
                         perror("Error occurred!");
                         fclose(file_ptr);
@@ -218,7 +162,6 @@ int main()
             }
         }
     }
-    printf("Fastest algorithm for solving the permanent of all matrices of sizes 2x2 up to %fx%f written successfully to file %s.\n", MAX_MATRIX, MAX_MATRIX, filename);
     fclose(file_ptr);
 
 

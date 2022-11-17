@@ -41,6 +41,7 @@ test: permanent/permanent.so
 clean:
 	rm -f permanent/run_tuning permanent/tuning.h
 	rm -f permanent/permanent.so libpermanent.o libpermanent.a libpermanent.so
+	rm -f fast_permanent.csv
 
 # Tuning utility
 permanent/run_tuning:
