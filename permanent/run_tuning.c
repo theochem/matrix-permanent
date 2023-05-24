@@ -51,7 +51,7 @@ int main()
     {
         for (int64_t n = m; n <= MAX_MATRIX; n++)
         {
-            /* Populate the matrix of a given size randomly with 0-1. */
+            /* Populate the matrix of a given size randomly with 0's and 1's for testing. */
             double randArray[256];
             for (int64_t i = 0; i < m; i++)
             {
@@ -61,28 +61,37 @@ int main()
                 }
             }
 
-            /* Solve the permanent using each algorithm the number of times specified. */
+            /* Solve the permanent using each algorithm the number of times specified in NUM_REPEATS. */
             for (int64_t i = 0; i < NUM_REPEATS; i++)
             {
-                clock_t begin_1 = clock(); // Time how long it takes to solve
-                combinatoric(m, n, (double *)randArray);
-                clock_t end_1 = clock();
-                time_spent_on_comb[i] = (double)(end_1 - begin_1) / CLOCKS_PER_SEC;
-            }
-            for (int64_t i = 0; i < NUM_REPEATS; i++)
-            {
+                double squareness = m / n;
+                if (squareness < 0.4)
+                {
+                    clock_t begin_1 = clock(); // Time how long it takes to solve
+                    combinatoric(m, n, (double *)randArray);
+                    clock_t end_1 = clock();
+                    time_spent_on_comb[i] = (double)(end_1 - begin_1) / CLOCKS_PER_SEC;
+                }
+                else if ((squareness >= 0.4) && (m > 8))
+                {
+                    time_spent_on_comb[i] = 100;
+                }
+                else
+                {
+                    time_spent_on_comb[i] = 100;
+                }
+
                 clock_t begin_2 = clock();
                 glynn(m, n, (double *)randArray);
                 clock_t end_2 = clock();
                 time_spent_on_glynn[i] = (double)(end_2 - begin_2) / CLOCKS_PER_SEC;
-            }
-            for (int64_t i = 0; i < NUM_REPEATS; i++)
-            {
+
                 clock_t begin_3 = clock();
                 ryser(m, n, (double *)randArray);
                 clock_t end_3 = clock();
                 time_spent_on_ryser[i] = (double)(end_3 - begin_3) / CLOCKS_PER_SEC;
             }
+
             double mean_time_comb = 0.0;
             double mean_time_glynn = 0.0;
             double mean_time_ryser = 0.0;
@@ -163,10 +172,6 @@ int main()
         }
     }
     fclose(file_ptr);
-
-
-
-
 
 
     /* ...
