@@ -64,17 +64,16 @@ int main()
             /* Solve the permanent using each algorithm the number of times specified in NUM_REPEATS. */
             for (int64_t i = 0; i < NUM_REPEATS; i++)
             {
-                double squareness = m / n;
-                if (squareness < 0.4)
+                double squareness = (double)m / (double)n ;
+                double current_size = (double)m ;
+                double max_size = 6.0;
+                double comparison_value = 0.4;
+                if ((squareness < comparison_value) || (current_size <= max_size))
                 {
                     clock_t begin_1 = clock(); // Time how long it takes to solve
                     combinatoric(m, n, (double *)randArray);
                     clock_t end_1 = clock();
                     time_spent_on_comb[i] = (double)(end_1 - begin_1) / CLOCKS_PER_SEC;
-                }
-                else if ((squareness >= 0.4) && (m > 8))
-                {
-                    time_spent_on_comb[i] = 100;
                 }
                 else
                 {
@@ -182,8 +181,8 @@ int main()
     printf("#ifndef PERMANENT_TUNING_H\n");
     printf("#define PERMANENT_TUNING_H\n");
     printf("\n\n");
-    printf("#define PARAM_1 %.9le\n", param_1);
-    printf("#define PARAM_2 %ld\n", param_2);
+    printf("#define PARAM_1 %.9f\n", param_1);
+    printf("#define PARAM_2 %lld\n", param_2);
     printf("\n\n");
     printf("#endif /* PERMANENT_TUNING_H */\n");
 
