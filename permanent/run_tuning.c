@@ -4,6 +4,7 @@
 #include <time.h>
 #include <tgmath.h>
 
+
 #include "permanent.h"
 
 
@@ -45,19 +46,26 @@ int main()
     double time_spent_on_glynn[128];
     double time_spent_on_ryser[128];
     int NUM_REPEATS = 3;
-    int MAX_MATRIX = 20;
+    int MAX_MATRIX = 64;
 
     for (int64_t m = 2; m <= MAX_MATRIX; m++)
     {
         for (int64_t n = m; n <= MAX_MATRIX; n++)
         {
             /* Populate the matrix of a given size randomly with 0's and 1's for testing. */
-            double randArray[256];
+            const double size = (double)n * (double)m;
+            double *randArray = malloc(size * sizeof(*randArray));
+            if (randArray == NULL)
+            {
+                printf("Failed to allocate memory!\n");
+                return -1;
+            }
+
             for (int64_t i = 0; i < m; i++)
             {
                 for (int64_t j = 0; j < n; j++)
                 {
-                    randArray[i * n + j]= (rand() % 2);
+                    randArray[i * n + j]= (double)(rand() % 2);
                 }
             }
 
@@ -66,7 +74,7 @@ int main()
             {
                 double squareness = (double)m / (double)n ;
                 double current_size = (double)m ;
-                double max_size = 6.0;
+                double max_size = 5.0;
                 double comparison_value = 0.4;
                 if ((squareness < comparison_value) || (current_size <= max_size))
                 {
@@ -90,6 +98,7 @@ int main()
                 clock_t end_3 = clock();
                 time_spent_on_ryser[i] = (double)(end_3 - begin_3) / CLOCKS_PER_SEC;
             }
+            free(randArray);
 
             double mean_time_comb = 0.0;
             double mean_time_glynn = 0.0;
@@ -102,7 +111,7 @@ int main()
                 mean_time_glynn += time_spent_on_glynn[i];
                 mean_time_ryser += time_spent_on_ryser[i];
             }
-
+            
             mean_time_comb = (double)mean_time_comb / (double)NUM_REPEATS; // Divide by the total number of runs done
             mean_time_glynn = (double)mean_time_glynn / (double)NUM_REPEATS;
             mean_time_ryser = (double)mean_time_ryser / (double)NUM_REPEATS;
@@ -127,6 +136,10 @@ int main()
             
             /* Write all of the important information to the output file. */
             char s[] = "Fastest!";
+
+            if (n==22)
+                fprintf(file_ptr, "Testing Ryser, %.10f +- %.10f, %.10f +- %.10f, %.10f +- %.10f \n", mean_time_comb, st_dev_comb, mean_time_glynn, st_dev_glynn, mean_time_ryser, st_dev_ryser);                    
+            
 
             enum winning_algorithm alg;
             if (mean_time_comb <= mean_time_ryser && mean_time_comb <= mean_time_glynn)
@@ -171,11 +184,6 @@ int main()
         }
     }
     fclose(file_ptr);
-
-
-    /* ...
-     * ...
-     * ... */
 
     /* Print a header file to stdout with constants defined as macros */
     printf("#ifndef PERMANENT_TUNING_H\n");
