@@ -85,7 +85,7 @@ bool gen_next_perm(int64_t *const falling_fact, int64_t *const perm_, int64_t *c
 }
 
 
-double opt(const int64_t m_rows, const int64_t n_cols, const double *ptr)
+double opt(const int64_t m_rows, const int64_t n_cols, double *const ptr)
 {
     /* Use the fastest algorithm. */
     /* NOTE: This is just nonsense to show how it's done... */
@@ -99,7 +99,7 @@ double opt(const int64_t m_rows, const int64_t n_cols, const double *ptr)
 }
 
 
-double combinatoric(const int64_t m_rows, const int64_t n_cols, const double *ptr)
+double combinatoric(const int64_t m_rows, const int64_t n_cols, double *const ptr)
 {
     /* sort up to position u + 1 where u = min(k, n_cols - 1). */
     int64_t sort_up_to = n_cols - 1;
@@ -138,7 +138,7 @@ double combinatoric(const int64_t m_rows, const int64_t n_cols, const double *pt
 }
 
 
-double glynn(const int64_t m_rows, const int64_t n_cols, const double *ptr)
+double glynn(const int64_t m_rows, const int64_t n_cols, double *const ptr)
 {
     /* Initialize gray code. */
     int64_t pos = 0;
@@ -203,7 +203,7 @@ double glynn(const int64_t m_rows, const int64_t n_cols, const double *ptr)
 }
 
 
-double glynn_rectangle(const int64_t m_rows, const int64_t n_cols, const double *ptr)
+double glynn_rectangle(const int64_t m_rows, const int64_t n_cols, double *const ptr)
 {
     /* Initialize gray code. */
     int64_t pos = 0;
@@ -272,7 +272,7 @@ double glynn_rectangle(const int64_t m_rows, const int64_t n_cols, const double 
 }
 
 
-double ryser(const int64_t m_rows, const int64_t n_cols, const double *ptr)
+double ryser(const int64_t m_rows, const int64_t n_cols, double *const ptr)
 {
     /* Dealing with a square matrix. This bit-hacking trick was modified from
      * C++ code from Michelle Richer (lines 289-316) */
@@ -310,7 +310,7 @@ double ryser(const int64_t m_rows, const int64_t n_cols, const double *ptr)
 }
 
 
-double ryser_rectangle(const int64_t m_rows, const int64_t n_cols, const double *ptr)
+double ryser_rectangle(const int64_t m_rows, const int64_t n_cols, double *const ptr)
 {
     /* Initialize all relevant variables. See combinatorial algorithm for more
      * details as it was already went over. */

@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 import permanent
 
@@ -111,3 +112,47 @@ def test_6by7_glynn():
 def test_6by7_ryser():
     matrix = np.arange(1, 43, dtype=np.double).reshape(6,7)
     assert permanent.ryser(matrix)==117681979920
+
+def test_ones_comb():
+    matrix = np.ones((10,10), dtype=np.double)
+    assert permanent.combinatoric(matrix)==math.factorial(10)
+
+def test_ones_ryser():
+    matrix = np.ones((10,10), dtype=np.double)
+    assert permanent.ryser(matrix)==math.factorial(10)
+
+def test_ones_glynn():
+    matrix = np.ones((10,10), dtype=np.double)
+    assert permanent.glynn(matrix)==math.factorial(10)
+
+def test_ones_comb_big():
+    matrix = np.ones((12,12), dtype=np.double)
+    assert permanent.combinatoric(matrix)==math.factorial(12)
+
+def test_ones_ryser_big():
+    matrix = np.ones((12,12), dtype=np.double)
+    assert permanent.ryser(matrix)==math.factorial(12)
+
+def test_ones_glynn_big():
+    matrix = np.ones((12,12), dtype=np.double)
+    assert permanent.glynn(matrix)==math.factorial(12)
+
+def test_identity_comb():
+    matrix = np.identity(10, dtype=np.double)
+    assert permanent.combinatoric==1.0
+
+def test_identity_ryser():
+    matrix = np.identity(10, dtype=np.double)
+    assert permanent.ryser==1.0
+
+def test_identity_glynn():
+    matrix = np.identity(10, dtype=np.double)
+    assert permanent.glynn==1.0
+
+def test_identity_ryser_odd():
+    matrix = np.identity(5, dtype=np.double)
+    assert permanent.ryser==1.0
+
+def test_identity_glynn_odd():
+    matrix = np.identity(5, dtype=np.double)
+    assert permanent.glynn==1.0
