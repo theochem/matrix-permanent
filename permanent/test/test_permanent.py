@@ -1,6 +1,5 @@
 import numpy as np
 import math
-
 import permanent
 
 ## Test square matrices
@@ -139,20 +138,35 @@ def test_ones_glynn_big():
 
 def test_identity_comb():
     matrix = np.identity(10, dtype=np.double)
-    assert permanent.combinatoric==1.0
+    assert permanent.combinatoric(matrix)==1.0
 
 def test_identity_ryser():
     matrix = np.identity(10, dtype=np.double)
-    assert permanent.ryser==1.0
+    assert permanent.ryser(matrix)==1.0
 
 def test_identity_glynn():
     matrix = np.identity(10, dtype=np.double)
-    assert permanent.glynn==1.0
+    assert permanent.glynn(matrix)==1.0
 
 def test_identity_ryser_odd():
     matrix = np.identity(5, dtype=np.double)
-    assert permanent.ryser==1.0
+    assert permanent.ryser(matrix)==1.0
 
 def test_identity_glynn_odd():
     matrix = np.identity(5, dtype=np.double)
-    assert permanent.glynn==1.0
+    assert permanent.glynn(matrix)==1.0
+
+def test_identity_comb_diag():
+    matrix = np.ones((3,7), dtype=np.double)
+    diag_matrix = np.diag(np.diag(matrix))
+    assert permanent.combinatoric(diag_matrix)==1.0
+
+def test_identity_ryser_diag():
+    matrix = np.ones((3,7), dtype=np.double)
+    diag_matrix = np.diag(np.diag(matrix))
+    assert permanent.ryser(diag_matrix)==1.0
+
+def test_identity_glynn_diag():
+    matrix = np.ones((3,7), dtype=np.double)
+    diag_matrix = np.diag(np.diag(matrix))
+    assert permanent.glynn(diag_matrix)==1.0
