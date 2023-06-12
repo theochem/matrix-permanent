@@ -45,15 +45,17 @@ int main()
     double time_spent_on_comb[128];
     double time_spent_on_glynn[128];
     double time_spent_on_ryser[128];
+    double time_c_2[128];
+    double time_g_2[128];
+    double time_r_2[128];
     int NUM_REPEATS = 3;
-    int MAX_MATRIX = 10;
+    int MAX_MATRIX = 20;
 
     for (int64_t m = 2; m <= MAX_MATRIX; m++)
     {
         for (int64_t n = m; n <= MAX_MATRIX; n++)
         {
             /* Populate the matrix of a given size randomly with 0's and 1's for testing. */
-
             double *randArray;
             double size = (double)(n * m);
             randArray = (double *)malloc(size * sizeof(double));
@@ -63,12 +65,60 @@ int main()
                 return -1;
             }
 
-
+            /* Random binary matrix for testing. */
             for (int64_t i = 0; i < m; i++)
             {
                 for (int64_t j = 0; j < n; j++)
                 {
-                    randArray[i * n + j]= (double)(rand() % 2);
+                    randArray[i * n + j ]= (double)(rand() % 2);
+                }
+            }
+
+            /* Random 0, 2 matrix for testing. */
+            double *randArray2;
+            randArray2 = (double *)malloc(size * sizeof(double));
+            if (randArray2 == NULL)
+            {
+                printf("Failed to allocate memory!\n");
+                return -1;
+            }
+            for (int64_t i = 0; i < m; i++)
+            {
+                for (int64_t j = 0; j < n; j++)
+                {
+                    randArray2[i * n + j] = (double)(rand() % 2) * 2.0;
+                }
+            }
+
+            /* Random -1, 1 matrix for testing. */
+            double *randArray3;
+            randArray3 = (double *)malloc(size * sizeof(double));
+            if (randArray3 == NULL)
+            {
+                printf("Failed to allocate memory!\n");
+                return -1;
+            }
+            for (int64_t i = 0; i < m; i++)
+            {
+                for (int64_t j = 0; j < n; j++)
+                {
+                    randArray3[i * n + j] = -1.0 + (double)(rand() % 2) * 2.0;
+                }
+            }
+
+            /* Random -2, 2 matrix for testing. */
+            double *randArray4;
+            randArray4 = (double *)malloc(size * sizeof(double));
+            if (randArray4 == NULL)
+            {
+                printf("Failed to allocate memory!\n");
+                return -1;
+            }
+            for (int64_t i = 0; i < m; i++)
+            {
+                for (int64_t j = 0; j < n; j++)
+                {
+                    randArray4[i * n + j] = -2.0 + (double)(rand() % 2) * 4.0;
                 }
             }
 
@@ -78,17 +128,23 @@ int main()
                 //double squareness = (double)m / (double)n ;
                 double current_size = (double)m ;
                 double max_size = 6.0;
-                //double comparison_value = 0.6;
-                if (current_size <= max_size)
+                double comparison_value = 0.6;
+                if ((current_size <= max_size) || (current_size < comparison_value))
                 {
                     clock_t begin_1 = clock(); // Time how long it takes to solve
                     combinatoric(m, n, randArray);
                     clock_t end_1 = clock();
                     time_spent_on_comb[i] = (double)(end_1 - begin_1) / CLOCKS_PER_SEC;
+
+                    clock_t begin_12 = clock(); // Time how long it takes to solve
+                    combinatoric(m, n, randArray2);
+                    clock_t end_12 = clock();
+                    time_c_2[i] = (double)(end_12 - begin_12) / CLOCKS_PER_SEC;
                 }
                 else
                 {
                     time_spent_on_comb[i] = 100.0;
+                    time_c_2[i] = 100.0;
                 }
 
                 if (m == n)
@@ -98,10 +154,20 @@ int main()
                     clock_t end_2 = clock();
                     time_spent_on_glynn[i] = (double)(end_2 - begin_2) / CLOCKS_PER_SEC;
 
+                    clock_t begin_22 = clock(); // Time how long it takes to solve
+                    glynn(m, n, randArray2);
+                    clock_t end_22 = clock();
+                    time_g_2[i] = (double)(end_22 - begin_22) / CLOCKS_PER_SEC;
+
                     clock_t begin_3 = clock();
                     ryser(m, n, randArray);
                     clock_t end_3 = clock();
                     time_spent_on_ryser[i] = (double)(end_3 - begin_3) / CLOCKS_PER_SEC;
+
+                    clock_t begin_32 = clock(); // Time how long it takes to solve
+                    ryser(m, n, randArray2);
+                    clock_t end_32 = clock();
+                    time_r_2[i] = (double)(end_32 - begin_32) / CLOCKS_PER_SEC;
                 }
 
                 else if (m != n)
@@ -111,16 +177,27 @@ int main()
                     clock_t end_2 = clock();
                     time_spent_on_glynn[i] = (double)(end_2 - begin_2) / CLOCKS_PER_SEC;
 
+                    clock_t begin_22 = clock(); // Time how long it takes to solve
+                    glynn_rectangle(m, n, randArray2);
+                    clock_t end_22 = clock();
+                    time_g_2[i] = (double)(end_22 - begin_22) / CLOCKS_PER_SEC;
+
                     if (current_size <= max_size)
                     {
                         clock_t begin_3 = clock();
                         ryser_rectangle(m, n, randArray);
                         clock_t end_3 = clock();
                         time_spent_on_ryser[i] = (double)(end_3 - begin_3) / CLOCKS_PER_SEC;
+
+                        clock_t begin_32 = clock(); // Time how long it takes to solve
+                        ryser_rectangle(m, n, randArray2);
+                        clock_t end_32 = clock();
+                        time_r_2[i] = (double)(end_32 - begin_32) / CLOCKS_PER_SEC;
                     }
                     else
                     {
                         time_spent_on_ryser[i] = 100.0;
+                        time_r_2[i] = 100.0;
                     }
                 }
             }
@@ -135,6 +212,10 @@ int main()
                 mean_time_comb += time_spent_on_comb[i]; // Sum up all of the time values
                 mean_time_glynn += time_spent_on_glynn[i];
                 mean_time_ryser += time_spent_on_ryser[i];
+
+                mean_time_comb += time_c_2[i];
+                mean_time_glynn += time_g_2[i];
+                mean_time_ryser += time_r_2[i];
             }
             
             mean_time_comb = (double)mean_time_comb / (double)NUM_REPEATS; // Divide by the total number of runs done
@@ -158,7 +239,8 @@ int main()
             double st_dev_comb = sqrt(over_N * sum_num_minus_mean_comb);
             double st_dev_glynn = sqrt(over_N * sum_num_minus_mean_glynn);
             double st_dev_ryser = sqrt(over_N * sum_num_minus_mean_ryser);
-            
+
+
             /* Write all of the important information to the output file. */
             char s[] = "Fastest!";
 
@@ -215,6 +297,9 @@ int main()
             // }
             
             free(randArray);
+            free(randArray2);
+            free(randArray3);
+            free(randArray4);
         }
     }
     fclose(file_ptr);
