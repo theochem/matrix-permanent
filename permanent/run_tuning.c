@@ -49,7 +49,7 @@ int main()
     double time_g_2[128];
     double time_r_2[128];
     int NUM_REPEATS = 3;
-    int MAX_MATRIX = 20;
+    int MAX_MATRIX = 60;
 
     for (int64_t m = 2; m <= MAX_MATRIX; m++)
     {
@@ -90,46 +90,46 @@ int main()
                 }
             }
 
-            /* Random -1, 1 matrix for testing. */
-            double *randArray3;
-            randArray3 = (double *)malloc(size * sizeof(double));
-            if (randArray3 == NULL)
-            {
-                printf("Failed to allocate memory!\n");
-                return -1;
-            }
-            for (int64_t i = 0; i < m; i++)
-            {
-                for (int64_t j = 0; j < n; j++)
-                {
-                    randArray3[i * n + j] = -1.0 + (double)(rand() % 2) * 2.0;
-                }
-            }
+            // /* Random -1, 1 matrix for testing. */
+            // double *randArray3;
+            // randArray3 = (double *)malloc(size * sizeof(double));
+            // if (randArray3 == NULL)
+            // {
+            //     printf("Failed to allocate memory!\n");
+            //     return -1;
+            // }
+            // for (int64_t i = 0; i < m; i++)
+            // {
+            //     for (int64_t j = 0; j < n; j++)
+            //     {
+            //         randArray3[i * n + j] = -1.0 + (double)(rand() % 2) * 2.0;
+            //     }
+            // }
 
-            /* Random -2, 2 matrix for testing. */
-            double *randArray4;
-            randArray4 = (double *)malloc(size * sizeof(double));
-            if (randArray4 == NULL)
-            {
-                printf("Failed to allocate memory!\n");
-                return -1;
-            }
-            for (int64_t i = 0; i < m; i++)
-            {
-                for (int64_t j = 0; j < n; j++)
-                {
-                    randArray4[i * n + j] = -2.0 + (double)(rand() % 2) * 4.0;
-                }
-            }
+            // /* Random -2, 2 matrix for testing. */
+            // double *randArray4;
+            // randArray4 = (double *)malloc(size * sizeof(double));
+            // if (randArray4 == NULL)
+            // {
+            //     printf("Failed to allocate memory!\n");
+            //     return -1;
+            // }
+            // for (int64_t i = 0; i < m; i++)
+            // {
+            //     for (int64_t j = 0; j < n; j++)
+            //     {
+            //         randArray4[i * n + j] = -2.0 + (double)(rand() % 2) * 4.0;
+            //     }
+            // }
 
             /* Solve the permanent using each algorithm the number of times specified in NUM_REPEATS. */
             for (int64_t i = 0; i < NUM_REPEATS; i++)
             {
-                //double squareness = (double)m / (double)n ;
-                double current_size = (double)m ;
-                double max_size = 6.0;
+                double squareness = (double)m / (double)n ;
+                double current_size = (double)n ;
+                double max_size = 15.0;
                 double comparison_value = 0.6;
-                if ((current_size <= max_size) || (current_size < comparison_value))
+                if ((current_size <= max_size) || (squareness < comparison_value))
                 {
                     clock_t begin_1 = clock(); // Time how long it takes to solve
                     combinatoric(m, n, randArray);
@@ -182,23 +182,15 @@ int main()
                     clock_t end_22 = clock();
                     time_g_2[i] = (double)(end_22 - begin_22) / CLOCKS_PER_SEC;
 
-                    if (current_size <= max_size)
-                    {
-                        clock_t begin_3 = clock();
-                        ryser_rectangle(m, n, randArray);
-                        clock_t end_3 = clock();
-                        time_spent_on_ryser[i] = (double)(end_3 - begin_3) / CLOCKS_PER_SEC;
+                    clock_t begin_3 = clock();
+                    ryser_rectangle(m, n, randArray);
+                    clock_t end_3 = clock();
+                    time_spent_on_ryser[i] = (double)(end_3 - begin_3) / CLOCKS_PER_SEC;
 
-                        clock_t begin_32 = clock(); // Time how long it takes to solve
-                        ryser_rectangle(m, n, randArray2);
-                        clock_t end_32 = clock();
-                        time_r_2[i] = (double)(end_32 - begin_32) / CLOCKS_PER_SEC;
-                    }
-                    else
-                    {
-                        time_spent_on_ryser[i] = 100.0;
-                        time_r_2[i] = 100.0;
-                    }
+                    clock_t begin_32 = clock(); // Time how long it takes to solve
+                    ryser_rectangle(m, n, randArray2);
+                    clock_t end_32 = clock();
+                    time_r_2[i] = (double)(end_32 - begin_32) / CLOCKS_PER_SEC;
                 }
             }
 
@@ -298,8 +290,8 @@ int main()
             
             free(randArray);
             free(randArray2);
-            free(randArray3);
-            free(randArray4);
+            // free(randArray3);
+            // free(randArray4);
         }
     }
     fclose(file_ptr);
