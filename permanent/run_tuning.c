@@ -1,8 +1,7 @@
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <math.h>
+#include <time.h>
 
 #include "permanent.h"
 
@@ -13,7 +12,7 @@
 
 #define NUM_REPEATS 3
 
-#define MAX_MATRIX  20
+#define MAX_MATRIX  10
 
 #define FASTEST     "Fastest!"
 
@@ -38,7 +37,7 @@ int main(void)
     /* Compute the tuning parameters */
 
     double param_1 = 3.14159;
-    int64_t param_2 = 8192;
+    int param_2 = 8192;
 
     /* Open a file for writing to */
 
@@ -60,7 +59,7 @@ int main(void)
 
     /* Time the efficiency of the algorithms for different size matrices. */
 
-    int64_t i, m, n;
+    int i, m, n;
     double mean_time_combn, mean_time_glynn, mean_time_ryser;
     double sum_num_minus_mean_combn, sum_num_minus_mean_glynn, sum_num_minus_mean_ryser;
     double over_N, st_dev_combn, st_dev_glynn, st_dev_ryser;

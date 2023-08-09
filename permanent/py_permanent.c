@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include <Python.h>
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
@@ -58,7 +60,13 @@ static PyObject *py_ryser(PyObject *module, PyObject *object)
 }
 
 
-/* Define the Python methods that will go into the C extension module. */
+/* Define the Python methods that will go into the C extension module.       *
+ *                                                                           *
+ * Note:  METH_O indicates that the Python function takes a single argument. *
+ *        On the C side, the function takes two PyObject* arguments;         *
+ *        the first one is the C extension module itself,                    *
+ *        and the second one is the argument to the Python function.         */
+
 static PyMethodDef methods[] = {
     /* Python function name     C function          Args flag   Docstring */
     { "opt",                    py_opt,             METH_O,     DOCSTRING_PERMANENT },
@@ -67,22 +75,19 @@ static PyMethodDef methods[] = {
     { "ryser",                  py_ryser,           METH_O,     DOCSTRING_RYSER },
     { NULL,                     NULL,               0,          NULL } /* sentinel value */
 };
-/* Note:  METH_O indicates that the Python function takes a single argument.
- *        On the C side, the function takes two PyObject* arguments;
- *        the first one is the C extension module itself,
- *        and the second one is the argument to the Python function. */
 
 
 /* Define the C extension module. */
+
 static struct PyModuleDef definition = {
-    /* Shouldn't need to change this. */
     PyModuleDef_HEAD_INIT, "permanent", DOCSTRING_MODULE, -1, methods
 };
 
 
 /* Initialize the C extension module. */
+
 PyMODINIT_FUNC PyInit_permanent(void) {
-    Py_Initialize();    /* Initialize Python API */
-    import_array();     /* Initialize NumPy NDArray API */
-    return PyModule_Create(&definition); /* Create module. */
+    Py_Initialize();                      /* Initialize Python API */
+    import_array();                       /* Initialize NumPy NDArray API */
+    return PyModule_Create(&definition);  /* Create module. */
 }

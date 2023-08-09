@@ -1,8 +1,8 @@
-#ifndef PERMANENT_BINOM_H
-#define PERMANENT_BINOM_H
+#ifndef PERMANENT_BINOMIAL_H
+#define PERMANENT_BINOMIAL_H
 
 
-#define BINOM(N, K) binom_table[65 * N + K]
+#define BINOMIAL(N, K) binom_table[65 * N + K]
 
 
 static const long binom_table[] = {
@@ -4234,4 +4234,4 @@ static const long binom_table[] = {
 };
 
 
-#endif /* PERMANENT_BINOM_H */
+#endif /* PERMANENT_BINOMIAL_H */

@@ -43,6 +43,10 @@ clean:
 	rm -f permanent/permanent.so libpermanent.o libpermanent.a libpermanent.so
 	rm -f fast_permanent.csv
 
+# compile_flags.txt (clangd)
+compile_flags.txt:
+	echo "$(CFLAGS)" | sed 's/ /\n/g' > $@
+
 # Tuning utility
 permanent/run_tuning:
 	$(CC) $(CFLAGS) -o $@ permanent/permanent.c permanent/run_tuning.c

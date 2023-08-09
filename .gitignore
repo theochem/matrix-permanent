@@ -84,5 +84,8 @@ tags
 .vscode/
 
 # Project files
+compile_flags.txt
 permanent/run_tuning
 permanent/tuning.h
+*.csv
+permanent/*.csv
