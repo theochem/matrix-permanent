@@ -17,8 +17,8 @@
 static PyObject *py_opt(PyObject *module, PyObject *object)
 {
     PyArrayObject *matrix = (PyArrayObject *)PyArray_FromAny(object, NULL, 2, 2, NPY_ARRAY_ALIGNED, NULL);
-    int64_t m_rows = PyArray_DIMS(matrix)[0];
-    int64_t n_cols = PyArray_DIMS(matrix)[1];
+    size_t m_rows = PyArray_DIMS(matrix)[0];
+    size_t n_cols = PyArray_DIMS(matrix)[1];
     double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
     return PyFloat_FromDouble(opt(m_rows, n_cols, ptr));
 }
@@ -27,8 +27,8 @@ static PyObject *py_opt(PyObject *module, PyObject *object)
 static PyObject *py_combinatoric(PyObject *module, PyObject *object)
 {
     PyArrayObject *matrix = (PyArrayObject *)PyArray_FromAny(object, NULL, 2, 2, NPY_ARRAY_ALIGNED, NULL);
-    int64_t m_rows = PyArray_DIMS(matrix)[0];
-    int64_t n_cols = PyArray_DIMS(matrix)[1];
+    size_t m_rows = PyArray_DIMS(matrix)[0];
+    size_t n_cols = PyArray_DIMS(matrix)[1];
     double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
     return PyFloat_FromDouble(combinatoric(m_rows, n_cols, ptr));
 }
@@ -37,8 +37,8 @@ static PyObject *py_combinatoric(PyObject *module, PyObject *object)
 static PyObject *py_glynn(PyObject *module, PyObject *object)
 {
     PyArrayObject *matrix = (PyArrayObject *)PyArray_FromAny(object, NULL, 2, 2, NPY_ARRAY_ALIGNED, NULL);
-    int64_t m_rows = PyArray_DIMS(matrix)[0];
-    int64_t n_cols = PyArray_DIMS(matrix)[1];
+    size_t m_rows = PyArray_DIMS(matrix)[0];
+    size_t n_cols = PyArray_DIMS(matrix)[1];
     double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
     if (m_rows == n_cols)
         return PyFloat_FromDouble(glynn(m_rows, n_cols, ptr));
@@ -49,8 +49,8 @@ static PyObject *py_glynn(PyObject *module, PyObject *object)
 static PyObject *py_ryser(PyObject *module, PyObject *object)
 {
     PyArrayObject *matrix = (PyArrayObject *)PyArray_FromAny(object, NULL, 2, 2, NPY_ARRAY_ALIGNED, NULL);
-    int64_t m_rows = PyArray_DIMS(matrix)[0];
-    int64_t n_cols = PyArray_DIMS(matrix)[1];
+    size_t m_rows = PyArray_DIMS(matrix)[0];
+    size_t n_cols = PyArray_DIMS(matrix)[1];
     double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
     if (m_rows == n_cols)
         return PyFloat_FromDouble(ryser(m_rows, n_cols, ptr));

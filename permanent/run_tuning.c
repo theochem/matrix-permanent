@@ -2,39 +2,56 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <tgmath.h>
-
+#include <math.h>
 
 #include "permanent.h"
 
 
-enum winning_algorithm
+#define HEADER_FILE "permanent/tuning.h"
+
+#define CSV_FILE    "fast_permanent.csv"
+
+#define NUM_REPEATS 3
+
+#define MAX_MATRIX  20
+
+#define FASTEST     "Fastest!"
+
+#define HEADER      "M/N, Size, Fastest Algorithm, M, N, Mean Time (sec), Standard Deviation (sec), Faster Combinatorial, Faster Glynn, Faster Ryser, Speed Combinatorial (sec), Speed Glynn (sec), Speed Ryser (sec)\n"
+
+#define LINE_COMBN  "%.4e, %ld, Combn, %ld, %ld, %.10e, %.10e, %s, %.4ex, %.4ex, %.10e +- %.10e, %.10e +- %.10e, %.10e +- %.10e\n"
+
+#define LINE_GLYNN  "%.4e, %ld, Glynn, %ld, %ld, %.10e, %.10e, %.4ex, %s, %.4ex, %.10e +- %.10e, %.10e +- %.10e, %.10e +- %.10e\n"
+
+#define LINE_RYSER  "%.4e, %ld, Ryser, %ld, %ld, %.10e, %.10e, %.4ex, %.4ex, %s, %.10e +- %.10e, %.10e +- %.10e, %.10e +- %.10e\n"
+
+
+double randl(double min, double max)
 {
-    COMBINATORIAL,
-    RYSER,
-    GLYNN
-};
+    srand((unsigned int) time(NULL));
+    return ((double)rand() / (double)RAND_MAX) * (max - min) + min;
+}
 
 
-int main()
+int main(void)
 {
     /* Compute the tuning parameters */
+
     double param_1 = 3.14159;
     int64_t param_2 = 8192;
 
     /* Open a file for writing to */
 
-    const char filename[] = "fast_permanent.csv";
-    FILE *file_ptr = NULL;
-
-    file_ptr = fopen(filename, "w");
+    FILE *file_ptr = fopen(CSV_FILE, "w");
     if (file_ptr == NULL)
     {
         perror("Cannot open file!");
         return -1;
     }
-    
-    if (fprintf(file_ptr, "M/N, Size, Fastest Algorithm, M, N, Mean Time(sec), Standard Deviation(sec), xFaster Combinatorial, xFaster Glynn, xFaster Ryser, Speed Combinatorial(sec), Speed Glynn(sec), Speed Ryser(sec) \n") < 0)
+
+    /* Print CSV headers */
+
+    if (fprintf(file_ptr, HEADER) < 0)
     {
         perror("Error occurred!");
         fclose(file_ptr);
@@ -42,269 +59,162 @@ int main()
     }
 
     /* Time the efficiency of the algorithms for different size matrices. */
-    double time_spent_on_comb[128];
+
+    int64_t i, m, n;
+    double mean_time_combn, mean_time_glynn, mean_time_ryser;
+    double sum_num_minus_mean_combn, sum_num_minus_mean_glynn, sum_num_minus_mean_ryser;
+    double over_N, st_dev_combn, st_dev_glynn, st_dev_ryser;
+    clock_t begin, end;
+    double time_spent_on_combn[128];
     double time_spent_on_glynn[128];
     double time_spent_on_ryser[128];
-    double time_c_2[128];
-    double time_g_2[128];
-    double time_r_2[128];
-    int NUM_REPEATS = 3;
-    int MAX_MATRIX = 60;
+    double randArray[4096];
 
-    for (int64_t m = 2; m <= MAX_MATRIX; m++)
+    /* Random binary matrix for testing. */
+
+    for (i = 0; i < 4096; i++)
     {
-        for (int64_t n = m; n <= MAX_MATRIX; n++)
+        randArray[i] = randl(-1.0, 1.0);
+    }
+
+    /* Iterate over number of rows and number of columns. */
+
+    for (m = 2; m <= MAX_MATRIX; m++)
+    {
+        for (n = m; n <= MAX_MATRIX; n++)
         {
-            /* Populate the matrix of a given size randomly with 0's and 1's for testing. */
-            double *randArray;
-            double size = (double)(n * m);
-            randArray = (double *)malloc(size * sizeof(double));
-            if (randArray == NULL)
-            {
-                printf("Failed to allocate memory!\n");
-                return -1;
-            }
-
-            /* Random binary matrix for testing. */
-            for (int64_t i = 0; i < m; i++)
-            {
-                for (int64_t j = 0; j < n; j++)
-                {
-                    randArray[i * n + j ]= (double)(rand() % 2);
-                }
-            }
-
-            /* Random 0, 2 matrix for testing. */
-            double *randArray2;
-            randArray2 = (double *)malloc(size * sizeof(double));
-            if (randArray2 == NULL)
-            {
-                printf("Failed to allocate memory!\n");
-                return -1;
-            }
-            for (int64_t i = 0; i < m; i++)
-            {
-                for (int64_t j = 0; j < n; j++)
-                {
-                    randArray2[i * n + j] = (double)(rand() % 2) * 2.0;
-                }
-            }
-
-            // /* Random -1, 1 matrix for testing. */
-            // double *randArray3;
-            // randArray3 = (double *)malloc(size * sizeof(double));
-            // if (randArray3 == NULL)
-            // {
-            //     printf("Failed to allocate memory!\n");
-            //     return -1;
-            // }
-            // for (int64_t i = 0; i < m; i++)
-            // {
-            //     for (int64_t j = 0; j < n; j++)
-            //     {
-            //         randArray3[i * n + j] = -1.0 + (double)(rand() % 2) * 2.0;
-            //     }
-            // }
-
-            // /* Random -2, 2 matrix for testing. */
-            // double *randArray4;
-            // randArray4 = (double *)malloc(size * sizeof(double));
-            // if (randArray4 == NULL)
-            // {
-            //     printf("Failed to allocate memory!\n");
-            //     return -1;
-            // }
-            // for (int64_t i = 0; i < m; i++)
-            // {
-            //     for (int64_t j = 0; j < n; j++)
-            //     {
-            //         randArray4[i * n + j] = -2.0 + (double)(rand() % 2) * 4.0;
-            //     }
-            // }
-
             /* Solve the permanent using each algorithm the number of times specified in NUM_REPEATS. */
-            for (int64_t i = 0; i < NUM_REPEATS; i++)
-            {
-                double squareness = (double)m / (double)n ;
-                double current_size = (double)n ;
-                double max_size = 15.0;
-                double comparison_value = 0.6;
-                if ((current_size <= max_size) || (squareness < comparison_value))
-                {
-                    clock_t begin_1 = clock(); // Time how long it takes to solve
-                    combinatoric(m, n, randArray);
-                    clock_t end_1 = clock();
-                    time_spent_on_comb[i] = (double)(end_1 - begin_1) / CLOCKS_PER_SEC;
 
-                    clock_t begin_12 = clock(); // Time how long it takes to solve
-                    combinatoric(m, n, randArray2);
-                    clock_t end_12 = clock();
-                    time_c_2[i] = (double)(end_12 - begin_12) / CLOCKS_PER_SEC;
-                }
-                else
-                {
-                    time_spent_on_comb[i] = 100.0;
-                    time_c_2[i] = 100.0;
-                }
+            for (i = 0; i < NUM_REPEATS; i++)
+            {
+                begin = clock();
+                combinatoric(m, n, randArray);
+                end = clock();
+                time_spent_on_combn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
 
                 if (m == n)
                 {
-                    clock_t begin_2 = clock();
-                    glynn(m, n, randArray);
-                    clock_t end_2 = clock();
-                    time_spent_on_glynn[i] = (double)(end_2 - begin_2) / CLOCKS_PER_SEC;
+                    // begin = clock();
+                    // glynn(m, n, randArray);
+                    // end = clock();
+                    // time_spent_on_glynn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                    time_spent_on_glynn[i] = 1.0e9;
 
-                    clock_t begin_22 = clock(); // Time how long it takes to solve
-                    glynn(m, n, randArray2);
-                    clock_t end_22 = clock();
-                    time_g_2[i] = (double)(end_22 - begin_22) / CLOCKS_PER_SEC;
-
-                    clock_t begin_3 = clock();
+                    begin = clock();
                     ryser(m, n, randArray);
-                    clock_t end_3 = clock();
-                    time_spent_on_ryser[i] = (double)(end_3 - begin_3) / CLOCKS_PER_SEC;
-
-                    clock_t begin_32 = clock(); // Time how long it takes to solve
-                    ryser(m, n, randArray2);
-                    clock_t end_32 = clock();
-                    time_r_2[i] = (double)(end_32 - begin_32) / CLOCKS_PER_SEC;
+                    end = clock();
+                    time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                    // time_spent_on_ryser[i] = 1.0e9;
                 }
-
-                else if (m != n)
+                else
                 {
-                    clock_t begin_2 = clock();
-                    glynn_rectangle(m, n, randArray);
-                    clock_t end_2 = clock();
-                    time_spent_on_glynn[i] = (double)(end_2 - begin_2) / CLOCKS_PER_SEC;
+                    // begin = clock();
+                    // glynn_rectangle(m, n, randArray);
+                    // end = clock();
+                    // time_spent_on_glynn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                    time_spent_on_glynn[i] = 1.0e9;
 
-                    clock_t begin_22 = clock(); // Time how long it takes to solve
-                    glynn_rectangle(m, n, randArray2);
-                    clock_t end_22 = clock();
-                    time_g_2[i] = (double)(end_22 - begin_22) / CLOCKS_PER_SEC;
-
-                    clock_t begin_3 = clock();
+                    begin = clock();
                     ryser_rectangle(m, n, randArray);
-                    clock_t end_3 = clock();
-                    time_spent_on_ryser[i] = (double)(end_3 - begin_3) / CLOCKS_PER_SEC;
-
-                    clock_t begin_32 = clock(); // Time how long it takes to solve
-                    ryser_rectangle(m, n, randArray2);
-                    clock_t end_32 = clock();
-                    time_r_2[i] = (double)(end_32 - begin_32) / CLOCKS_PER_SEC;
+                    end = clock();
+                    time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                    // time_spent_on_ryser[i] = 1.0e9;
                 }
             }
-
-            double mean_time_comb = 0.0;
-            double mean_time_glynn = 0.0;
-            double mean_time_ryser = 0.0;
 
             /* Calculate the mean and standard deviation for the runtime of each algorithm. */
-            for (int64_t i = 0; i < NUM_REPEATS; i++)
+
+            mean_time_combn = 0.0;
+            mean_time_glynn = 0.0;
+            mean_time_ryser = 0.0;
+
+            for (i = 0; i < NUM_REPEATS; i++)
             {
-                mean_time_comb += time_spent_on_comb[i]; // Sum up all of the time values
+                mean_time_combn += time_spent_on_combn[i];
                 mean_time_glynn += time_spent_on_glynn[i];
                 mean_time_ryser += time_spent_on_ryser[i];
-
-                mean_time_comb += time_c_2[i];
-                mean_time_glynn += time_g_2[i];
-                mean_time_ryser += time_r_2[i];
             }
-            
-            mean_time_comb = (double)mean_time_comb / (double)NUM_REPEATS; // Divide by the total number of runs done
+
+            mean_time_combn = (double)mean_time_combn / (double)NUM_REPEATS;
             mean_time_glynn = (double)mean_time_glynn / (double)NUM_REPEATS;
             mean_time_ryser = (double)mean_time_ryser / (double)NUM_REPEATS;
 
-            double sum_num_minus_mean_comb = 0.0;
-            double sum_num_minus_mean_glynn = 0.0;
-            double sum_num_minus_mean_ryser = 0.0;
+            sum_num_minus_mean_combn = 0.0;
+            sum_num_minus_mean_glynn = 0.0;
+            sum_num_minus_mean_ryser = 0.0;
 
-            for (int i = 0; i < NUM_REPEATS; i++)
+            /* Sum all of the values for (runtime - mean runtime) for each algorithm. */
+
+            for (i = 0; i < NUM_REPEATS; i++)
             {
-                /* Sum all of the (values for runtime - mean runtime for each algorithm). */
-                sum_num_minus_mean_comb += pow(time_spent_on_comb[i] - mean_time_comb, 2.0); 
+                sum_num_minus_mean_combn += pow(time_spent_on_combn[i] - mean_time_combn, 2.0);
                 sum_num_minus_mean_glynn += pow(time_spent_on_glynn[i] - mean_time_glynn, 2.0);
                 sum_num_minus_mean_ryser += pow(time_spent_on_ryser[i] - mean_time_ryser, 2.0);
             }
 
             /* Calculate the standard deviation for runtime of each algorithm. */
-            double over_N = (double)1 / (double)NUM_REPEATS;
-            double st_dev_comb = sqrt(over_N * sum_num_minus_mean_comb);
-            double st_dev_glynn = sqrt(over_N * sum_num_minus_mean_glynn);
-            double st_dev_ryser = sqrt(over_N * sum_num_minus_mean_ryser);
 
+            over_N = (double)1.0 / (double)NUM_REPEATS;
+            st_dev_combn = sqrt(over_N * sum_num_minus_mean_combn);
+            st_dev_glynn = sqrt(over_N * sum_num_minus_mean_glynn);
+            st_dev_ryser = sqrt(over_N * sum_num_minus_mean_ryser);
 
-            /* Write all of the important information to the output file. */
-            char s[] = "Fastest!";
+            /* Write line depending on winning algorithm */
 
-            enum winning_algorithm alg;
-            if (mean_time_comb <= mean_time_ryser && mean_time_comb <= mean_time_glynn)
+            if (mean_time_combn <= mean_time_ryser && mean_time_combn <= mean_time_glynn)
             {
-                alg = COMBINATORIAL;
+                if (fprintf(file_ptr, LINE_COMBN, (double)m / (double)n, n, m, n, mean_time_combn, st_dev_combn, FASTEST, (double)mean_time_glynn / (double)mean_time_combn, (double)mean_time_ryser / (double)mean_time_combn, mean_time_combn, st_dev_combn, mean_time_glynn, st_dev_glynn, mean_time_ryser, st_dev_ryser) < 0)
+                {
+                    perror("Error occurred!");
+                    fclose(file_ptr);
+                    return -1;
+                }
             }
             else if (mean_time_glynn <= mean_time_ryser)
             {
-                alg = GLYNN;
+                if (fprintf(file_ptr, LINE_GLYNN, (double)m / (double)n, n, m, n, mean_time_glynn, st_dev_glynn, (double)mean_time_combn / (double)mean_time_glynn, FASTEST, (double)mean_time_ryser / (double)mean_time_glynn, mean_time_combn, st_dev_combn, mean_time_glynn, st_dev_glynn, mean_time_ryser, st_dev_ryser) < 0)
+                {
+                    perror("Error occurred!");
+                    fclose(file_ptr);
+                    return -1;
+                }
             }
-            else 
+            else
             {
-                alg = RYSER;
+                if (fprintf(file_ptr, LINE_RYSER, (double)m / (double)n, n, m, n, mean_time_ryser, st_dev_ryser, (double)mean_time_combn / (double)mean_time_ryser, (double)mean_time_glynn / (double)mean_time_ryser, FASTEST, mean_time_combn, st_dev_combn, mean_time_glynn, st_dev_glynn, mean_time_ryser, st_dev_ryser) < 0)
+                {
+                    perror("Error occurred!");
+                    fclose(file_ptr);
+                    return -1;
+                }
             }
-            switch (alg)
-            {
-                case COMBINATORIAL:
-                    if (fprintf(file_ptr, "%.4f, %lld, Combinatorial,     %lld, %lld, %.10f, %.10f, %s, %.4fx, %.4fx, %.10f +- %.10f, %.10f +- %.10f, %.10f +- %.10f \n", (double)m/(double)n, n, m, n, mean_time_comb, st_dev_comb, s, (double)mean_time_glynn/(double)mean_time_comb, (double)mean_time_ryser/(double)mean_time_comb, mean_time_comb, st_dev_comb, mean_time_glynn, st_dev_glynn, mean_time_ryser, st_dev_ryser) < 0)
-                    {
-                        perror("Error occurred!");
-                        fclose(file_ptr);
-                        return -1;
-                    }
-                    break;
-                case GLYNN:
-                    if (fprintf(file_ptr, "%.4f, %lld, Glynn,             %lld, %lld, %.10f, %.10f, %.4fx, %s, %.4fx, %.10f +- %.10f, %.10f +- %.10f, %.10f +- %.10f \n", (double)m/(double)n, n, m, n, mean_time_glynn, st_dev_glynn, (double)mean_time_comb/(double)mean_time_glynn, s, (double)mean_time_ryser/(double)mean_time_glynn, mean_time_comb, st_dev_comb, mean_time_glynn, st_dev_glynn, mean_time_ryser, st_dev_ryser) < 0)
-                    {
-                        perror("Error occurred!");
-                        fclose(file_ptr);
-                        return -1;
-                    }
-                    break;
-                case RYSER:
-                    if (fprintf(file_ptr, "%.4f, %lld, Ryser,             %lld, %lld, %.10f, %.10f, %.4fx, %.4fx, %s, %.10f +- %.10f, %.10f +- %.10f, %.10f +- %.10f \n", (double)m/(double)n, n, m, n, mean_time_ryser, st_dev_ryser, (double)mean_time_comb/(double)mean_time_ryser, (double)mean_time_glynn/(double)mean_time_ryser, s, mean_time_comb, st_dev_comb, mean_time_glynn, st_dev_glynn, mean_time_ryser, st_dev_ryser) < 0)
-                    {
-                        perror("Error occurred!");
-                        fclose(file_ptr);
-                        return -1;
-                    }
-                    break;
-            }
-            //fprintf(file_ptr, "Successfully allocated memory for an array of %f elements of %zu bytes each at address %p using malloc.\n", size, sizeof(*randArray), (void *)randArray);
-            //fprintf(file_ptr, "First element (uninitialized): %f.\n", randArray[0]);
-            //fprintf(file_ptr, "Check address of void pointer: %p and double pointer: %p. \n", (void *)randArray, (double *)randArray);
-            // if (m == n)
-            // {
-            //     fprintf(file_ptr, "Solution to Glynn: %f, Solution to Ryser: %f \n", glynn(m, n, randArray), ryser(m, n, randArray));
-            // }
-            // else if (m != n)
-            // {
-            //     fprintf(file_ptr, "Solution to Glynn: %f, Solution to Ryser: %f \n", glynn_rectangle(m, n, randArray), ryser_rectangle(m, n, randArray));
-            // }
-            
-            free(randArray);
-            free(randArray2);
-            // free(randArray3);
-            // free(randArray4);
         }
     }
+
+    /* Close written file */
+
     fclose(file_ptr);
 
-    /* Print a header file to stdout with constants defined as macros */
-    printf("#ifndef PERMANENT_TUNING_H\n");
-    printf("#define PERMANENT_TUNING_H\n");
-    printf("\n\n");
-    printf("#define PARAM_1 %.9f\n", param_1);
-    printf("#define PARAM_2 %lld\n", param_2);
-    printf("\n\n");
-    printf("#endif /* PERMANENT_TUNING_H */\n");
+    /* Write a header file with constants defined as macros */
+
+    file_ptr = fopen(HEADER_FILE, "w");
+    if (file_ptr == NULL)
+    {
+        perror("Cannot open file!");
+        return -1;
+    }
+    if (fprintf(file_ptr, "#ifndef PERMANENT_TUNING_H\n#define PERMANENT_TUNING_H\n\n\n#define PARAM_1 %.9f\n#define PARAM_2 %ld\n\n\n#endif /* PERMANENT_TUNING_H */\n", param_1, param_2) < 0)
+    {
+        perror("Error occurred!");
+        fclose(file_ptr);
+        return -1;
+    }
+
+    /* Close written file */
+
+    fclose(file_ptr);
 
     /* Exit successfully */
+
     return 0;
 }

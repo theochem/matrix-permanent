@@ -2,13 +2,10 @@
 #define PERMANENT_BINOM_H
 
 
-#include <stdint.h>
-
-
 #define BINOM(N, K) binom_table[65 * N + K]
 
 
-static const int64_t binom_table[] = {
+static const long binom_table[] = {
     1,
     0,
     0,

@@ -49,7 +49,7 @@ permanent/run_tuning:
 
 # Tuning parameters
 permanent/tuning.h: permanent/run_tuning
-	./$^ > $@
+	./$^
 
 # Python library
 permanent/permanent.so: permanent/tuning.h
