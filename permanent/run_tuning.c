@@ -10,9 +10,9 @@
 
 #define CSV_FILE    "fast_permanent.csv"
 
-#define NUM_REPEATS 2
+#define NUM_REPEATS 3
 
-#define MAX_MATRIX  24
+#define MAX_MATRIX  42
 
 #define FASTEST     "Fastest!"
 
@@ -82,9 +82,9 @@ int main(void)
 
     /* Iterate over number of rows and number of columns. */
 
-    for (m = 4; m <= MAX_MATRIX; m+=4)
+    for (m = 3; m <= MAX_MATRIX; m+=3)
     {
-        for (n = m; n <= MAX_MATRIX; n+=4)
+        for (n = m; n <= MAX_MATRIX; n+=3)
         {
             /* Solve the permanent using each algorithm the number of times specified in NUM_REPEATS. */
 
