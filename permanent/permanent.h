@@ -16,6 +16,9 @@ double glynn(const size_t, const size_t, double *const);
 double ryser(const size_t, const size_t, double *const);
 
 
+double combinatoric_rectangle(const size_t, const size_t, double *const);
+
+
 double glynn_rectangle(const size_t, const size_t, double *const);
 
 

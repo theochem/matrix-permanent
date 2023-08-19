@@ -10,9 +10,9 @@
 
 #define CSV_FILE    "fast_permanent.csv"
 
-#define NUM_REPEATS 3
+#define NUM_REPEATS 2
 
-#define MAX_MATRIX  10
+#define MAX_MATRIX  24
 
 #define FASTEST     "Fastest!"
 
@@ -56,6 +56,7 @@ int main(void)
         fclose(file_ptr);
         return -1;
     }
+    printf("Opened CSV file!\n");
 
     /* Time the efficiency of the algorithms for different size matrices. */
 
@@ -68,6 +69,7 @@ int main(void)
     double time_spent_on_glynn[128];
     double time_spent_on_ryser[128];
     double randArray[4096];
+    double soln;
 
     /* Random binary matrix for testing. */
 
@@ -76,52 +78,77 @@ int main(void)
         randArray[i] = randl(-1.0, 1.0);
     }
 
+    printf("\tfilled matrix from rand()\n");
+
     /* Iterate over number of rows and number of columns. */
 
-    for (m = 2; m <= MAX_MATRIX; m++)
+    for (m = 4; m <= MAX_MATRIX; m+=4)
     {
-        for (n = m; n <= MAX_MATRIX; n++)
+        for (n = m; n <= MAX_MATRIX; n+=4)
         {
             /* Solve the permanent using each algorithm the number of times specified in NUM_REPEATS. */
 
+            printf("M: %ld\tN: %ld\n", m, n);
+
             for (i = 0; i < NUM_REPEATS; i++)
             {
-                begin = clock();
-                combinatoric(m, n, randArray);
-                end = clock();
-                time_spent_on_combn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                printf("\tTrial %ld:\n", i);
 
                 if (m == n)
                 {
-                    // begin = clock();
-                    // glynn(m, n, randArray);
-                    // end = clock();
-                    // time_spent_on_glynn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
-                    time_spent_on_glynn[i] = 1.0e9;
+                    begin = clock();
+                    soln = combinatoric(m, n, randArray);
+                    end = clock();
+                    time_spent_on_combn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+
+                    printf("\t\tComputed Combn (square): %ld\n", soln);
+                    
+                    begin = clock();
+                    soln = glynn(m, n, randArray);
+                    end = clock();
+                    time_spent_on_glynn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                    // time_spent_on_glynn[i] = 1.0e9;
+
+                    printf("\t\tComputed Glynn (square): %ld\n", soln);
 
                     begin = clock();
-                    ryser(m, n, randArray);
+                    soln = ryser(m, n, randArray);
                     end = clock();
                     time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
                     // time_spent_on_ryser[i] = 1.0e9;
+
+                    printf("\t\tComputed Ryser (square): %ld\n", soln);
                 }
                 else
                 {
-                    // begin = clock();
-                    // glynn_rectangle(m, n, randArray);
-                    // end = clock();
-                    // time_spent_on_glynn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
-                    time_spent_on_glynn[i] = 1.0e9;
+                    begin = clock();
+                    soln = combinatoric_rectangle(m, n, randArray);
+                    end = clock();
+                    time_spent_on_combn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+
+                    printf("\t\tComputed Combn (rectangle): %ld\n", soln);
 
                     begin = clock();
-                    ryser_rectangle(m, n, randArray);
+                    soln = glynn_rectangle(m, n, randArray);
+                    end = clock();
+                    time_spent_on_glynn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                    //time_spent_on_glynn[i] = 1.0e9;
+
+                    printf("\t\tComputed Glynn (rectangle): %ld\n", soln);
+
+                    begin = clock();
+                    soln = ryser_rectangle(m, n, randArray);
                     end = clock();
                     time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
                     // time_spent_on_ryser[i] = 1.0e9;
+
+                    printf("\t\tComputed Ryser (rectangle): %ld\n", soln);
                 }
             }
 
             /* Calculate the mean and standard deviation for the runtime of each algorithm. */
+
+            printf("Computing times...\n");
 
             mean_time_combn = 0.0;
             mean_time_glynn = 0.0;
@@ -190,9 +217,13 @@ int main(void)
         }
     }
 
+    printf("Done!\n");
+
     /* Close written file */
 
     fclose(file_ptr);
+
+    printf("Closed CSV file!\n");
 
     /* Write a header file with constants defined as macros */
 

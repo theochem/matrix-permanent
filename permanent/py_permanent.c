@@ -32,7 +32,9 @@ static PyObject *py_combinatoric(PyObject *module, PyObject *object)
     size_t m_rows = PyArray_DIMS(matrix)[0];
     size_t n_cols = PyArray_DIMS(matrix)[1];
     double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
-    return PyFloat_FromDouble(combinatoric(m_rows, n_cols, ptr));
+    if (m_rows == n_cols)
+        return PyFloat_FromDouble(combinatoric(m_rows, n_cols, ptr));
+    return PyFloat_FromDouble(combinatoric_rectangle(m_rows, n_cols, ptr));
 }
 
 
