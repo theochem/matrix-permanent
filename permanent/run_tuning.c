@@ -96,10 +96,17 @@ int main(void)
 
                 if (m == n)
                 {
-                    begin = clock();
-                    soln = combinatoric(m, n, randArray);
-                    end = clock();
-                    time_spent_on_combn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                    if (m*n > 100 || m > 30 || n > 30)
+                    {
+                        time_spent_on_combn[i] = 1.0e16;
+                    }
+                    else
+                    {
+                        begin = clock();
+                        soln = combinatoric(m, n, randArray);
+                        end = clock();
+                        time_spent_on_combn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                    }
 
                     printf("\t\tComputed Combn (square): %ld\n", soln);
                     
@@ -121,12 +128,17 @@ int main(void)
                 }
                 else
                 {
-                    begin = clock();
-                    soln = combinatoric_rectangle(m, n, randArray);
-                    end = clock();
-                    time_spent_on_combn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                    if (m*n > 100 || m > 30 || n > 30)
+                        time_spent_on_combn[i] = 1.0e16;
+                    else
+                    {
+                        begin = clock();
+                        soln = combinatoric_rectangle(m, n, randArray);
+                        end = clock();
+                        time_spent_on_combn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                    }
 
-                    printf("\t\tComputed Combn (rectangle): %ld\n", soln);
+                    printf("\t\tComputed Combn (rectangle): %f\n", soln);
 
                     begin = clock();
                     soln = glynn_rectangle(m, n, randArray);
@@ -134,7 +146,7 @@ int main(void)
                     time_spent_on_glynn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
                     //time_spent_on_glynn[i] = 1.0e9;
 
-                    printf("\t\tComputed Glynn (rectangle): %ld\n", soln);
+                    printf("\t\tComputed Glynn (rectangle): %f\n", soln);
 
                     begin = clock();
                     soln = ryser_rectangle(m, n, randArray);
@@ -142,7 +154,7 @@ int main(void)
                     time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
                     // time_spent_on_ryser[i] = 1.0e9;
 
-                    printf("\t\tComputed Ryser (rectangle): %ld\n", soln);
+                    printf("\t\tComputed Ryser (rectangle): %f\n", soln);
                 }
             }
 
