@@ -12,7 +12,7 @@
 
 #define NUM_REPEATS 3
 
-#define MAX_MATRIX  42
+#define MAX_MATRIX  36
 
 #define FASTEST     "Fastest!"
 
@@ -96,9 +96,10 @@ int main(void)
 
                 if (m == n)
                 {
-                    if (m*n > 100 || m > 30 || n > 30)
+                    if (m*n > 200 || m > 40 || n > 40) // consider changing to 200
                     {
                         time_spent_on_combn[i] = 1.0e16;
+                        soln = 100000;
                     }
                     else
                     {
@@ -128,8 +129,11 @@ int main(void)
                 }
                 else
                 {
-                    if (m*n > 100 || m > 30 || n > 30)
+                    if (m*n > 200 || m > 40 || n > 40) // consider changing to 200
+                    {
                         time_spent_on_combn[i] = 1.0e16;
+                        soln = 100000;
+                    }
                     else
                     {
                         begin = clock();
@@ -140,19 +144,36 @@ int main(void)
 
                     printf("\t\tComputed Combn (rectangle): %f\n", soln);
 
-                    begin = clock();
-                    soln = glynn_rectangle(m, n, randArray);
-                    end = clock();
-                    time_spent_on_glynn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
-                    //time_spent_on_glynn[i] = 1.0e9;
+                    if ((double)m/(double)n <= 0.2) // test the limit to 0.1 possibly
+                    {
+                        time_spent_on_glynn[i] = 1.0e16;
+                        soln = 100000;
+                    }
+                    else
+                    {
+                        begin = clock();
+                        soln = glynn_rectangle(m, n, randArray);
+                        end = clock();
+                        time_spent_on_glynn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                        //time_spent_on_glynn[i] = 1.0e9;
+                    }
 
                     printf("\t\tComputed Glynn (rectangle): %f\n", soln);
 
-                    begin = clock();
-                    soln = ryser_rectangle(m, n, randArray);
-                    end = clock();
-                    time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
-                    // time_spent_on_ryser[i] = 1.0e9;
+                    if ((double)m/(double)n <= 0.5 && m > 8)
+                    {
+                        time_spent_on_ryser[i] = 1.0e16;
+                        soln = 100000;
+                    }
+
+                    else
+                    {
+                        begin = clock();
+                        soln = ryser_rectangle(m, n, randArray);
+                        end = clock();
+                        time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                        // time_spent_on_ryser[i] = 1.0e9;
+                    }
 
                     printf("\t\tComputed Ryser (rectangle): %f\n", soln);
                 }
