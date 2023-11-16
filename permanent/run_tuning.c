@@ -12,7 +12,7 @@
 
 #define NUM_REPEATS 3
 
-#define MAX_MATRIX  36
+#define MAX_MATRIX  30
 
 #define FASTEST     "Fastest!"
 
@@ -96,7 +96,7 @@ int main(void)
 
                 if (m == n)
                 {
-                    if (m*n > 200 || m > 40 || n > 40) // consider changing to 200
+                    if (m*n > 150 || m > 30 || n > 30) // consider changing to 200
                     {
                         time_spent_on_combn[i] = 1.0e16;
                         soln = 100000;
@@ -129,7 +129,7 @@ int main(void)
                 }
                 else
                 {
-                    if (m*n > 200 || m > 40 || n > 40) // consider changing to 200
+                    if (m*n > 150 || m > 30 || n > 30) // consider changing to 200
                     {
                         time_spent_on_combn[i] = 1.0e16;
                         soln = 100000;
