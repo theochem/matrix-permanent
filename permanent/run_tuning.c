@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <pthread.h>
 
 #include "permanent.h"
 
@@ -12,7 +13,7 @@
 
 #define NUM_REPEATS 3
 
-#define MAX_MATRIX  30
+#define MAX_MATRIX  20
 
 #define FASTEST     "Fastest!"
 
@@ -29,6 +30,37 @@ double randl(double min, double max)
 {
     srand((unsigned int) time(NULL));
     return ((double)rand() / (double)RAND_MAX) * (max - min) + min;
+}
+
+struct readThreadParams 
+{
+    double randArray[4096];
+    int m;
+    int n
+};
+
+void *glynnThread(struct readThreadParams *state)
+{
+    begin = clock();
+    soln = glynn(state.m, state.n, state.randArray);
+    end = clock();
+    time_spent_on_glynn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+    return NULL;
+}
+
+void *ryserThread(struct readThreadParams *state)
+{
+    begin = clock();
+    soln = ryser(state.m, state.n, state.randArray);
+    end = clock();
+    time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+    return NULL;
+}
+
+void *rectanglecombinatoricThread(void *vargp)
+{
+    
+    return NULL;
 }
 
 
@@ -82,9 +114,9 @@ int main(void)
 
     /* Iterate over number of rows and number of columns. */
 
-    for (m = 3; m <= MAX_MATRIX; m+=3)
+    for (m = 2; m <= MAX_MATRIX; m++)
     {
-        for (n = m; n <= MAX_MATRIX; n+=3)
+        for (n = m; n <= MAX_MATRIX; n++)
         {
             /* Solve the permanent using each algorithm the number of times specified in NUM_REPEATS. */
 
@@ -110,22 +142,37 @@ int main(void)
                     }
 
                     printf("\t\tComputed Combn (square): %ld\n", soln);
+
+                    struct readThreadParams readParams;
+                    readParams.randArray = randArray;
+                    readParams.m = m;
+                    readParams.n = n;
+
+                    pthread_t glynn_thread_id; 
+                    printf("Before Glynn Thread\n"); 
+                    pthread_create(&glynn_thread_id, NULL, glynnThread, &readParams);
+                
+                    // begin = clock();
+                    // soln = glynn(m, n, randArray);
+                    // end = clock();
+                    // time_spent_on_glynn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
                     
-                    begin = clock();
-                    soln = glynn(m, n, randArray);
-                    end = clock();
-                    time_spent_on_glynn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
-                    // time_spent_on_glynn[i] = 1.0e9;
 
                     printf("\t\tComputed Glynn (square): %ld\n", soln);
 
-                    begin = clock();
-                    soln = ryser(m, n, randArray);
-                    end = clock();
-                    time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
-                    // time_spent_on_ryser[i] = 1.0e9;
+                    pthread_t ryser_thread_id;
+                    printf("Before Ryser Thread\n");
+                    pthread_create(&ryser_thread_id, NULL, ryserThread, &readParams);
+
+                    // begin = clock();
+                    // soln = ryser(m, n, randArray);
+                    // end = clock();
+                    // time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
 
                     printf("\t\tComputed Ryser (square): %ld\n", soln);
+
+                    pthread_join(glynn_thread_id, NULL); 
+                    pthread_join(ryser_thread_id, NULL); 
                 }
                 else
                 {
@@ -160,7 +207,7 @@ int main(void)
 
                     printf("\t\tComputed Glynn (rectangle): %f\n", soln);
 
-                    if ((double)m/(double)n <= 0.5 && m > 8)
+                    if ((double)m/(double)n >= 0.65)
                     {
                         time_spent_on_ryser[i] = 1.0e16;
                         soln = 100000;
