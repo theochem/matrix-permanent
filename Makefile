@@ -43,6 +43,16 @@ clean:
 	rm -f permanent/permanent.so libpermanent.o libpermanent.a libpermanent.so
 	rm -f fast_permanent.csv
 
+# valgrind memory checks
+.PHONY: valgrind
+valgrind: 
+	valgrind --leak-check=full \
+    --show-leak-kinds=all \
+    --track-origins=yes \
+    --verbose \
+    --log-file=valgrind-out.txt \
+    make permanent/run_tuning ./permanent/run_tuning
+
 # compile_flags.txt (clangd)
 compile_flags.txt:
 	echo "$(CFLAGS)" | sed 's/ /\n/g' > $@
@@ -70,3 +80,6 @@ libpermanent.a: libpermanent.o
 # C shared library
 libpermanent.so: libpermanent.o
 	$(CC) $(CFLAGS) -shared -o $@ $^
+
+
+
