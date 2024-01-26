@@ -12,7 +12,7 @@
 
 #define NUM_REPEATS 3
 
-#define MAX_MATRIX  20
+#define MAX_MATRIX  50
 
 #define FASTEST     "Fastest!"
 
@@ -74,16 +74,16 @@ int main(void)
 
     for (i = 0; i < 4096; i++)
     {
-        randArray[i] = randl(-1.0, 1.0);
+        randArray[i] = randl(0.0, 1.0);
     }
 
     printf("\tfilled matrix from rand()\n");
 
     /* Iterate over number of rows and number of columns. */
 
-    for (m = 2; m <= MAX_MATRIX; m+=2)
+    for (m = 5; m <= MAX_MATRIX; m+=5)
     {
-        for (n = m; n <= MAX_MATRIX; n+=2)
+        for (n = m; n <= MAX_MATRIX; n+=5)
         {
             /* Solve the permanent using each algorithm the number of times specified in NUM_REPEATS. */
 
@@ -95,7 +95,7 @@ int main(void)
 
                 if (m == n)
                 {
-                    if (m*n > 160) 
+                    if (m*n >= 250) 
                     {
                         time_spent_on_combn[i] = 1.0e16;
                         soln = 100000;
@@ -117,10 +117,13 @@ int main(void)
 
                     printf("\t\tComputed Glynn (square): %ld\n", soln);
 
-                    begin = clock();
-                    soln = ryser(m, n, randArray);
-                    end = clock();
-                    time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                    if ((double)m >= 25)
+                    {
+                        begin = clock();
+                        soln = ryser(m, n, randArray);
+                        end = clock();
+                        time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                    }
 
                     printf("\t\tComputed Ryser (square): %ld\n", soln);
 
@@ -128,7 +131,7 @@ int main(void)
 
                 else
                 {
-                    if (m*n > 160) 
+                    if (((m*n >= 150) && ((double)m/(double)n >= 0.4)) || (m*n >= 300)) 
                     {
                         time_spent_on_combn[i] = 1.0e16;
                         soln = 100000;
@@ -143,22 +146,24 @@ int main(void)
 
                     printf("\t\tComputed Combn (rectangle): %f\n", soln);
 
-                    if ((double)m/(double)n <= 0.2) // test the limit to 0.1 possibly
+                    if (((double)m/(double)n <= 0.25) && (n >= 30))
                     {
                         time_spent_on_glynn[i] = 1.0e16;
                         soln = 100000;
                     }
+
                     else
                     {
                         begin = clock();
                         soln = glynn_rectangle(m, n, randArray);
                         end = clock();
                         time_spent_on_glynn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                        
                     }
-
+                    
                     printf("\t\tComputed Glynn (rectangle): %f\n", soln);
 
-                    if ((double)m/(double)n >= 0.65)
+                    if ((((double)m/(double)n >= 0.4) && (n >= 10)) | (m*n >= 300))
                     {
                         time_spent_on_ryser[i] = 1.0e16;
                         soln = 100000;
