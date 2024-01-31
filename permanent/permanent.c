@@ -10,23 +10,40 @@
 #include "tuning.h"
 #else
 /* Set default tuning parameters. */
-#define PARAM_1 3.1415926
-#define PARAM_2 8192
+#define PARAM_1 0.2217547141511318
+#define PARAM_2 9.967087824994731
+#define PARAM_3 -6.871441450045971
 #endif
+
+
+double predict_class(const size_t m_rows, const size_t n_cols)
+{
+    /* Use the decision boundary from the tuning test. */
+
+    const size_t x1 = m_rows/n_cols;
+    const size_t x2 = n_cols;
+
+    return PARAM_1 * x1 + PARAM_2 * x2 + PARAM_3;
+}
 
 
 double opt(const size_t m_rows, const size_t n_cols, double *const ptr)
 {
     /* Use the fastest algorithm. */
 
-    if (m_rows < PARAM_1) {
+    const size_t size_matrix = n_cols;
+
+    if ((m_rows == n_cols) && (n_cols == 2)){
+        return ryser(m_rows, n_cols, ptr);
+    } else if ((m_rows == n_cols) && (n_cols <= 5)){
         return combinatoric(m_rows, n_cols, ptr);
-    } else if (m_rows * n_cols < PARAM_2) {
+    } else if (predict_class(m_rows, n_cols) > 0){
         return glynn(m_rows, n_cols, ptr);
     } else {
-        return ryser(m_rows, n_cols, ptr);
+        return combinatoric(m_rows, n_cols, ptr);
     }
 }
+
 
 inline void swap2(size_t *perm, size_t i, size_t j)
 {

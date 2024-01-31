@@ -12,7 +12,7 @@
 
 #define NUM_REPEATS 3
 
-#define MAX_MATRIX  50
+#define MAX_MATRIX  20
 
 #define FASTEST     "Fastest!"
 
@@ -35,8 +35,11 @@ int main(void)
 {
     /* Compute the tuning parameters */
 
-    double param_1 = 3.14159;
-    int param_2 = 8192;
+    double param_1 = 0.2217547141511318;
+    double param_2 = 9.967087824994731;
+    double param_3 = -6.871441450045971;
+
+
 
     /* Open a file for writing to */
 
@@ -81,9 +84,9 @@ int main(void)
 
     /* Iterate over number of rows and number of columns. */
 
-    for (m = 5; m <= MAX_MATRIX; m+=5)
+    for (m = 2; m <= MAX_MATRIX; m++)
     {
-        for (n = m; n <= MAX_MATRIX; n+=5)
+        for (n = m; n <= MAX_MATRIX; n++)
         {
             /* Solve the permanent using each algorithm the number of times specified in NUM_REPEATS. */
 
@@ -95,18 +98,12 @@ int main(void)
 
                 if (m == n)
                 {
-                    if (m*n >= 250) 
-                    {
-                        time_spent_on_combn[i] = 1.0e16;
-                        soln = 100000;
-                    }
-                    else
-                    {
-                        begin = clock();
-                        soln = combinatoric(m, n, randArray);
-                        end = clock();
-                        time_spent_on_combn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
-                    }
+
+                    begin = clock();
+                    soln = combinatoric(m, n, randArray);
+                    end = clock();
+                    time_spent_on_combn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                
 
                     printf("\t\tComputed Combn (square): %ld\n", soln);
 
@@ -117,13 +114,12 @@ int main(void)
 
                     printf("\t\tComputed Glynn (square): %ld\n", soln);
 
-                    if ((double)m >= 25)
-                    {
-                        begin = clock();
-                        soln = ryser(m, n, randArray);
-                        end = clock();
-                        time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
-                    }
+                
+                    begin = clock();
+                    soln = ryser(m, n, randArray);
+                    end = clock();
+                    time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                
 
                     printf("\t\tComputed Ryser (square): %ld\n", soln);
 
@@ -131,51 +127,45 @@ int main(void)
 
                 else
                 {
-                    if (((m*n >= 150) && ((double)m/(double)n >= 0.4)) || (m*n >= 300)) 
-                    {
-                        time_spent_on_combn[i] = 1.0e16;
-                        soln = 100000;
-                    }
-                    else
-                    {
-                        begin = clock();
-                        soln = combinatoric_rectangle(m, n, randArray);
-                        end = clock();
-                        time_spent_on_combn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
-                    }
+                    // if (((m*n >= 150) && ((double)m/(double)n >= 0.4)) || (m*n >= 300)) 
+                    // {
+                    //     time_spent_on_combn[i] = 1.0e16;
+                    //     soln = 100000;
+                    // }
+                    
+                    begin = clock();
+                    soln = combinatoric_rectangle(m, n, randArray);
+                    end = clock();
+                    time_spent_on_combn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                
 
                     printf("\t\tComputed Combn (rectangle): %f\n", soln);
 
-                    if (((double)m/(double)n <= 0.25) && (n >= 30))
-                    {
-                        time_spent_on_glynn[i] = 1.0e16;
-                        soln = 100000;
-                    }
+                    // if (((double)m/(double)n <= 0.25) && (n >= 30))
+                    // {
+                    //     time_spent_on_glynn[i] = 1.0e16;
+                    //     soln = 100000;
+                    // }
 
-                    else
-                    {
-                        begin = clock();
-                        soln = glynn_rectangle(m, n, randArray);
-                        end = clock();
-                        time_spent_on_glynn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
-                        
-                    }
+                    begin = clock();
+                    soln = glynn_rectangle(m, n, randArray);
+                    end = clock();
+                    time_spent_on_glynn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                
                     
                     printf("\t\tComputed Glynn (rectangle): %f\n", soln);
 
-                    if ((((double)m/(double)n >= 0.4) && (n >= 10)) | (m*n >= 300))
-                    {
-                        time_spent_on_ryser[i] = 1.0e16;
-                        soln = 100000;
-                    }
+                    // if ((((double)m/(double)n >= 0.4) && (n >= 10)) | (m*n >= 300))
+                    // {
+                    //     time_spent_on_ryser[i] = 1.0e16;
+                    //     soln = 100000;
+                    // }
 
-                    else
-                    {
-                        begin = clock();
-                        soln = ryser_rectangle(m, n, randArray);
-                        end = clock();
-                        time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
-                    }
+                    begin = clock();
+                    soln = ryser_rectangle(m, n, randArray);
+                    end = clock();
+                    time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+                
 
                     printf("\t\tComputed Ryser (rectangle): %f\n", soln);
                 }
