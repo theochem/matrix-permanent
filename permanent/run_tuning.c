@@ -33,14 +33,6 @@ double randl(double min, double max)
 
 int main(void)
 {
-    /* Compute the tuning parameters */
-
-    double param_1 = 0.2217547141511318;
-    double param_2 = 9.967087824994731;
-    double param_3 = -6.871441450045971;
-
-
-
     /* Open a file for writing to */
 
     FILE *file_ptr = fopen(CSV_FILE, "w");
@@ -249,25 +241,6 @@ int main(void)
     fclose(file_ptr);
 
     printf("Closed CSV file!\n");
-
-    /* Write a header file with constants defined as macros */
-
-    file_ptr = fopen(HEADER_FILE, "w");
-    if (file_ptr == NULL)
-    {
-        perror("Cannot open file!");
-        return -1;
-    }
-    if (fprintf(file_ptr, "#ifndef PERMANENT_TUNING_H\n#define PERMANENT_TUNING_H\n\n\n#define PARAM_1 %.9f\n#define PARAM_2 %.9f\n#define PARAM_3 %.9f\n\n\n#endif /* PERMANENT_TUNING_H */\n", param_1, param_2, param_3) < 0)
-    {
-        perror("Error occurred!");
-        fclose(file_ptr);
-        return -1;
-    }
-
-    /* Close written file */
-
-    fclose(file_ptr);
 
     /* Exit successfully */
 

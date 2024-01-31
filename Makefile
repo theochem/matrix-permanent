@@ -43,16 +43,6 @@ clean:
 	rm -f permanent/permanent.so libpermanent.o libpermanent.a libpermanent.so
 	rm -f fast_permanent.csv
 
-# valgrind memory checks
-.PHONY: valgrind
-valgrind: 
-	valgrind --leak-check=full \
-    --show-leak-kinds=all \
-    --track-origins=yes \
-    --verbose \
-    --log-file=valgrind-out.txt \
-    make permanent/run_tuning ./permanent/run_tuning
-
 # compile_flags.txt (clangd)
 compile_flags.txt:
 	echo "$(CFLAGS)" | sed 's/ /\n/g' > $@
@@ -64,6 +54,7 @@ permanent/run_tuning:
 # Tuning parameters
 permanent/tuning.h: permanent/run_tuning
 	./$^
+	$(PYTHON) find_boundary.py -v .
 
 # Python library
 permanent/permanent.so: permanent/tuning.h
