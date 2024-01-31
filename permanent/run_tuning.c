@@ -258,7 +258,7 @@ int main(void)
         perror("Cannot open file!");
         return -1;
     }
-    if (fprintf(file_ptr, "#ifndef PERMANENT_TUNING_H\n#define PERMANENT_TUNING_H\n\n\n#define PARAM_1 %.9f\n#define PARAM_2 %ld\n\n\n#endif /* PERMANENT_TUNING_H */\n", param_1, param_2) < 0)
+    if (fprintf(file_ptr, "#ifndef PERMANENT_TUNING_H\n#define PERMANENT_TUNING_H\n\n\n#define PARAM_1 %.9f\n#define PARAM_2 %.9f\n#define PARAM_3 %.9f\n\n\n#endif /* PERMANENT_TUNING_H */\n", param_1, param_2, param_3) < 0)
     {
         perror("Error occurred!");
         fclose(file_ptr);
