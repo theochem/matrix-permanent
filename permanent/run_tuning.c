@@ -50,7 +50,7 @@ int main(void)
         fclose(file_ptr);
         return -1;
     }
-    printf("Opened CSV file!\n");
+    printf("Opened CSV file\n");
 
     /* Time the efficiency of the algorithms for different size matrices. */
 
@@ -72,7 +72,7 @@ int main(void)
         randArray[i] = randl(0.0, 1.0);
     }
 
-    printf("\tfilled matrix from rand()\n");
+    printf("Running tuning test..\n");
 
     /* Iterate over number of rows and number of columns. */
 
@@ -82,12 +82,8 @@ int main(void)
         {
             /* Solve the permanent using each algorithm the number of times specified in NUM_REPEATS. */
 
-            printf("M: %ld\tN: %ld\n", m, n);
-
             for (i = 0; i < NUM_REPEATS; i++)
             {
-                printf("\tTrial %ld:\n", i);
-
                 if (m == n)
                 {
 
@@ -96,76 +92,37 @@ int main(void)
                     end = clock();
                     time_spent_on_combn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
                 
-
-                    printf("\t\tComputed Combn (square): %ld\n", soln);
-
                     begin = clock();
                     soln = glynn(m, n, randArray);
                     end = clock();
                     time_spent_on_glynn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
-
-                    printf("\t\tComputed Glynn (square): %ld\n", soln);
-
                 
                     begin = clock();
                     soln = ryser(m, n, randArray);
                     end = clock();
                     time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
-                
-
-                    printf("\t\tComputed Ryser (square): %ld\n", soln);
-
                 }
 
                 else
                 {
-                    // if (((m*n >= 150) && ((double)m/(double)n >= 0.4)) || (m*n >= 300)) 
-                    // {
-                    //     time_spent_on_combn[i] = 1.0e16;
-                    //     soln = 100000;
-                    // }
-                    
                     begin = clock();
                     soln = combinatoric_rectangle(m, n, randArray);
                     end = clock();
                     time_spent_on_combn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
-                
-
-                    printf("\t\tComputed Combn (rectangle): %f\n", soln);
-
-                    // if (((double)m/(double)n <= 0.25) && (n >= 30))
-                    // {
-                    //     time_spent_on_glynn[i] = 1.0e16;
-                    //     soln = 100000;
-                    // }
 
                     begin = clock();
                     soln = glynn_rectangle(m, n, randArray);
                     end = clock();
                     time_spent_on_glynn[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
-                
-                    
-                    printf("\t\tComputed Glynn (rectangle): %f\n", soln);
-
-                    // if ((((double)m/(double)n >= 0.4) && (n >= 10)) | (m*n >= 300))
-                    // {
-                    //     time_spent_on_ryser[i] = 1.0e16;
-                    //     soln = 100000;
-                    // }
 
                     begin = clock();
                     soln = ryser_rectangle(m, n, randArray);
                     end = clock();
                     time_spent_on_ryser[i] = (double)(end - begin) / (double)CLOCKS_PER_SEC;
-                
-
-                    printf("\t\tComputed Ryser (rectangle): %f\n", soln);
                 }
             }
 
             /* Calculate the mean and standard deviation for the runtime of each algorithm. */
-
-            printf("Computing times...\n");
 
             mean_time_combn = 0.0;
             mean_time_glynn = 0.0;
@@ -240,7 +197,7 @@ int main(void)
 
     fclose(file_ptr);
 
-    printf("Closed CSV file!\n");
+    printf("Closed CSV file\n");
 
     /* Exit successfully */
 

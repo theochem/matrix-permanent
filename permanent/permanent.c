@@ -30,9 +30,7 @@ double predict_class(const size_t m_rows, const size_t n_cols)
 double opt(const size_t m_rows, const size_t n_cols, double *const ptr)
 {
     /* Use the fastest algorithm. */
-
-    const size_t size_matrix = n_cols;
-
+    
     if ((m_rows == n_cols) && (n_cols == 2)){
         return ryser(m_rows, n_cols, ptr);
     } else if ((m_rows == n_cols) && (n_cols <= 5)){
