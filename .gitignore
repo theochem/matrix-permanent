@@ -85,7 +85,6 @@ tags
 
 # Project files
 compile_flags.txt
-permanent/run_tuning
-permanent/tuning.h
-*.csv
-permanent/*.csv
+src/tuning
+src/tuning.h
+src/tuning.csv
