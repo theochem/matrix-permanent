@@ -1,13 +1,17 @@
 #include <cstdlib>
 #include <cmath>
 #include <ctime>
+#include <random>
+#include <algorithm>
 
 #include <fstream>
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <vector>
 
 #include "permanent.h"
+#include "svm.h"
 
 
 #ifdef RUN_TUNING
@@ -38,9 +42,22 @@ constexpr double DEFAULT_PARAM_2 = 1.0;
 
 constexpr double DEFAULT_PARAM_3 = 1.0;
 
-constexpr double DEFAULT_PARAM_4 = 1.0;
+constexpr double DEFAULT_PARAM_4 = 3.0;
 
 #endif
+
+/* Function to convert the first n rows of a 2D array into a vector of vectors */
+std::vector<std::vector<int>> arrayToVector(int (*array)[2], int rows) {
+    std::vector<std::vector<int>> result;
+    for (int i = 0; i < rows; ++i) {
+        std::vector<int> row;
+        row.push_back(array[i][0]);
+        row.push_back(array[i][1]);
+        result.push_back(row);
+    }
+
+    return result;
+}
 
 
 #ifdef RUN_TUNING
@@ -253,6 +270,61 @@ int main(int argc, char *argv[])
     double DEFAULT_PARAM_4 = metrics_ryser[counter_ryser - 1][1];
 
     std::cout << std::setw(3) << DEFAULT_PARAM_4 << '\n';
+
+    /* Prepare data for hard margin SVM boundary evaluation. */
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    std::vector<std::vector<int> > clean_combn = arrayToVector(metrics_combn, counter_combn);
+    std::vector<std::vector<int> > clean_glynn = arrayToVector(metrics_glynn, counter_glynn);
+
+
+    // Shuffle rows
+    std::shuffle(clean_combn.begin(), clean_combn.end(), gen);
+    std::shuffle(clean_glynn.begin(), clean_glynn.end(), gen);
+
+    // /* Create train/test split */
+
+    // std::vector<std::vector<double> > class1_data;
+    // std::vector<std::vector<double>> class2_data;
+
+
+    // std::vector<std::vector<double> > train_class1_data;
+    // std::vector<std::vector<double>> train_class2_data;
+
+    // // (2.3) Training for SVM
+    // HardMargin_SVM svm(vm["verbose"].as<bool>());
+    // svm.train(train_class1_data, train_class2_data, vm["nd"].as<size_t>(), vm["lr"].as<double>());
+
+    // // (3.1) Get Test Data for class 1
+    // std::string test_class1_dir;
+    // std::vector<std::string> test_class1_paths;
+    // std::vector<std::vector<double>> test_class1_data;
+    // /*****************************************************/
+    // test_class1_dir = "datasets/" + vm["dataset"].as<std::string>() + "/" + vm["test_class1_dir"].as<std::string>();
+    // test_class1_paths = Get_Paths(test_class1_dir);
+    // test_class1_data = Get_Data(test_class1_paths, vm["nd"].as<size_t>());
+
+    // // (3.2) Get Test Data for class 2
+    // std::string test_class2_dir;
+    // std::vector<std::string> test_class2_paths;
+    // std::vector<std::vector<double>> test_class2_data;
+    // /*****************************************************/
+    // test_class2_dir = "datasets/" + vm["dataset"].as<std::string>() + "/" + vm["test_class2_dir"].as<std::string>();
+    // test_class2_paths = Get_Paths(test_class2_dir);
+    // test_class2_data = Get_Data(test_class2_paths, vm["nd"].as<size_t>());
+
+    // // (3.3) Test for SVM
+    // svm.test(test_class1_data, test_class2_data);
+    // std::cout << "///////////////////////// Test /////////////////////////" << std::endl;
+    // std::cout << "accuracy-all: " << svm.accuracy << " (" << svm.correct_c1 + svm.correct_c2 << "/" << test_class1_data.size() + test_class2_data.size() << ")" << std::endl;
+    // std::cout << "accuracy-class1: " << svm.accuracy_c1 << " (" << svm.correct_c1 << "/" << test_class1_data.size() << ")" << std::endl;
+    // std::cout << "accuracy-class2: " << svm.accuracy_c2 << " (" << svm.correct_c2 << "/" << test_class2_data.size() << ")" << std::endl;
+    // std::cout << "////////////////////////////////////////////////////////" << std::endl;
+
+
+
 
     /* Exit successfully */
 
