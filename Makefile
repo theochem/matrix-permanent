@@ -9,7 +9,7 @@ CXXFLAGS += -undefined dynamic_lookup
 endif
 
 ifneq ($(RUN_TUNING),)
-CXXFLAGS += -march=native -DRUN_TUNING=1
+CXXFLAGS += -DRUN_TUNING=1
 endif
 
 ifeq ($(PREFIX),)
@@ -40,7 +40,7 @@ install: src/tuning.h libpermanent.a libpermanent.so
 
 # Run tests
 .PHONY: test
-test: src/permanent.so
+test: permanent/permanent.so
 	$(PYTHON) -m pytest -v .
 
 # Clean directory
@@ -65,6 +65,10 @@ permanent/permanent.so: src/tuning.h src/permanent.cc src/py_permanent.cc
 		-I$(shell $(PYTHON) -c "import sysconfig; print(sysconfig.get_paths()['include'])") \
 		-I$(shell $(PYTHON) -c "import numpy; print(numpy.get_include())") \
 		-shared -o $@ src/permanent.cc src/py_permanent.cc
+
+# # Compile shared library for src directory
+# src/permanent.so: src/libpermanent.o
+# 	$(CXX) $(CXXFLAGS) -shared -o $@ $^
 
 # Compile object code
 src/libpermanent.o: src/tuning.h src/permanent.cc
