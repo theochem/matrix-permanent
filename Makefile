@@ -54,13 +54,13 @@ compile_flags.txt:
 	echo "$(CXXFLAGS)" | sed 's/ /\n/g' > $@
 
 # Find tuning parameters
-src/tuning.h: src/tuning.cc src/tuning.py
+src/tuning.h: src/permanent.h src/tuning.cc src/tuning.py
 	$(CXX) $(CXXFLAGS) -o src/tuning src/permanent.cc src/tuning.cc
 	src/tuning
 	[ -n "$(RUN_TUNING)" ] && $(PYTHON) src/tuning.py || true
 
 # Compile Python library
-permanent/permanent.so: src/tuning.h src/permanent.cc src/py_permanent.cc
+permanent/permanent.so: src/tuning.h src/permanent.h src/permanent.cc src/py_permanent.cc
 	$(CXX) $(CXXFLAGS) -DWITH_TUNING_FILE=1 \
 		-I$(shell $(PYTHON) -c "import sysconfig; print(sysconfig.get_paths()['include'])") \
 		-I$(shell $(PYTHON) -c "import numpy; print(numpy.get_include())") \
@@ -71,7 +71,7 @@ permanent/permanent.so: src/tuning.h src/permanent.cc src/py_permanent.cc
 # 	$(CXX) $(CXXFLAGS) -shared -o $@ $^
 
 # Compile object code
-src/libpermanent.o: src/tuning.h src/permanent.cc
+src/libpermanent.o: src/tuning.h src/permanent.h src/permanent.cc
 	$(CXX) $(CXXFLAGS) -DWITH_TUNING_FILE=1 -c -o $@ src/permanent.cc
 
 # Compile static library

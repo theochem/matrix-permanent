@@ -154,12 +154,12 @@ int main(int argc, char *argv[])
                 {
 
                     begin = std::clock();
-                    soln_combn = combinatoric(m, n, array);
+                    soln_combn = combinatoric<double>(m, n, array);
                     end = std::clock();
                     time_combn[i] = (double)(end - begin);
 
                     begin = std::clock();
-                    soln_glynn = glynn(m, n, array);
+                    soln_glynn = glynn<double>(m, n, array);
                     end = std::clock();
                     time_glynn[i] = (double)(end - begin);
 
@@ -183,12 +183,12 @@ int main(int argc, char *argv[])
                 for (i = 0; i != NUM_TRIALS; ++i)
                 {
                     begin = std::clock();
-                    soln_combn = combinatoric_rectangular(m, n, array);
+                    soln_combn = combinatoric_rectangular<double>(m, n, array);
                     end = std::clock();
                     time_combn[i] = (double)(end - begin);
 
                     begin = std::clock();
-                    soln_glynn = glynn_rectangular(m, n, array);
+                    soln_glynn = glynn_rectangular<double>(m, n, array);
                     end = std::clock();
                     time_glynn[i] = (double)(end - begin);
 
