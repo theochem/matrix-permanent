@@ -3,7 +3,7 @@
 #include <vector>
 #include <cmath>
 // Original
-#include "svm.hpp"
+#include "svm.h"
 
 // --------------------------------------
 // class{HardMargin_SVM} -> constructor

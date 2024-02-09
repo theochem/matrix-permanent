@@ -71,8 +71,8 @@ permanent/permanent.so: src/tuning.h src/permanent.cc src/py_permanent.cc
 # 	$(CXX) $(CXXFLAGS) -shared -o $@ $^
 
 # Compile object code
-src/libpermanent.o: src/tuning.h src/permanent.cc
-	$(CXX) $(CXXFLAGS) -DWITH_TUNING_FILE=1 -c -o $@ src/permanent.cc
+src/libpermanent.o: src/tuning.h src/permanent.cc src/svm.cpp
+	$(CXX) $(CXXFLAGS) -DWITH_TUNING_FILE=1 -c -o $@ src/permanent.cc src/svm.cpp
 
 # Compile static library
 libpermanent.a: src/libpermanent.o
