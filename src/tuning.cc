@@ -47,16 +47,36 @@ constexpr double DEFAULT_PARAM_4 = 3.0;
 #endif
 
 /* Function to convert the first n rows of a 2D array into a vector of vectors */
-std::vector<std::vector<int>> arrayToVector(int (*array)[2], int rows) {
-    std::vector<std::vector<int>> result;
+std::vector<std::vector<double>> arrayToVector(int (*array)[2], int rows) {
+    std::vector<std::vector<double>> result;
     for (int i = 0; i < rows; ++i) {
-        std::vector<int> row;
-        row.push_back(array[i][0]);
-        row.push_back(array[i][1]);
+        std::vector<double> row;
+        row.push_back((double)array[i][0]);
+        row.push_back((double)array[i][1]);
         result.push_back(row);
     }
 
     return result;
+}
+
+
+/* Function to split the data into train and test sets */
+void trainTestSplit(const std::vector<std::vector<double>>& data, 
+                    std::vector<std::vector<double>>& trainData, 
+                    std::vector<std::vector<double>>& testData,
+                    double trainRatio) {
+    /* Calculate the number of samples for the training set */
+    int numTrainSamples = static_cast<int>(data.size() * trainRatio);
+
+    /* Shuffle the data */
+    std::vector<std::vector<double>> shuffledData = data;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::shuffle(shuffledData.begin(), shuffledData.end(), gen);
+
+    /* Split the shuffled data into train and test sets */
+    trainData.assign(shuffledData.begin(), shuffledData.begin() + numTrainSamples);
+    testData.assign(shuffledData.begin() + numTrainSamples, shuffledData.end());
 }
 
 
@@ -261,28 +281,25 @@ int main(int argc, char *argv[])
 
     csv_file.close();
 
-    // int metrics_ryser_final = metrics_ryser[:counter_ryser + 1][:];
-    // int metrics_combn_final = metrics_combn[:counter_combn + 1][:];
-    // int metrics_glynn_final = metrics_glynn[:counter_glynn + 1][:];
-    // Use push_back to add the two class system to a vector, pass that vector to the cpp functions
-
-
     double DEFAULT_PARAM_4 = metrics_ryser[counter_ryser - 1][1];
 
     std::cout << std::setw(3) << DEFAULT_PARAM_4 << '\n';
 
     /* Prepare data for hard margin SVM boundary evaluation. */
+    std::vector<std::vector<double>> clean_combn = arrayToVector(metrics_combn, counter_combn);
+    std::vector<std::vector<double>> clean_glynn = arrayToVector(metrics_glynn, counter_glynn);
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
+    /* Split into train/test for SVM */
+    double trainRatio = 0.9; 
+    std::vector<std::vector<double>> trainDataCombn;
+    std::vector<std::vector<double>> testDataCombn;
+    std::vector<std::vector<double>> trainDataGlynn;
+    std::vector<std::vector<double>> testDataGlynn;
 
-    std::vector<std::vector<int> > clean_combn = arrayToVector(metrics_combn, counter_combn);
-    std::vector<std::vector<int> > clean_glynn = arrayToVector(metrics_glynn, counter_glynn);
+    /* Perform train-test split */
+    trainTestSplit(clean_combn, trainDataCombn, testDataCombn, trainRatio);
+    trainTestSplit(clean_glynn, trainDataGlynn, testDataGlynn, trainRatio);
 
-
-    // Shuffle rows
-    std::shuffle(clean_combn.begin(), clean_combn.end(), gen);
-    std::shuffle(clean_glynn.begin(), clean_glynn.end(), gen);
 
     // /* Create train/test split */
 
@@ -293,9 +310,11 @@ int main(int argc, char *argv[])
     // std::vector<std::vector<double> > train_class1_data;
     // std::vector<std::vector<double>> train_class2_data;
 
-    // // (2.3) Training for SVM
-    // HardMargin_SVM svm(vm["verbose"].as<bool>());
-    // svm.train(train_class1_data, train_class2_data, vm["nd"].as<size_t>(), vm["lr"].as<double>());
+    // (2.3) Training for SVM
+    constexpr double lr = 0.01;
+    size_t D = counter_combn + counter_glynn;
+    HardMargin_SVM svm;
+    svm.train(trainDataCombn, trainDataGlynn, D, lr);
 
     // // (3.1) Get Test Data for class 1
     // std::string test_class1_dir;
@@ -315,13 +334,11 @@ int main(int argc, char *argv[])
     // test_class2_paths = Get_Paths(test_class2_dir);
     // test_class2_data = Get_Data(test_class2_paths, vm["nd"].as<size_t>());
 
-    // // (3.3) Test for SVM
-    // svm.test(test_class1_data, test_class2_data);
-    // std::cout << "///////////////////////// Test /////////////////////////" << std::endl;
-    // std::cout << "accuracy-all: " << svm.accuracy << " (" << svm.correct_c1 + svm.correct_c2 << "/" << test_class1_data.size() + test_class2_data.size() << ")" << std::endl;
-    // std::cout << "accuracy-class1: " << svm.accuracy_c1 << " (" << svm.correct_c1 << "/" << test_class1_data.size() << ")" << std::endl;
-    // std::cout << "accuracy-class2: " << svm.accuracy_c2 << " (" << svm.correct_c2 << "/" << test_class2_data.size() << ")" << std::endl;
-    // std::cout << "////////////////////////////////////////////////////////" << std::endl;
+    // (3.3) Test for SVM
+    svm.test(testDataCombn, testDataGlynn);
+    std::cout << "///////////////////////// Test /////////////////////////" << std::endl;
+    std::cout << "accuracy: " << svm.accuracy << " (" << svm.correct_c1 + svm.correct_c2 << "/" << testDataCombn.size() + testDataGlynn.size() << ")" << std::endl;
+    std::cout << "////////////////////////////////////////////////////////" << std::endl;
 
 
 
