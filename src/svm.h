@@ -19,7 +19,7 @@ private:
     std::vector<double> alpha_s;
 
     // function
-    double dot(const std::vector<double> x1, const std::vector<double> x2);
+    double dot(const std::vector<double>& x1, const std::vector<double>& x2);
 
 public:
 
@@ -31,10 +31,10 @@ public:
     HardMargin_SVM();
 
     // function
-    void train(const std::vector<std::vector<double>> class1_data, const std::vector<std::vector<double>> class2_data, const size_t D, const double lr, const double limit=0.0001);
-    void test(const std::vector<std::vector<double>> class1_data, const std::vector<std::vector<double>> class2_data);
-    double f(const std::vector<double> x);
-    double g(const std::vector<double> x);
+    void train(const std::vector<std::vector<double>>& class1_data, const std::vector<std::vector<double>>& class2_data, const size_t D, const double lr, const double limit=0.0001);
+    void test(const std::vector<std::vector<double>>& class1_data, const std::vector<std::vector<double>>& class2_data);
+    double f(const std::vector<double>& x);
+    double g(const std::vector<double>& x);
 
 };
 

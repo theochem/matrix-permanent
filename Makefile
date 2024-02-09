@@ -54,8 +54,8 @@ compile_flags.txt:
 	echo "$(CXXFLAGS)" | sed 's/ /\n/g' > $@
 
 # Find tuning parameters
-src/tuning.h: src/tuning.cc src/tuning.py
-	$(CXX) $(CXXFLAGS) -o src/tuning src/permanent.cc src/tuning.cc
+src/tuning.h: src/permanent.h src/svm.h src/tuning.cc src/svm.cpp src/tuning.py
+	$(CXX) $(CXXFLAGS) -o src/tuning src/permanent.cc src/tuning.cc src/svm.cpp
 	src/tuning
 	[ -n "$(RUN_TUNING)" ] && $(PYTHON) src/tuning.py || true
 

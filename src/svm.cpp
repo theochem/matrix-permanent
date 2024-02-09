@@ -58,8 +58,9 @@ void HardMargin_SVM::train(const std::vector<std::vector<double>>& class1_data, 
     // (3) Training
     std::cout << "\n";
     std::cout << "/////////////////////// Training ///////////////////////\n";
+    bool judge;
     do {
-        bool judge = false;
+        judge = false;
         double error = 0.0;
 
         // (3.1) Update Alpha
@@ -153,8 +154,6 @@ void HardMargin_SVM::test(const std::vector<std::vector<double>>& class1_data, c
     }
 
     accuracy = static_cast<double>(correct_c1 + correct_c2) / static_cast<double>(class1_data.size() + class2_data.size());
-    accuracy_c1 = static_cast<double>(correct_c1) / static_cast<double>(class1_data.size());
-    accuracy_c2 = static_cast<double>(correct_c2) / static_cast<double>(class2_data.size());
 }
 
 // --------------------------------------
