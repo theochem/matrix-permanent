@@ -53,9 +53,13 @@ clean:
 compile_flags.txt:
 	echo "$(CXXFLAGS)" | sed 's/ /\n/g' > $@
 
+# Compile tuning.cc
+src/tuning.o: src/tuning.cc
+	$(CXX) $(CXXFLAGS) $(PYTHON) -c -o $@ $<
+
 # Find tuning parameters
-src/tuning.h: src/permanent.h src/svm.h src/tuning.cc src/svm.cpp src/tuning.py
-	$(CXX) $(CXXFLAGS) -o src/tuning src/permanent.cc src/tuning.cc src/svm.cpp
+src/tuning.h: src/permanent.h src/tuning.cc src/tuning.py
+	$(CXX) $(CXXFLAGS) -o src/tuning src/permanent.cc src/tuning.cc
 	src/tuning
 	[ -n "$(RUN_TUNING)" ] && $(PYTHON) src/tuning.py || true
 
@@ -66,18 +70,16 @@ permanent/permanent.so: src/tuning.h src/permanent.cc src/py_permanent.cc
 		-I$(shell $(PYTHON) -c "import numpy; print(numpy.get_include())") \
 		-shared -o $@ src/permanent.cc src/py_permanent.cc
 
-# # Compile shared library for src directory
-# src/permanent.so: src/libpermanent.o
-# 	$(CXX) $(CXXFLAGS) -shared -o $@ $^
-
 # Compile object code
-src/libpermanent.o: src/tuning.h src/permanent.cc src/svm.cpp
-	$(CXX) $(CXXFLAGS) -DWITH_TUNING_FILE=1 -c -o $@ src/permanent.cc src/svm.cpp
+src/libpermanent.o: src/tuning.h src/permanent.cc
+	$(CXX) $(CXXFLAGS) $(PYTHON) -DWITH_TUNING_FILE=1 -c -o $@ src/permanent.cc
 
 # Compile static library
 libpermanent.a: src/libpermanent.o
 	$(AR) crs $@ $^
 
 # Compile shared library
-libpermanent.so: src/libpermanent.o
-	$(CXX) $(CXXFLAGS) -shared -o $@ $^
+libpermanent.so: src/libpermanent.o src/tuning.o
+	$(CXX) $(CXXFLAGS) -shared -o $@ $^ $(PYTHON)
+
+

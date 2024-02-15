@@ -3,11 +3,24 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn import svm
 from sklearn.metrics import accuracy_score
+import tuning
 
 HEADER_FILE = "permanent/tuning.h"
 
 
 #load the data
+pyTrainDataCombn = tuning.get_pyTrainDataCombn()
+pyTestDataCombn = tuning.get_pyTestDataCombn()
+pyTrainDataGlynn = tuning.get_pyTrainDataGlynn()
+pyTestDataGlynn = tuning.get_pyTestDataGlynn()
+pyRyserParam4 = tuning.get_pyRyserParam4()
+
+
+print(f"Py train data combn: \n{pyTrainDataCombn}")
+
+
+
+
 df = pd.read_csv('fast_permanent.csv', usecols = [' Size', 'M/N', ' Fastest Algorithm'])
 
 # Update label columns for ML
@@ -41,58 +54,7 @@ y_train = label[:-test_size].values
 x_test = features[-test_size:].values
 y_test = label[-test_size:].values
 
-# # Plotting the training set
-# fig, ax = plt.subplots(figsize=(12, 7))
-# ax.spines['top'].set_visible(False)
-# ax.spines['left'].set_visible(False)
-# ax.spines['right'].set_visible(False)
-
-# Adding major gridlines
-# ax.grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
-# ax.scatter(features[:-test_size]['x'], features[:-test_size]['y'], color="#8C7298")
-#plt.show()
-
-# # Separate two classes using 2nd-degree polynomial curve and hard margin
-# model_poly_hard_margin = svm.SVC(kernel='poly', degree=2, C=10.0)
-# model_poly_hard_margin.fit(x_train, y_train)
-
-# fig, ax = plt.subplots(figsize=(12, 7))
-
-# # Setting the boarders
-# ax.spines['top'].set_visible(False)
-# ax.spines['left'].set_visible(False)
-# ax.spines['right'].set_visible(False)
-
-# # Create grid to evaluate model
-# xx = np.linspace(-1, max(features['x']) + 1, len(x_train))
-# yy = np.linspace(0, max(features['y']) + 1, len(y_train))
-# YY, XX = np.meshgrid(yy, xx)
-# xy = np.vstack([XX.ravel(), YY.ravel()]).T
-# train_size = len(features[:-test_size]['x'])
-
-# # Assigning different colors to the classes
-# colors = y_train
-# colors = np.where(colors == 1, '#8C7298', '#4786D1')
-
-# # Plot the dataset
-# ax.scatter(features[:-test_size]['x'], features[:-test_size]['y'], c=colors)
-
-# # Get the separating hyperplane
-# Z = model_poly_hard_margin.decision_function(xy).reshape(XX.shape)
-
-# # Draw the decision boundary and margins
-# ax.contour(XX, YY, Z, colors='k', levels=[-1, 0, 1], alpha=0.5, linestyles=['--', '-', '--'])
-
-# # Highlight support vectors with a circle around them
-# ax.scatter(model_poly_hard_margin.support_vectors_[:, 0], model_poly_hard_margin.support_vectors_[:, 1], s=100, linewidth=1, facecolors='none', edgecolors='k')
-# #plt.show()
-
-# predictions_poly = model_poly_hard_margin.predict(x_test)
-# accuracy_poly = accuracy_score(y_test, predictions_poly)
-# print("2nd degree polynomial Kernel\nAccuracy (normalized): " + str(accuracy_poly))
-
-
-### Test a more simple approach - add a hard margin
+### Train a linear model - add a hard margin
 linear_model = svm.SVC(kernel='linear', C=100.0)
 linear_model.fit(x_train, y_train)
 
@@ -144,6 +106,7 @@ print(equation)
 param_1 = coefficients[0]  # Replace with your actual value
 param_2 = coefficients[1]  # Replace with your actual value
 param_3 = bias  # Replace with your actual value
+param_4 = ryser_limit
 
 try:
     with open(HEADER_FILE, "w") as file_ptr:

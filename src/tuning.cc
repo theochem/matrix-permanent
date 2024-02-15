@@ -1,4 +1,8 @@
 #include <cstdlib>
+
+#include <Python.h>
+#include <numpy/arrayobject.h>
+
 #include <cmath>
 #include <ctime>
 #include <random>
@@ -11,7 +15,15 @@
 #include <vector>
 
 #include "permanent.h"
-#include "svm.h"
+
+#define DOCSTRING_MODULE        "Tuning C extension module."
+#define DOCSTRING_TRAIN_COMBN     "Compute the permanent of a matrix using the best algorithm."
+#define DOCSTRING_TEST_COMBN  "Compute the permanent of a (rectangular) matrix combinatorically."
+#define DOCSTRING_TRAIN_GLYNN         "Compute the permanent of a (rectangular) matrix via Glynn's algorithm."
+#define DOCSTRING_TEST_GLYNN        "Compute the permanent of a (rectangular) matrix via Ryser's algorithm."
+#define DOCSTRING_RYSER_VALUE       "Compute the permanent of a (rectangular) matrix via Ryser's algorithm."
+
+
 
 
 #ifdef RUN_TUNING
@@ -28,8 +40,6 @@ constexpr std::size_t MAX_COLS = 10;
 
 constexpr std::size_t DATA_POINTS = MAX_ROWS * MAX_COLS;
 
-
-
 constexpr double TOLERANCE = 0.0001;
 
 #else
@@ -45,6 +55,7 @@ constexpr double DEFAULT_PARAM_3 = 1.0;
 constexpr double DEFAULT_PARAM_4 = 3.0;
 
 #endif
+
 
 /* Function to convert the first n rows of a 2D array into a vector of vectors */
 std::vector<std::vector<double>> arrayToVector(int (*array)[2], int rows) {
@@ -77,6 +88,87 @@ void trainTestSplit(const std::vector<std::vector<double>>& data,
     /* Split the shuffled data into train and test sets */
     trainData.assign(shuffledData.begin(), shuffledData.begin() + numTrainSamples);
     testData.assign(shuffledData.begin() + numTrainSamples, shuffledData.end());
+}
+
+/* Function to create a NumPy array from a C++ vector of vectors */
+static PyObject* createNumPyArray(const std::vector<std::vector<double>>& vec) {
+    npy_intp dims[2] = {static_cast<npy_intp>(vec.size()), static_cast<npy_intp>(vec[0].size())};
+    PyObject* array = PyArray_SimpleNewFromData(2, dims, NPY_DOUBLE, reinterpret_cast<void*>(vec.data()));
+    return array;
+}
+
+/* Function to convert a C++ vector of vectors into a Python list */
+static PyObject* vectorToPythonList(const std::vector<std::vector<double>>& vec) {    
+    PyObject* pyList = PyList_New(vec.size());
+    for (size_t i = 0; i < vec.size(); ++i) {
+        PyObject* innerList = PyList_New(vec[i].size());
+        for (size_t j = 0; j < vec[i].size(); ++j) {
+            PyList_SetItem(innerList, j, PyFloat_FromDouble(vec[i][j]));
+        }
+        PyList_SetItem(pyList, i, innerList);
+    }
+    return pyList;
+}
+
+/* Function to return pyTrainDataCombn */
+static PyObject* get_pyTrainDataCombn(PyObject* self, PyObject* args) {
+    Py_XINCREF(pyTrainDataCombn);
+    return pyTrainDataCombn;
+}
+
+/* Function to return pyTestDataCombn */
+static PyObject* get_pyTestDataCombn(PyObject* self, PyObject* args) {
+    Py_XINCREF(pyTestDataCombn);
+    return pyTestDataCombn;
+}
+
+/* Function to return pyTrainDataGlynn */
+static PyObject* get_pyTrainDataGlynn(PyObject* self, PyObject* args) {
+    Py_XINCREF(pyTrainDataGlynn);
+    return pyTrainDataGlynn;
+}
+
+/* Function to return pyTestDataGlynn */
+static PyObject* get_pyTestDataGlynn(PyObject* self, PyObject* args) {
+    Py_XINCREF(pyTestDataGlynn);
+    return pyTestDataGlynn;
+}
+
+/* Function to return pyRyserParam4 */
+static PyObject* get_pyRyserParam4(PyObject* self, PyObject* args) {
+    Py_XINCREF(pyRyserParam4);
+    return pyRyserParam4;
+}
+
+
+/* Define the Python methods that will go into the C extension module.       *
+ *                                                                           *
+ * Note:  METH_NOARGS indicates that the Python function takes no arguments. *
+ *        On the C side, the function takes two PyObject* arguments;         *
+ *        the first one is the C extension module itself,                    *
+ *        and the second one is the argument to the Python function.         */
+
+static PyMethodDef methods[] = {
+    /* Python function name     C function              Args flag       Docstring */
+    {"get_pyTrainDataCombn",    get_pyTrainDataCombn,   METH_NOARGS,    DOCSTRING_TRAIN_COMBN},
+    {"get_pyTestDataCombn",     get_pyTestDataCombn,    METH_NOARGS,    DOCSTRING_TEST_COMBN},
+    {"get_pyTrainDataGlynn",    get_pyTrainDataGlynn,   METH_NOARGS,    DOCSTRING_TRAIN_GLYNN},
+    {"get_pyTestDataGlynn",     get_pyTestDataGlynn,    METH_NOARGS,    DOCSTRING_TEST_GLYNN},
+    {"get_pyRyserParam4",       get_pyRyserParam4,      METH_NOARGS,    DOCSTRING_RYSER_VALUE},
+    {NULL,                      NULL,                   0,              NULL} /* sentinel value */
+};
+
+/* Module initialization function */
+static struct PyModuleDef definition = {
+    PyModuleDef_HEAD_INIT, "tuning", DOCSTRING_MODULE, -1, methods, NULL, NULL, NULL, NULL
+};
+
+/* Initialize the C extension module. */
+
+PyMODINIT_FUNC PyInit_tuning(void) {
+    Py_Initialize();                      /* Initialize Python API */
+    import_array();                       /* Initialize NumPy NDArray API */
+    return PyModule_Create(&definition);  /* Create module. */
 }
 
 
@@ -281,7 +373,7 @@ int main(int argc, char *argv[])
 
     csv_file.close();
 
-    double DEFAULT_PARAM_4 = metrics_ryser[counter_ryser - 1][1];
+    double RYSER_PARAM_4 = metrics_ryser[counter_ryser - 1][1];
 
     std::cout << std::setw(3) << DEFAULT_PARAM_4 << '\n';
 
@@ -301,47 +393,21 @@ int main(int argc, char *argv[])
     trainTestSplit(clean_glynn, trainDataGlynn, testDataGlynn, trainRatio);
 
 
-    // /* Create train/test split */
+    /* Convert train and test data into Python objects */
+    PyObject* pyTrainDataCombn = vectorToPythonList(trainDataCombn);
+    PyObject* pyTestDataCombn = vectorToPythonList(testDataCombn);
+    PyObject* pyTrainDataGlynn = vectorToPythonList(trainDataGlynn);
+    PyObject* pyTestDataGlynn = vectorToPythonList(testDataGlynn);
 
-    // std::vector<std::vector<double> > class1_data;
-    // std::vector<std::vector<double>> class2_data;
+    /* Convert RYSER_PARAM_4 to a Python integer */
+    PyObject* pyRyserParam4 = PyLong_FromLong((long)RYSER_PARAM_4);
 
-
-    // std::vector<std::vector<double> > train_class1_data;
-    // std::vector<std::vector<double>> train_class2_data;
-
-    // (2.3) Training for SVM
-    constexpr double lr = 0.01;
-    size_t D = counter_combn + counter_glynn;
-    HardMargin_SVM svm;
-    svm.train(trainDataCombn, trainDataGlynn, D, lr);
-
-    // // (3.1) Get Test Data for class 1
-    // std::string test_class1_dir;
-    // std::vector<std::string> test_class1_paths;
-    // std::vector<std::vector<double>> test_class1_data;
-    // /*****************************************************/
-    // test_class1_dir = "datasets/" + vm["dataset"].as<std::string>() + "/" + vm["test_class1_dir"].as<std::string>();
-    // test_class1_paths = Get_Paths(test_class1_dir);
-    // test_class1_data = Get_Data(test_class1_paths, vm["nd"].as<size_t>());
-
-    // // (3.2) Get Test Data for class 2
-    // std::string test_class2_dir;
-    // std::vector<std::string> test_class2_paths;
-    // std::vector<std::vector<double>> test_class2_data;
-    // /*****************************************************/
-    // test_class2_dir = "datasets/" + vm["dataset"].as<std::string>() + "/" + vm["test_class2_dir"].as<std::string>();
-    // test_class2_paths = Get_Paths(test_class2_dir);
-    // test_class2_data = Get_Data(test_class2_paths, vm["nd"].as<size_t>());
-
-    // (3.3) Test for SVM
-    svm.test(testDataCombn, testDataGlynn);
-    std::cout << "///////////////////////// Test /////////////////////////" << std::endl;
-    std::cout << "accuracy: " << svm.accuracy << " (" << svm.correct_c1 + svm.correct_c2 << "/" << testDataCombn.size() + testDataGlynn.size() << ")" << std::endl;
-    std::cout << "////////////////////////////////////////////////////////" << std::endl;
-
-
-
+    /* Decrement reference count of Python objects */
+    Py_DECREF(pyTrainDataCombn);
+    Py_DECREF(pyTestDataCombn);
+    Py_DECREF(pyTrainDataGlynn);
+    Py_DECREF(pyTestDataGlynn);
+    Py_DECREF(pyRyserParam4);
 
     /* Exit successfully */
 
@@ -402,3 +468,4 @@ int main(int argc, char *argv[])
 
 
 #endif
+
