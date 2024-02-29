@@ -4,39 +4,38 @@ import matplotlib.pyplot as plt
 from sklearn import svm
 from sklearn.metrics import accuracy_score
 
+HEADER_FILE = "permanent/tuning.h"
 
-df = pd.read_csv('src/tuning.csv', usecols = ['M/N', 'N', 'Fastest'])
+
+tuning = pd.read_csv('src/tuning.csv', usecols = ['M/N', 'N', 'Fastest'])
 
 # Update label columns for ML
-df.rename(columns={'N': 'x', 'M/N': 'y', 'Fastest': 'target'}, inplace=True)
+tuning.rename(columns={'N': 'x', 'M/N': 'y', 'Fastest': 'target'}, inplace=True)
 
 # Find Ryser limit and update to dual class for SVM
 # Locate rows where column value matches specified value
-matching_row = df[df['target'] == '0']
+matching_row = tuning.loc[tuning['target'] == 0, 'x']
 
 if not matching_row.empty:
     # Pull out specific column value from the last matching row
-    last_matching_row = matching_rows.iloc[-1].copy()
-    ryser_limit = last_matching_row['x']
+    ryser_limit = matching_row.iloc[-1].copy()
 else:
     ryser_limit = 0
     
-update_target = df['target'] == '0'
-df.loc[update_target, 'target'] = '1'
+update_target = tuning['target'] == 0
+tuning.loc[update_target, 'target'] = -1
 
 # Update classes to -1/1, Combn = 1
-update_glynn = df['target'] == '2'
-df.loc[update_glynn, 'target'] = -1
+update_glynn = tuning['target'] == 2
+tuning.loc[update_glynn, 'target'] = -1
 
-# Change feature type to float
-df['target'] = df['target'].astype(float)
 
-features = df[['x', 'y']]
-label = df['target']
-value_counts = df['target'].value_counts()
+features = tuning[['x', 'y']]
+label = tuning['target']
+value_counts = tuning['target'].value_counts()
 
 # Create train/test split 
-size = df.shape[0]
+size = tuning.shape[0]
 test_size = int(np.round(size * 0.1, 0))
 
 # Split dataset into training and testing sets
@@ -78,7 +77,7 @@ ax.contour(XX, YY, Z, colors='k', levels=[-1, 0, 1], alpha=0.5, linestyles=['--'
 
 # Highlight support vectors with a circle around them
 ax.scatter(linear_model.support_vectors_[:, 0], linear_model.support_vectors_[:, 1], s=100, linewidth=1, facecolors='none', edgecolors='k')
-#plt.show()
+plt.show()
 
 # Check the accuracy of the model
 predictions_linear = linear_model.predict(x_test)
@@ -99,7 +98,6 @@ param_2 = coefficients[1]
 param_3 = bias  
 param_4 = ryser_limit
 
-print(ryser_limit)
 
 try:
     with open(HEADER_FILE, "w") as file_ptr:

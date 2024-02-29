@@ -9,7 +9,7 @@
 #include "permanent.h"
 
 
-#ifdef WITH_TUNING_FILE
+#ifdef DWITH_TUNING_FILE
 
 /* Include tuning file. */
 
@@ -19,9 +19,11 @@
 
 /* Set default tuning parameters. */
 
-#define PARAM_1 1.0
-#define PARAM_2 1.0
-#define PARAM_3 1.0
+#define PARAM_1 -0.572098
+#define PARAM_2 -22.014212
+#define PARAM_3 15.297940
+#define PARAM_4 3.0
+
 
 #endif
 
@@ -30,13 +32,13 @@ double opt(const size_t m, const size_t n, double *const ptr)
 {
     /* Use the fastest algorithm. */
 
-    if (m < PARAM_1) {
+    if (m == n && n <= PARAM_4) {
+        return ryser(m, n, ptr);
+    } else if ((n * PARAM_1) + ((double)(m / n) * PARAM_2) + PARAM_3 > 0) {
         return (m == n) ? combinatoric(m, n, ptr) : combinatoric_rectangular(m, n, ptr);
-    } else if (m * n < PARAM_2) {
-        return (m == n) ? glynn(m, n, ptr) : glynn_rectangular(m, n, ptr);
     }
     else {
-        return (m == n) ? ryser(m, n, ptr) : ryser_rectangular(m, n, ptr);
+        return (m == n) ? glynn(m, n, ptr) : glynn_rectangular(m, n, ptr);
     }
 }
 
@@ -359,3 +361,4 @@ double ryser_rectangular(const size_t m, const size_t n, double *const ptr)
 
     return out;
 }
+

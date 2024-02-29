@@ -19,9 +19,9 @@ constexpr char CSV_HEADER[] = "M/N,N,Combn,Glynn,Ryser,Fastest";
 
 constexpr std::size_t NUM_TRIALS = 5;
 
-constexpr std::size_t MAX_ROWS = 10;
+constexpr std::size_t MAX_ROWS = 15;
 
-constexpr std::size_t MAX_COLS = 10;
+constexpr std::size_t MAX_COLS = 15;
 
 constexpr std::size_t DATA_POINTS = MAX_ROWS * MAX_COLS;
 
@@ -31,11 +31,11 @@ constexpr double TOLERANCE = 0.0001;
 
 constexpr char HEADER_FILE[] = "src/tuning.h";
 
-constexpr double DEFAULT_PARAM_1 = 1.0;
+constexpr double DEFAULT_PARAM_1 = -0.572098;
 
-constexpr double DEFAULT_PARAM_2 = 1.0;
+constexpr double DEFAULT_PARAM_2 = -22.014212;
 
-constexpr double DEFAULT_PARAM_3 = 1.0;
+constexpr double DEFAULT_PARAM_3 = 15.297940;
 
 constexpr double DEFAULT_PARAM_4 = 3.0;
 

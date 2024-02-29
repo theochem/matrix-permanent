@@ -76,6 +76,6 @@ libpermanent.a: src/libpermanent.o
 
 # Compile shared library
 libpermanent.so: src/libpermanent.o
-	$(CXX) $(CXXFLAGS) -shared -o $@ $^ $(PYTHON)
+	$(CXX) $(CXXFLAGS) -shared -o $@ $^
 
 
