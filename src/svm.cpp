@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <cmath>
-// Original
+
 #include "svm.h"
 
 // --------------------------------------
@@ -128,9 +128,14 @@ void HardMargin_SVM::train(const std::vector<std::vector<double>>& class1_data, 
     // (4.3) Description for b
     b = 0.0;
     for (size_t i = 0; i < Ns; ++i) {
-        b += ys[i] - dot(w, xs[i]);
+        double sum = 0.0;
+        for (size_t j = 0; j < D; ++j) {
+            sum += w[j] * xs[i][j];
+        }
+        b += ys[i] - sum;
     }
     b /= Ns;
+
     std::cout << "bias = " << b << "\n";
     std::cout << "////////////////////////////////////////////////////////\n\n";
 }

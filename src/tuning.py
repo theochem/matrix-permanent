@@ -3,39 +3,30 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn import svm
 from sklearn.metrics import accuracy_score
-import tuning
-
-HEADER_FILE = "permanent/tuning.h"
 
 
-#load the data
-pyTrainDataCombn = tuning.get_pyTrainDataCombn()
-pyTestDataCombn = tuning.get_pyTestDataCombn()
-pyTrainDataGlynn = tuning.get_pyTrainDataGlynn()
-pyTestDataGlynn = tuning.get_pyTestDataGlynn()
-pyRyserParam4 = tuning.get_pyRyserParam4()
-
-
-print(f"Py train data combn: \n{pyTrainDataCombn}")
-
-
-
-
-df = pd.read_csv('fast_permanent.csv', usecols = [' Size', 'M/N', ' Fastest Algorithm'])
+df = pd.read_csv('src/tuning.csv', usecols = ['M/N', 'N', 'Fastest'])
 
 # Update label columns for ML
-df.rename(columns={' Size': 'x', 'M/N': 'y', ' Fastest Algorithm': 'target'}, inplace=True)
+df.rename(columns={'N': 'x', 'M/N': 'y', 'Fastest': 'target'}, inplace=True)
 
-# Make dataset dual class only
-update_target = df['target'] == ' Ryser'
-df.loc[update_target, 'target'] = ' Combn'
+# Find Ryser limit and update to dual class for SVM
+# Locate rows where column value matches specified value
+matching_row = df[df['target'] == '0']
 
-# Update classes to -1/1, Combn = -1
-update_combn = df['target'] == ' Combn'
-df.loc[update_combn, 'target'] = -1
+if not matching_row.empty:
+    # Pull out specific column value from the last matching row
+    last_matching_row = matching_rows.iloc[-1].copy()
+    ryser_limit = last_matching_row['x']
+else:
+    ryser_limit = 0
+    
+update_target = df['target'] == '0'
+df.loc[update_target, 'target'] = '1'
 
-update_glynn = df['target'] == ' Glynn'
-df.loc[update_glynn, 'target'] = 1
+# Update classes to -1/1, Combn = 1
+update_glynn = df['target'] == '2'
+df.loc[update_glynn, 'target'] = -1
 
 # Change feature type to float
 df['target'] = df['target'].astype(float)
@@ -103,14 +94,16 @@ equation = f"Decision Boundary Equation: {coefficients[0]} * x1 + {coefficients[
 print(equation)
 
 # Write a header file with constants defined as macros 
-param_1 = coefficients[0]  # Replace with your actual value
-param_2 = coefficients[1]  # Replace with your actual value
-param_3 = bias  # Replace with your actual value
+param_1 = coefficients[0]  
+param_2 = coefficients[1]  
+param_3 = bias  
 param_4 = ryser_limit
+
+print(ryser_limit)
 
 try:
     with open(HEADER_FILE, "w") as file_ptr:
-        file_ptr.write("#ifndef PERMANENT_TUNING_H\n#define PERMANENT_TUNING_H\n\n\n#define PARAM_1 %.9f\n#define PARAM_2 %.9f\n#define PARAM_3 %.9f\n\n\n#endif /* PERMANENT_TUNING_H */\n" % (param_1, param_2, param_3))
+        file_ptr.write("#ifndef PERMANENT_TUNING_H\n#define PERMANENT_TUNING_H\n\n\n#define PARAM_1 %.9f\n#define PARAM_2 %.9f\n#define PARAM_3 %.9f\n #define PARAM_4 %.9f\n\n\n#endif /* PERMANENT_TUNING_H */\n" % (param_1, param_2, param_3, param_4))
 except IOError:
     print("Cannot open file!")
     exit(-1)

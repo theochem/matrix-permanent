@@ -18,7 +18,7 @@ endif
 
 # Build C and Python libraries
 .PHONY: all
-all: libpermanent.a libpermanent.so permanent/permanent.so
+all: libpermanent.a libpermanent.so permanent/permanent.so 
 
 # Build C libraries
 .PHONY: c
@@ -53,10 +53,6 @@ clean:
 compile_flags.txt:
 	echo "$(CXXFLAGS)" | sed 's/ /\n/g' > $@
 
-# Compile tuning.cc
-src/tuning.o: src/tuning.cc
-	$(CXX) $(CXXFLAGS) $(PYTHON) -c -o $@ $<
-
 # Find tuning parameters
 src/tuning.h: src/permanent.h src/tuning.cc src/tuning.py
 	$(CXX) $(CXXFLAGS) -o src/tuning src/permanent.cc src/tuning.cc
@@ -64,7 +60,7 @@ src/tuning.h: src/permanent.h src/tuning.cc src/tuning.py
 	[ -n "$(RUN_TUNING)" ] && $(PYTHON) src/tuning.py || true
 
 # Compile Python library
-permanent/permanent.so: src/tuning.h src/permanent.cc src/py_permanent.cc
+permanent/permanent.so: src/tuning.h src/permanent.h src/permanent.cc src/py_permanent.cc
 	$(CXX) $(CXXFLAGS) -DWITH_TUNING_FILE=1 \
 		-I$(shell $(PYTHON) -c "import sysconfig; print(sysconfig.get_paths()['include'])") \
 		-I$(shell $(PYTHON) -c "import numpy; print(numpy.get_include())") \
@@ -72,14 +68,14 @@ permanent/permanent.so: src/tuning.h src/permanent.cc src/py_permanent.cc
 
 # Compile object code
 src/libpermanent.o: src/tuning.h src/permanent.cc
-	$(CXX) $(CXXFLAGS) $(PYTHON) -DWITH_TUNING_FILE=1 -c -o $@ src/permanent.cc
+	$(CXX) $(CXXFLAGS) -DWITH_TUNING_FILE=1 -c -o $@ src/permanent.cc
 
 # Compile static library
 libpermanent.a: src/libpermanent.o
 	$(AR) crs $@ $^
 
 # Compile shared library
-libpermanent.so: src/libpermanent.o src/tuning.o
+libpermanent.so: src/libpermanent.o
 	$(CXX) $(CXXFLAGS) -shared -o $@ $^ $(PYTHON)
 
 
