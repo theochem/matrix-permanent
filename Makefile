@@ -18,7 +18,7 @@ endif
 
 # Build C and Python libraries
 .PHONY: all
-all: libpermanent.a libpermanent.so permanent/permanent.so
+all: libpermanent.a libpermanent.so permanent/permanent.so 
 
 # Build C libraries
 .PHONY: c
@@ -66,10 +66,6 @@ permanent/permanent.so: src/tuning.h src/permanent.h src/permanent.cc src/py_per
 		-I$(shell $(PYTHON) -c "import numpy; print(numpy.get_include())") \
 		-shared -o $@ src/permanent.cc src/py_permanent.cc
 
-# # Compile shared library for src directory
-# src/permanent.so: src/libpermanent.o
-# 	$(CXX) $(CXXFLAGS) -shared -o $@ $^
-
 # Compile object code
 src/libpermanent.o: src/tuning.h src/permanent.h src/permanent.cc
 	$(CXX) $(CXXFLAGS) -DWITH_TUNING_FILE=1 -c -o $@ src/permanent.cc
@@ -81,3 +77,5 @@ libpermanent.a: src/libpermanent.o
 # Compile shared library
 libpermanent.so: src/libpermanent.o
 	$(CXX) $(CXXFLAGS) -shared -o $@ $^
+
+
