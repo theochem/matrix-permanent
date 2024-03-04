@@ -19,7 +19,7 @@ Permanent module C extension.
 
 
 static const char DOCSTRING_PERMANENT[] = R"""(
-Compute the permanent of a matrix using the best algorithm.
+Compute the permanent of a matrix using the best algorithm for the shape of the given matrix.
 
 Parameters
 ----------
