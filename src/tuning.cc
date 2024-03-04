@@ -19,9 +19,9 @@ constexpr char CSV_HEADER[] = "M/N,N,Combn,Glynn,Ryser,Fastest";
 
 constexpr std::size_t NUM_TRIALS = 5;
 
-constexpr std::size_t MAX_ROWS = 15;
+constexpr std::size_t MAX_ROWS = 16;
 
-constexpr std::size_t MAX_COLS = 15;
+constexpr std::size_t MAX_COLS = 16;
 
 constexpr std::size_t DATA_POINTS = MAX_ROWS * MAX_COLS;
 
@@ -39,7 +39,7 @@ constexpr double DEFAULT_PARAM_3 = 15.297940;
 
 constexpr double DEFAULT_PARAM_4 = 3.0;
 
-#endif
+#endif /* RUN_TUNING */
 
 
 
@@ -137,11 +137,12 @@ int main(int argc, char *argv[])
                     time_glynn[i] = (double)(end - begin);
 
                     begin = std::clock();
-                    soln_ryser = ryser(m, n, array);
+                    soln_ryser = ryser<double>(m, n, array);
                     end = std::clock();
                     time_ryser[i] = (double)(end - begin);
 
-                    if (std::fabs(soln_combn - soln_glynn) / soln_combn > TOLERANCE) {
+                    if ((std::fabs(soln_combn - soln_glynn) / soln_combn > TOLERANCE) ||
+                        (std::fabs(soln_combn - soln_ryser) / soln_ryser > TOLERANCE)) {
                         std::cerr << "Bad permanent values:"
                             << "\nCombn: " << soln_combn
                             << "\nGlynn: " << soln_glynn
@@ -165,13 +166,18 @@ int main(int argc, char *argv[])
                     end = std::clock();
                     time_glynn[i] = (double)(end - begin);
 
-                    time_ryser[i] = 1000000;
+                    begin = std::clock();
+                    soln_ryser = ryser_rectangular<double>(m, n, array);
+                    end = std::clock();
+                    time_ryser[i] = (double)(end - begin);
 
-                    if (std::fabs(soln_combn - soln_glynn) / soln_combn > TOLERANCE) {
+                    if ((std::fabs(soln_combn - soln_glynn) / soln_combn > TOLERANCE) ||
+                        (std::fabs(soln_combn - soln_ryser) / soln_ryser > TOLERANCE)) {
                         std::cerr << std::scientific
                             << "Bad permanent values:"
                             << "\nCombn: " << soln_combn
-                            << "\nGlynn: " << soln_glynn << std::endl;
+                            << "\nGlynn: " << soln_glynn
+                            << "\nRyser: " << soln_ryser << std::endl;
                         csv_file.close();
                         return 1;
                     }
@@ -207,12 +213,12 @@ int main(int argc, char *argv[])
 
             /* Write line */
 
-            std::cout << std::scientific << (double)m/n << ',' << std::setw(3) << n << ','
+            std::cout << std::scientific << (double)m / n << ',' << std::setw(2) << n << ','
                       << std::scientific << mean_combn << ',' << mean_glynn << ','
                       << std::scientific << mean_ryser << ',' << fastest << std::endl;
 
 
-            csv_file << std::scientific << (double)m/n << ',' << std::setw(3) << n << ','
+            csv_file << std::scientific << (double)m / n << ',' << std::setw(2) << n << ','
                      << std::scientific << mean_combn << ',' << mean_glynn << ','
                      << std::scientific << mean_ryser << ',' << fastest << '\n';
 
@@ -287,5 +293,4 @@ int main(int argc, char *argv[])
 }
 
 
-#endif
-
+#endif /* RUN_TUNING */

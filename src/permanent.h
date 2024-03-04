@@ -22,11 +22,12 @@
 
 /* Set default tuning parameters. */
 
-#define PARAM_1 1.0
-#define PARAM_2 1.0
-#define PARAM_3 1.0
+#define PARAM_1 -0.572098
+#define PARAM_2 -22.014212
+#define PARAM_3 15.297940
+#define PARAM_4 3.0
 
-#endif
+#endif /* WITH_TUNING_FILE */
 
 
 /* Allow type promotion to complex. */
@@ -325,57 +326,207 @@ T ryser(const std::size_t m, const std::size_t n, T *const ptr)
 }
 
 
+// template<typename T>
+// T ryser_rectangular(const std::size_t m, const std::size_t n, T *const ptr)
+// {
+//     kperm_gray permutations(n);
+//
+//     const std::size_t *perm = permutations.data();
+//
+//     std::size_t i, j, k, bin;
+//     int sign = 1;
+//
+//     T colprod, matsum, permsum;
+//     T out = 0.0;
+//     T vec[64];
+//
+//     /* Iterate over subsets from size 0 to size m */
+//
+//     for (k = 0; k < m; ++k) {
+//
+//         permutations.first(m - k);
+//
+//         bin = BINOMIAL((n - m + k), k);
+//         permsum = 0.0;
+//
+//         do {
+//
+//             /* Compute permanents of each submatrix */
+//
+//             for (i = 0; i < m; ++i) {
+//                 matsum = 0.0;
+//                 for (j = 0; j < m - k; ++j)
+//                     matsum += ptr[i * n + perm[j]];
+//                 vec[i] = matsum;
+//             }
+//
+//             colprod = 1.0;
+//             for (i = 0; i < m; ++i) {
+//                 colprod *= vec[i];
+//             }
+//
+//             permsum += colprod;
+//         }
+//         while (permutations.next());
+//
+//         /* Add term to result */
+//
+//         out += permsum * sign * bin;
+//
+//         sign *= -1;
+//     }
+//
+//     return out;
+// }
+
+
+namespace {
+
+inline void swap2(std::size_t *perm, std::size_t i, std::size_t j)
+{
+    const std::size_t temp = perm[i];
+    perm[i] = perm[j];
+    perm[j] = temp;
+}
+
+
+void init_perm(const std::size_t N, std::size_t *const the_fact_set, std::size_t *const the_perm_set, std::size_t *const the_inv_set)
+{
+    for (std::size_t i = 0; i < N; i++) {
+        the_fact_set[i + 1] = 0;
+        the_perm_set[i] = i;
+        the_inv_set[i] = i;
+    }
+}
+
+
+bool gen_next_perm(std::size_t *const falling_fact, std::size_t *const perm, std::size_t *const inv_perm, const std::size_t cols, const std::size_t u_)
+{
+    /* Use the current permutation to check for next permutation
+     * lexicographically, if it exists update the curr_array by swapping the
+     * leftmost changed element (at position i < k). Replace the elements up to
+     * position k by the smallest element lying to the right of i. Do not put
+     * remaining k, .., n - 1 positions in ascending order to improve efficiency
+     * has time complexity O(n) in the worst case. */
+    std::size_t i = u_ - 1;
+    std::size_t m1 = cols - i - 1;
+
+    /* Begin update of falling_fact - recall falling_fact[0] = 0, so increment
+     * index accordingly. If i becomes negative during the check, you are
+     * pointing to the sentinel value, so you are done generating
+     * permutations. */
+    while (falling_fact[i + 1] == m1) {
+        falling_fact[i + 1] = 0;
+        ++m1;
+        --i;
+    }
+    if (i == 0UL - 1) {
+        return false;
+    }
+    ++falling_fact[i + 1];
+
+    /* Find smallest element perm[i] < perm[j] that lies to the right of
+     * pos i, and then update the state of the permutation using its inverse
+     * to generate next. */
+    std::size_t z = (std::size_t)perm[i];
+    do {
+        ++z;
+    } while (inv_perm[z] <= i);
+    const std::size_t j = inv_perm[z];
+    swap2(perm, i, j);
+    swap2(inv_perm, perm[i], perm[j]);
+    ++i;
+    std::size_t y = 0;
+
+    /* Find the smallest elements to the right of position i. */
+    while (i < u_) {
+        while (inv_perm[y] < i) {
+            ++y;
+        }
+        const std::size_t j = inv_perm[y];
+        swap2(perm, i, j);
+        swap2(inv_perm, perm[i], perm[j]);
+        ++i;
+    }
+    return true;
+}
+
+} /* namespace */
+
+
 template<typename T>
 T ryser_rectangular(const std::size_t m, const std::size_t n, T *const ptr)
 {
-    kperm_gray permutations(n);
+    std::size_t falling_fact[128];
+    std::size_t perm[128];
+    std::size_t inv_perm[128];
+    falling_fact[0] = 0;
 
-    const std::size_t *perm = permutations.data();
+    std::size_t i, j, k, counter, sort_up_to;
 
-    std::size_t i, j, k, bin;
-    int sign = 1;
+    int value_sign = 1;
 
-    T colprod, matsum, permsum;
-    T out = 0.0;
+    T bin_c, sum_of_matrix_vals, prod_of_cols, result;
+    T sum_over_k_vals = 0.0;
     T vec[64];
 
-    /* Iterate over subsets from size 0 to size m */
-
+    /* Dealing with a rectangle. Can't use bit hacking trick here. */
     for (k = 0; k < m; ++k) {
+        /* Store the binomial coefficient for this k value bin_c. */
+        bin_c = (double)(BINOMIAL((n - m + k), k));
+        counter = 0; // Count how many permutations you have generated
+        sum_of_matrix_vals = 0.0;
+        prod_of_cols = 1.0;
+        result = 0.0;
 
-        permutations.first(m - k);
+        /* (Re)initialize the set to permute for this k value. */
+        init_perm(n, falling_fact, perm, inv_perm);
 
-        bin = BINOMIAL((n - m + k), k);
-        permsum = 0.0;
+        /* sort up to position u + 1 where u = min(m - k, n - 1). */
+        sort_up_to = n - 1;
 
-        do {
-
-            /* Compute permanents of each submatrix */
-
-            for (i = 0; i < m; ++i) {
-                matsum = 0.0;
-                for (j = 0; j < m - k; ++j)
-                    matsum += ptr[i * n + perm[j]];
-                vec[i] = matsum;
-            }
-
-            colprod = 1.0;
-            for (i = 0; i < m; ++i) {
-                colprod *= vec[i];
-            }
-
-            permsum += colprod;
+        if ((m - k) < sort_up_to) {
+            sort_up_to = (m - k);
         }
-        while (permutations.next());
 
-        /* Add term to result */
+        for (i = 0; i < m; ++i) {
+            sum_of_matrix_vals = 0.0;
+            for (j = 0; j < sort_up_to; ++j) {
+                sum_of_matrix_vals += ptr[i * n + perm[j]];
+            }
+            vec[i] = sum_of_matrix_vals;
+            sum_of_matrix_vals = 0.0;
+        }
+        for (i = 0; i < m; ++i) {
+            prod_of_cols *= vec[i];
+        }
 
-        out += permsum * sign * bin;
+        result += value_sign * bin_c * prod_of_cols;
+        counter += 1;
 
-        sign *= -1;
+        /* Iterate over second to last permutations of the set. */
+        while (gen_next_perm(falling_fact, perm, inv_perm, n, sort_up_to)) {
+            sum_of_matrix_vals = 0.0;
+            for (i = 0; i < m; ++i) {
+                sum_of_matrix_vals = 0.0;
+                for (j = 0; j < m - k; ++j) {
+                    sum_of_matrix_vals += ptr[i * n + perm[j]];
+                }
+                vec[i] = sum_of_matrix_vals;
+                sum_of_matrix_vals = 0.0;
+            }
+            prod_of_cols = 1.0;
+            for (i = 0; i < m; ++i) {
+                prod_of_cols *= vec[i];
+            }
+
+            result += value_sign * bin_c * prod_of_cols;
+            counter += 1;
+        }
+        sum_over_k_vals += (result / (double)counter) * BINOMIAL(n, (m - k));
+        value_sign *= -1;
     }
-
-    return out;
+    return sum_over_k_vals;
 }
 
 
@@ -384,13 +535,12 @@ T opt(const std::size_t m, const std::size_t n, T *const ptr)
 {
     /* Use the fastest algorithm. */
 
-    if (m < PARAM_1) {
-        return (m == n) ? combinatoric<T>(m, n, ptr) : combinatoric_rectangular<T>(m, n, ptr);
-    } else if (m * n < PARAM_2) {
-        return (m == n) ? glynn<T>(m, n, ptr) : glynn_rectangular<T>(m, n, ptr);
-    }
-    else {
-        return (m == n) ? ryser<T>(m, n, ptr) : ryser_rectangular<T>(m, n, ptr);
+    if (m == n && n <= PARAM_4) {
+        return ryser(m, n, ptr);
+    } else if (n * PARAM_1 + ((double)m / n) * PARAM_2 + PARAM_3 > 0) {
+        return (m == n) ? combinatoric(m, n, ptr) : combinatoric_rectangular(m, n, ptr);
+    } else {
+        return (m == n) ? glynn(m, n, ptr) : glynn_rectangular(m, n, ptr);
     }
 }
 

@@ -116,6 +116,8 @@ permanent : (np.double|np.complex)
 static const char DOCSTRING_RYSER[] = R"""(
 Compute the permanent of a matrix via Ryser's algorithm [Ryser]_.
 
+.. math::
+
     \text{per}(A) = \sum_{k=0}^{M-1}{
         {\left(-1\right)}^k
         \left(\begin{matrix}N - M + k\\ k\end{matrix}\right)

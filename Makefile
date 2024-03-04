@@ -8,6 +8,10 @@ ifeq ($(shell uname -s),Darwin)
 CXXFLAGS += -undefined dynamic_lookup
 endif
 
+ifneq ($(BUILD_NATIVE),)
+CXXFLAGS += -march=native -mtune=native
+endif
+
 ifneq ($(RUN_TUNING),)
 CXXFLAGS += -DRUN_TUNING=1
 endif
@@ -18,7 +22,7 @@ endif
 
 # Build C and Python libraries
 .PHONY: all
-all: libpermanent.a libpermanent.so permanent/permanent.so 
+all: libpermanent.a libpermanent.so permanent/permanent.so
 
 # Build C libraries
 .PHONY: c
@@ -54,28 +58,32 @@ compile_flags.txt:
 	echo "$(CXXFLAGS)" | sed 's/ /\n/g' > $@
 
 # Find tuning parameters
-src/tuning.h: src/permanent.h src/tuning.cc src/tuning.py
+src/tuning.h: src/permanent.h src/permanent.cc src/tuning.cc tools/tuning.py
 	$(CXX) $(CXXFLAGS) -o src/tuning src/permanent.cc src/tuning.cc
-	src/tuning
-	[ -n "$(RUN_TUNING)" ] && $(PYTHON) src/tuning.py || true
+	@if [ -n "$(RUN_TUNING)" ]; then \
+		echo "running tuning..."; \
+		src/tuning; \
+		echo "writing custom tuning.h"; \
+		$(PYTHON) tools/tuning.py; \
+	else \
+		echo "writing default tuning.h"; \
+		src/tuning; \
+	fi
 
 # Compile Python library
-permanent/permanent.so: src/tuning.h src/permanent.h src/permanent.cc src/py_permanent.cc
+permanent/permanent.so: src/tuning.h src/permanent.h src/permanent.cc src/py_permanent.cc tools/include_dirs.py
 	$(CXX) $(CXXFLAGS) -DWITH_TUNING_FILE=1 \
-		-I$(shell $(PYTHON) -c "import sysconfig; print(sysconfig.get_paths()['include'])") \
-		-I$(shell $(PYTHON) -c "import numpy; print(numpy.get_include())") \
+		$(shell $(PYTHON) tools/include_dirs.py) \
 		-shared -o $@ src/permanent.cc src/py_permanent.cc
 
 # Compile object code
 src/libpermanent.o: src/tuning.h src/permanent.h src/permanent.cc
 	$(CXX) $(CXXFLAGS) -DWITH_TUNING_FILE=1 -c -o $@ src/permanent.cc
 
-# Compile static library
+# Compile static C library
 libpermanent.a: src/libpermanent.o
 	$(AR) crs $@ $^
 
-# Compile shared library
+# Compile shared C library
 libpermanent.so: src/libpermanent.o
 	$(CXX) $(CXXFLAGS) -shared -o $@ $^
-
-

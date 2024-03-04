@@ -56,7 +56,7 @@ packages = [
 
 
 package_data = {
-    "permanent": ["permanent.so", "tuning.h"],
+    "permanent": ["permanent.so"],
 }
 
 
