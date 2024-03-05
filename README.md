@@ -1,111 +1,109 @@
 [![Python 3](http://img.shields.io/badge/python-3-blue.svg)](https://docs.python.org/3/)
 [![gcc](https://img.shields.io/badge/-C++-blue?logo=cplusplus)](https://gcc.gnu.org/)
 
-Permanent
-=========
+# Permanent
 
 The permanent of a square matrix, like the determinant is a polynomial in the entries of the matrix. Unlike the determinant, the signatures of the permutations are not taken into account making the permanent much more difficult to compute because decomposition methods cannot be used.
 
-The permanent commonly appears in problems related to quantum mechanics, and the most common brute-force combinatorial method has time complexity $\mathcal{O}(N!N)$, thus it is useful to look for more efficient algorithms. The two algorithms considered to be the fastest are one by Ryser (based on the inclusion-exclusion principle), and one by Glynn (based on invariant theory). 
+The permanent commonly appears in problems related to quantum mechanics, and the most common brute-force combinatorial method has time complexity $\mathcal{O}(N!N)$, thus it is useful to look for more efficient algorithms. The two algorithms considered to be the fastest are one by Ryser (based on the inclusion-exclusion principle), and one by Glynn (based on invariant theory).
 
 This library aims to solve the need for an efficient library that solves the permenent of a given matrix.
 
-Algorithms
-==========
+# Algorithms
 
-### Compute the permanent of a matrix using the best algorithm for the shape of the given matrix.
+`permanent.opt()`
 
-**Formula:**
-- Compute the permanent of a matrix using the best algorithm for the shape of the given matrix.
+Compute the permanent of a matrix using the best algorithm for the shape of the given matrix.
 
 **Parameters:**
+
 - `matrix`: `np.ndarray(M, N, dtype=(np.double|np.complex))`
 
 **Returns:**
-- `permanent`: `(np.double|np.complex)`
-  - Permanent of matrix.
+
+- `permanent`: `(np.double|np.complex)` - Permanent of matrix.
 
 ---
 
-### Compute the permanent of a matrix combinatorically.
+`permanent.combinatoric()`
+
+Compute the permanent of a matrix combinatorically.
 
 **Formula:**
-- $\text{per}(A) = \sum_{\sigma \in P(N,M)}{\prod_{i=1}^M{a_{i,{\sigma(i)}}}}$
+$$\text{per}(A) = \sum_{\sigma \in P(N,M)}{\prod_{i=1}^M{a_{i,{\sigma(i)}}}}$$
 
 **Parameters:**
+
 - `matrix`: `np.ndarray(M, N, dtype=(np.double|np.complex))`
 
 **Returns:**
-- `permanent`: `(np.double|np.complex)`
-  - Permanent of matrix.
+
+- `permanent`: `(np.double|np.complex)` - Permanent of matrix.
 
 ---
 
-### Compute the permanent of a matrix via Glynn's algorithm.
+`permanent.glynn()`
 
 **Formula:**
-- $$\text{per}(A) = \frac{1}{2^{N-1}} \cdot \sum_{\delta}{
-    \left(\sum_{k=1}^N{\delta_k}\right)
-    \prod_{j=1}^N{\sum_{i=1}^N{\delta_i a_{i,j}}}
-}$$
 
-
-**Additional Information:**
-- The original formula has been generalized here to work with $M$-by-$N$ rectangular permanents with $M \leq N$ by use of the following identity (shown here for $M \geq N$):
-  - $$
-\[
-\text{per}\left(
-\begin{matrix}
-a_{1,1} & \cdots & a_{1,N} \\
-\vdots & \ddots & \vdots \\
-a_{M,1} & \cdots & a_{M,N} \\
-\end{matrix}
-\right)
-= \frac{1}{(M - N + 1)!} \cdot \text{per}\left(
-\begin{matrix}
-a_{1,1} & \cdots & a_{1,N} & 1_{1,N+1} & \cdots & 1_{1,M} \\
-\vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
-a_{M,1} & \cdots & a_{M,N} & 1_{M,N+1} & \cdots & 1_{M,M} \\
-\end{matrix}
-\right)
-\]
+$$
+\text{per}(A) = \frac{1}{2^{N-1}} \cdot \sum_{\delta}{
+    \left(\sum_{k=1}^N{\delta_k}\right){\prod_{j=1}^N{\sum_{i=1}^N{\delta_i a_{i,j}}}}}
 $$
 
-- This can be neatly fit into the original formula by extending the inner sums over $\delta$ from $[1,M]$ to $[1,N]$:
+**Additional Information:**
+The original formula has been generalized here to work with $M$-by-$N$ rectangular permanents with $M \leq N$ by use of the following identity (shown here for $M \geq N$):
 
-**Parameters:**
-- `matrix`: `np.ndarray(M, N, dtype=(np.double|np.complex))`
+$$
+\text{per}\left(\begin{matrix}a_{1,1} & \cdots & a_{1,N} \\\vdots & \ddots & \vdots \\a_{M,1} & \cdots & a_{M,N} \\\end{matrix}\right) = \frac{1}{(M - N + 1)!} \cdot \text{per}\left(\begin{matrix}a_{1,1} & \cdots & a_{1,N} & 1_{1,N+1} & \cdots & 1_{1,M} \\\vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\a_{M,1} & \cdots & a_{M,N} & 1_{M,N+1} & \cdots & 1_{M,M} \\\end{matrix}\right)
+$$
 
-**Returns:**
-- `permanent`: `(np.double|np.complex)`
-  - Permanent of matrix.
+This can be neatly fit into the original formula by extending the inner sums over $\delta$ from $[1,M]$ to $[1,N]$:
 
----
-
-### Compute the permanent of a matrix via Ryser's algorithm.
-
-**Formula:**
-- $$\[
-\text{per}(A) = \frac{1}{2^{N-1}} \cdot \frac{1}{(N - M + 1)!}
-    \cdot \sum_{\delta}{
+$$
+\text{per}(A) = \frac{1}{2^{N-1}} \cdot \frac{1}{(N - M + 1)!}\cdot \sum_{\delta}{
         \left(\sum_{k=1}^N{\delta_k}\right)
         \prod_{j=1}^N{\left(
             \sum_{i=1}^M{\delta_i a_{i,j}} + \sum_{i=M+1}^N{\delta_i}
         \right)}
     }
-\]$$
-
+$$
 
 **Parameters:**
+
 - `matrix`: `np.ndarray(M, N, dtype=(np.double|np.complex))`
 
 **Returns:**
-- `permanent`: `(np.double|np.complex)`
-  - Permanent of matrix.
 
+- `permanent`: `(np.double|np.complex)` - Permanent of matrix.
 
-Installation
-============
+---
+
+`permanent.ryser()`
+
+**Formula:**
+
+$$
+\text{per}(A) = \sum_{k=0}^{M-1}{
+        {(-1)}^k
+        \binom{N - M + k}{k}
+        \sum_{\sigma \in P(N,M-k)}{
+            \prod_{i=1}^M{
+                \sum_{j=1}^{M-k}{a_{i,{\sigma(j)}}}
+            }
+        }
+    }
+$$
+
+**Parameters:**
+
+- `matrix`: `np.ndarray(M, N, dtype=(np.double|np.complex))`
+
+**Returns:**
+
+- `permanent`: `(np.double|np.complex)` - Permanent of matrix.
+
+# Installation
 
 The permanent package allows you to solve the permanent of a given matrix using the optimal algorithm for your matrix dimensions. You can either use the pre-defined parameters or fine tune them to your machine.
 
@@ -117,96 +115,96 @@ The permanent package allows you to solve the permanent of a given matrix using 
 
 3. Create and activate a virtual environment for this project named `permanents`. One way to do this is with pip.
 
-    ```console
-    pip install virtualenv
-    virtualenv permanents
-    ```
+   ```console
+   pip install virtualenv
+   virtualenv permanents
+   ```
 
 4. Activate the virtual environment.
 
-    ```console
-    source ~/permanents/bin/activate
-    ```
+   ```console
+   source ~/permanents/bin/activate
+   ```
 
 5. Install Sphinx and other dependencies.
 
-    ```console
-    pip install Sphinx sphinx-rtd-theme sphinx-copybutton
-    ```
+   ```console
+   pip install Sphinx sphinx-rtd-theme sphinx-copybutton
+   ```
 
 6. Install Python dependencies.
 
-    ```console
-    pip install numpy pandas scikit-learn
-    ```
+   ```console
+   pip install numpy pandas scikit-learn
+   ```
 
 7. (Optional) Install Pytest if you wish to run tests.
 
-    ```console
-    pip install pytest
-    ```
+   ```console
+   pip install pytest
+   ```
 
-Now that you have your environment set up and activated you are ready to compile the source code into an executable. Here you have two options - compile the code as is with the pre-defined parameters for algorithm swapping, **or** compile the code with machine specific tuning for algorithm swapping. *Note that machine specific tuning will run a series of tests. This will take anywhere from 10 minutes to 1 hour depending on your system.* 
+Now that you have your environment set up and activated you are ready to compile the source code into an executable. Here you have two options - compile the code as is with the pre-defined parameters for algorithm swapping, **or** compile the code with machine specific tuning for algorithm swapping. _Note that machine specific tuning will run a series of tests. This will take anywhere from 10 minutes to 1 hour depending on your system._
 
 ## Option 1: Use given parameters
 
 1. Compile the permanent code.
 
-    ```console
-    make -BUILD_NATIVE
-    ```
+   ```console
+   make -BUILD_NATIVE
+   ```
 
-    **Note: if using M1 architecture, simply run the following.**
+   **Note: if using M1 architecture, simply run the following.**
 
-    ```console
-    make
-    ```
+   ```console
+   make
+   ```
 
 2. (Optional) Run tests on the algorithms.
 
-    ```console
-    make test
-    ```
+   ```console
+   make test
+   ```
 
 3. Compile the website.
 
-    ```console
-    cd docs && make html
-    ```
+   ```console
+   cd docs && make html
+   ```
 
 4. Load the website.
 
-    ```console
-    open build/html/index.html
-    ```
+   ```console
+   open build/html/index.html
+   ```
 
 ## Option 2: Tune parameters
 
 1. Compile the permanent code with the `tuning` flag.
 
-    ```console
-    make -RUN_TUNING
-    ```
+   ```console
+   make -RUN_TUNING
+   ```
 
-    **Note: it will take some time to run the tuning tests on your machine.**
+   **Note: it will take some time to run the tuning tests on your machine.**
 
 2. (Optional) Run tests on the algorithms.
 
-    ```console
-    make test
-    ```
+   ```console
+   make test
+   ```
 
 3. Compile the website.
 
-    ```console
-    cd docs && make html
-    ```
+   ```console
+   cd docs && make html
+   ```
 
 4. Load the website.
 
-    ```console
-    open build/html/index.html
-    ```
+   ```console
+   open build/html/index.html
+   ```
 
 ## Notes about the `Makefile`
 
@@ -242,23 +240,20 @@ The Makefile in this project is used to compile C and Python libraries and inclu
 - `src/libpermanent.o`: Compiles object code.
 - `libpermanent.a`, `libpermanent.so`: Compiles static and shared C libraries respectively.
 
-License
-========
+# License
 
 This code is distributed under the GNU General Public License version 3 (GPLv3).
 See <http://www.gnu.org/licenses/> for more information.
 
-Dependencies
-============
+# Dependencies
 
 The following programs/libraries are required to compile this package:
 
--   [Python](http://python.org/) (≥3.6)
--	[gcc](https://gcc.gnu.org/) (≥11.4)
--	[Sphinx](https://pypi.org/project/Sphinx/) (≥7.2)
--	[sphinx-rtd-theme](https://pypi.org/project/sphinx-rtd-theme/) (≥2.0)
--   [NumPy](http://numpy.org/) (≥1.13)
--	[pandas](https://pypi.org/project/pandas/) (≥2.2)
--	[scikit-learn](https://pypi.org/project/scikit-learn/) (≥1.4)
--   [Pytest](http://docs.pytest.org/en/latest/) (optional: to run tests)
-
+- [Python](http://python.org/) (≥3.6)
+- [gcc](https://gcc.gnu.org/) (≥11.4)
+- [Sphinx](https://pypi.org/project/Sphinx/) (≥7.2)
+- [sphinx-rtd-theme](https://pypi.org/project/sphinx-rtd-theme/) (≥2.0)
+- [NumPy](http://numpy.org/) (≥1.13)
+- [pandas](https://pypi.org/project/pandas/) (≥2.2)
+- [scikit-learn](https://pypi.org/project/scikit-learn/) (≥1.4)
+- [Pytest](http://docs.pytest.org/en/latest/) (optional: to run tests)
