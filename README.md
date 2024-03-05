@@ -30,7 +30,7 @@ Algorithms
 ### Compute the permanent of a matrix combinatorically.
 
 **Formula:**
-- $\text{per}(A) = \sum_{\sigma \in P(N,M)}{\prod_{i=1}^M{a_{i,\sigma(i)}}}$
+- $\text{per}(A) = \sum_{\sigma \in P(N,M)}{\prod_{i=1}^M{a_{i,{\sigma(i)}}}}$
 
 **Parameters:**
 - `matrix`: `np.ndarray(M, N, dtype=(np.double|np.complex))`
@@ -44,24 +44,31 @@ Algorithms
 ### Compute the permanent of a matrix via Glynn's algorithm.
 
 **Formula:**
-- $\text{per}(A) = \frac{1}{2^{N-1}} \cdot \sum_{\delta}{\left(\sum_{k=1}^N{\delta_k}\right) \prod_{j=1}^N{\sum_{i=1}^N{\delta_i a_{i,j}}}}$
+- $$\text{per}(A) = \frac{1}{2^{N-1}} \cdot \sum_{\delta}{
+    \left(\sum_{k=1}^N{\delta_k}\right)
+    \prod_{j=1}^N{\sum_{i=1}^N{\delta_i a_{i,j}}}
+}$$
+
 
 **Additional Information:**
 - The original formula has been generalized here to work with $M$-by-$N$ rectangular permanents with $M \leq N$ by use of the following identity (shown here for $M \geq N$):
   - $$
+\[
 \text{per}\left(
 \begin{matrix}
 a_{1,1} & \cdots & a_{1,N} \\
 \vdots & \ddots & \vdots \\
-a_{M,1} & \cdots & a_{M,N}
+a_{M,1} & \cdots & a_{M,N} \\
 \end{matrix}
-\right) = \frac{1}{(M - N + 1)!} \cdot \text{per}\left(
+\right)
+= \frac{1}{(M - N + 1)!} \cdot \text{per}\left(
 \begin{matrix}
 a_{1,1} & \cdots & a_{1,N} & 1_{1,N+1} & \cdots & 1_{1,M} \\
 \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
-a_{M,1} & \cdots & a_{M,N} & 1_{M,N+1} & \cdots & 1_{M,M}
+a_{M,1} & \cdots & a_{M,N} & 1_{M,N+1} & \cdots & 1_{M,M} \\
 \end{matrix}
 \right)
+\]
 $$
 
 - This can be neatly fit into the original formula by extending the inner sums over $\delta$ from $[1,M]$ to $[1,N]$:
@@ -78,7 +85,16 @@ $$
 ### Compute the permanent of a matrix via Ryser's algorithm.
 
 **Formula:**
-- $\text{per}(A) = \sum_{k=0}^{M-1}{{(-1)}^k \binom{N - M + k}{k} \sum_{\sigma \in P(N,M-k)}{\prod_{i=1}^M{\sum_{j=1}^{M-k}{a_{i,\sigma(j)}}}}}$
+- $$\[
+\text{per}(A) = \frac{1}{2^{N-1}} \cdot \frac{1}{(N - M + 1)!}
+    \cdot \sum_{\delta}{
+        \left(\sum_{k=1}^N{\delta_k}\right)
+        \prod_{j=1}^N{\left(
+            \sum_{i=1}^M{\delta_i a_{i,j}} + \sum_{i=M+1}^N{\delta_i}
+        \right)}
+    }
+\]$$
+
 
 **Parameters:**
 - `matrix`: `np.ndarray(M, N, dtype=(np.double|np.complex))`
