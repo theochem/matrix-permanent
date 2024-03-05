@@ -10,7 +10,7 @@ The permanent commonly appears in problems related to quantum mechanics, and the
 
 This library aims to solve the need for an efficient library that solves the permenent of a given matrix.
 
-Documentation
+Algorithms
 =============
 
 ### Compute the permanent of a matrix using the best algorithm for the shape of the given matrix.
@@ -30,7 +30,10 @@ Documentation
 ### Compute the permanent of a matrix combinatorically.
 
 **Formula:**
-- \(\text{per}(A) = \sum_{\sigma \in P(N,M)}{\prod_{i=1}^M{a_{i,{\sigma(i)}}}}\)
+- \[
+\text{per}(A) = \sum_{\sigma \in P(N,M)}{\prod_{i=1}^M{a_{i,\sigma(i)}}}
+\]
+
 
 **Parameters:**
 - `matrix`: `np.ndarray(M, N, dtype=(np.double|np.complex))`
@@ -48,7 +51,22 @@ Documentation
 
 **Additional Information:**
 - The original formula has been generalized here to work with :math:`M`-by-:math:`N` rectangular permanents with :math:`M \leq N` by use of the following identity (shown here for :math:`M \geq N`):
-  - \( {\text{per}}\left(\begin{matrix}a_{1,1} & \cdots & a_{1,N} \\ \vdots & \ddots & \vdots \\ a_{M,1} & \cdots & a_{M,N} \end{matrix}\right) = \frac{1}{\left(M - N + 1\right)!} \cdot {\text{per}}\left(\begin{matrix}a_{1,1} & \cdots & a_{1,N} & 1_{1,N+1} & \cdots & 1_{1,M} \\ \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\ a_{M,1} & \cdots & a_{M,N} & 1_{M,N+1} & \cdots & 1_{M,M} \end{matrix}\right) \)
+  - \[
+{\text{per}}\left(
+\begin{matrix}
+a_{1,1} & \cdots & a_{1,N} \\
+\vdots & \ddots & \vdots \\
+a_{M,1} & \cdots & a_{M,N}
+\end{matrix}
+\right) = \frac{1}{(M - N + 1)!} \cdot {\text{per}}\left(
+\begin{matrix}
+a_{1,1} & \cdots & a_{1,N} & 1_{1,N+1} & \cdots & 1_{1,M} \\
+\vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
+a_{M,1} & \cdots & a_{M,N} & 1_{M,N+1} & \cdots & 1_{M,M}
+\end{matrix}
+\right)
+\]
+
 - This can be neatly fit into the original formula by extending the inner sums over :math:`\delta` from :math:`\left[1,M\right]` to :math:`\left[1,N\right]`:
 
 **Parameters:**
@@ -63,7 +81,9 @@ Documentation
 ### Compute the permanent of a matrix via Ryser's algorithm.
 
 **Formula:**
-- \(\text{per}(A) = \sum_{k=0}^{M-1}{{\left(-1\right)}^k \left(\begin{matrix}N - M + k\\ k\end{matrix}\right) \sum_{\sigma \in P(N,M-k)}{\prod_{i=1}^M{\sum_{j=1}^{M-k}{a_{i,{\sigma(j)}}}}}}\)
+- \[
+\text{per}(A) = \sum_{k=0}^{M-1}{{(-1)}^k \binom{N - M + k}{k} \sum_{\sigma \in P(N,M-k)}{\prod_{i=1}^M{\sum_{j=1}^{M-k}{a_{i,\sigma(j)}}}}}
+\]
 
 **Parameters:**
 - `matrix`: `np.ndarray(M, N, dtype=(np.double|np.complex))`
@@ -75,7 +95,6 @@ Documentation
 
 Installation
 ============
-# Installation
 
 The permanent package allows you to solve the permanent of a given matrix using the optimal algorithm for your matrix dimensions. You can either use the pre-defined parameters or fine tune them to your machine.
 
