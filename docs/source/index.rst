@@ -7,7 +7,6 @@ Welcome to Permanent's documentation!
 
    install
    api
-   contributing
 
 
 Indices and tables

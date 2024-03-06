@@ -10,97 +10,97 @@ Setting up your environment
 
 #. Create and activate a virtual environment for this project named ``permanents``. One way to do this is with pip.
 
-	.. code-block:: console
+	.. code-block:: bash
 
 		pip install virtualenv
 		virtualenv permanents
 
 #. Activate the virtual environment.
 
-	.. code-block:: console
+	.. code-block:: bash
 
 		source ~/permanents/bin/activate
 
 #. Install Sphinx and other dependencies.
 
-	.. code-block:: console
+	.. code-block:: bash
 
 		pip install Sphinx sphinx-rtd-theme sphinx-copybutton
 
 #. Install Python dependencies.
 
-	.. code-block:: console
+	.. code-block:: bash
 
 		pip install numpy pandas scikit-learn
 
 #. (Optional) Install Pyest if you wish to run tests.
 
-	.. code-block:: console
+	.. code-block:: bash
 
 		pip install pytest
 
 
-Now that you have your environment set up and activated you are ready to compile the source code into an executable. Here you have two options - compile the code as is with the pre-defined parameters for algorithm swapping, **or** compile the code with machine specific tuning for algorithm swapping. *Note that machine specific tuning will run a series of tests. This will take anywhere from 10 minutes to 1 hour depending on your system.* 
+Now that you have your environment set up and activated you are ready to compile the source code into an executable. Here you have two options - compile the code as is with the pre-defined parameters for algorithm swapping, **or** compile the code with machine specific tuning for algorithm swapping. *Note that machine specific tuning will run a series of tests. This will take anywhere from 10 minutes to 1 hour depending on your system.*
 
 Option 1: Use given parameters
 ==============================
 #. Compile the permanent code.
 
-	.. code-block:: console
+	.. code-block:: bash
 
-		make -BUILD_NATIVE
+		make BUILD_NATIVE=1
 
-	**Note: if using M1 architecture, simply run the following.**
+	**Note: if using M1 architecture, or want a portable build, simply run the following.**
 
-	.. code-block:: console
+	.. code-block:: bash
 
 		make
 
 #. (Optional) Run tests on the algorithms.
 
-	.. code-block:: console
+	.. code-block:: bash
 
 		make test
 
 #. Compile the website.
 
-	.. code-block:: console
+	.. code-block:: bash
 
 		cd docs && make html
 
 #. Load the website.
 
-	.. code-block:: console
+	.. code-block:: bash
 
-		open build/html/index.html
+		<browser> build/html/index.html
 
 Option 2: Tune parameters
 =========================
 #. Compile the permanent code with the ``tuning`` flag.
 
-	.. code-block:: console
+	.. code-block:: bash
 
-		make -RUN_TUNING
+		make RUN_TUNING=1
 
 **Note: it will take some time to run the tuning tests on your machine.**
 
 #. (Optional) Run tests on the algorithms.
 
-	.. code-block:: console
+	.. code-block:: bash
 
 		make test
 
 #. Compile the website.
 
-	.. code-block:: console
+	.. code-block:: bash
 
 		cd docs && make html
 
 #. Load the website.
 
-	.. code-block:: console
-	
-		open build/html/index.html
+	.. code-block:: bash
+
+		<browser> build/html/index.html
 
 Notes about the ``Makefile``
 ===============================

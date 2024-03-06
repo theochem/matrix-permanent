@@ -30,7 +30,9 @@ Compute the permanent of a matrix using the best algorithm for the shape of the 
 Compute the permanent of a matrix combinatorically.
 
 **Formula:**
-$$\text{per}(A) = \sum_{\sigma \in P(N,M)}{\prod_{i=1}^M{a_{i,{\sigma(i)}}}}$$
+```math
+\text{per}(A) = \sum_{\sigma \in P(N,M)}{\prod_{i=1}^M{a_{i,{\sigma(i)}}}}
+```
 
 **Parameters:**
 
@@ -46,28 +48,28 @@ $$\text{per}(A) = \sum_{\sigma \in P(N,M)}{\prod_{i=1}^M{a_{i,{\sigma(i)}}}}$$
 
 **Formula:**
 
-$$
+```math
 \text{per}(A) = \frac{1}{2^{N-1}} \cdot \sum_{\delta}{
     \left(\sum_{k=1}^N{\delta_k}\right){\prod_{j=1}^N{\sum_{i=1}^N{\delta_i a_{i,j}}}}}
-$$
+```
 
 **Additional Information:**
 The original formula has been generalized here to work with $M$-by-$N$ rectangular permanents with $M \leq N$ by use of the following identity (shown here for $M \geq N$):
 
-$$
-\text{per}\left(\begin{matrix}a_{1,1} & \cdots & a_{1,N} \\\vdots & \ddots & \vdots \\a_{M,1} & \cdots & a_{M,N} \\\end{matrix}\right) = \frac{1}{(M - N + 1)!} \cdot \text{per}\left(\begin{matrix}a_{1,1} & \cdots & a_{1,N} & 1_{1,N+1} & \cdots & 1_{1,M} \\\vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\a_{M,1} & \cdots & a_{M,N} & 1_{M,N+1} & \cdots & 1_{M,M} \\\end{matrix}\right)
-$$
+```math
+\text{per}\left(\begin{matrix}a_{1,1} & \cdots & a_{1,N} \\ \vdots & \ddots & \vdots \\ a_{M,1} & \cdots & a_{M,N}\end{matrix}\right) = \frac{1}{(M - N + 1)!} \cdot \text{per}\left(\begin{matrix}a_{1,1} & \cdots & a_{1,N} & 1_{1,N+1} & \cdots & 1_{1,M} \\ \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\ a_{M,1} & \cdots & a_{M,N} & 1_{M,N+1} & \cdots & 1_{M,M}\end{matrix}\right)
+```
 
 This can be neatly fit into the original formula by extending the inner sums over $\delta$ from $[1,M]$ to $[1,N]$:
 
-$$
+```math
 \text{per}(A) = \frac{1}{2^{N-1}} \cdot \frac{1}{(N - M + 1)!}\cdot \sum_{\delta}{
         \left(\sum_{k=1}^N{\delta_k}\right)
         \prod_{j=1}^N{\left(
             \sum_{i=1}^M{\delta_i a_{i,j}} + \sum_{i=M+1}^N{\delta_i}
         \right)}
     }
-$$
+```
 
 **Parameters:**
 
@@ -83,7 +85,7 @@ $$
 
 **Formula:**
 
-$$
+```math
 \text{per}(A) = \sum_{k=0}^{M-1}{
         {(-1)}^k
         \binom{N - M + k}{k}
@@ -93,7 +95,7 @@ $$
             }
         }
     }
-$$
+```
 
 **Parameters:**
 
@@ -115,32 +117,32 @@ The permanent package allows you to solve the permanent of a given matrix using 
 
 3. Create and activate a virtual environment for this project named `permanents`. One way to do this is with pip.
 
-   ```console
+   ```bash
    pip install virtualenv
    virtualenv permanents
    ```
 
 4. Activate the virtual environment.
 
-   ```console
-   source ~/permanents/bin/activate
+   ```bash
+   source permanents/bin/activate
    ```
 
 5. Install Sphinx and other dependencies.
 
-   ```console
-   pip install Sphinx sphinx-rtd-theme sphinx-copybutton
+   ```bash
+   pip install sphinx sphinx-rtd-theme sphinx-copybutton
    ```
 
 6. Install Python dependencies.
 
-   ```console
+   ```bash
    pip install numpy pandas scikit-learn
    ```
 
 7. (Optional) Install Pytest if you wish to run tests.
 
-   ```console
+   ```bash
    pip install pytest
    ```
 
@@ -148,33 +150,33 @@ Now that you have your environment set up and activated you are ready to compile
 
 ## Option 1: Use given parameters
 
-1. Compile the permanent code.
+1. Compile the permanent code (natively for your CPU architecture).
 
-   ```console
-   make -BUILD_NATIVE
+   ```bash
+   make BUILD_NATIVE=1
    ```
 
-   **Note: if using M1 architecture, simply run the following.**
+   **Note: if using M1 architecture, or want a portable build, simply run the following.**
 
-   ```console
+   ```bash
    make
    ```
 
 2. (Optional) Run tests on the algorithms.
 
-   ```console
+   ```bash
    make test
    ```
 
 3. Compile the website.
 
-   ```console
+   ```bash
    cd docs && make html
    ```
 
 4. Load the website.
 
-   ```console
+   ```bash
    open build/html/index.html
    ```
 
@@ -182,28 +184,28 @@ Now that you have your environment set up and activated you are ready to compile
 
 1. Compile the permanent code with the `tuning` flag.
 
-   ```console
-   make -RUN_TUNING
+   ```bash
+   make RUN_TUNING=1
    ```
 
    **Note: it will take some time to run the tuning tests on your machine.**
 
 2. (Optional) Run tests on the algorithms.
 
-   ```console
+   ```bash
    make test
    ```
 
 3. Compile the website.
 
-   ```console
+   ```bash
    cd docs && make html
    ```
 
-4. Load the website.
+4. Load the website using your web browser.
 
-   ```console
-   open build/html/index.html
+   ```bash
+   <browser> build/html/index.html
    ```
 
 ## Notes about the `Makefile`
