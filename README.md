@@ -3,7 +3,7 @@
 
 # Permanent
 
-The permanent of a square matrix, like the determinant is a polynomial in the entries of the matrix. Unlike the determinant, the signatures of the permutations are not taken into account making the permanent much more difficult to compute because decomposition methods cannot be used.
+The permanent of a (square) matrix, like the determinant is a polynomial in the entries of the matrix. Unlike the determinant, the signatures of the permutations are not taken into account making the permanent much more difficult to compute because decomposition methods cannot be used.
 
 The permanent commonly appears in problems related to quantum mechanics, and the most common brute-force combinatorial method has time complexity $\mathcal{O}(N!N)$, thus it is useful to look for more efficient algorithms. The two algorithms considered to be the fastest are one by Ryser (based on the inclusion-exclusion principle), and one by Glynn (based on invariant theory).
 
