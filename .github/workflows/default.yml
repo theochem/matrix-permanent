@@ -1,15 +1,20 @@
 name: CI
 
 on:
+
   push:
+
     branches:
       - main
 
 jobs:
+
   build:
+
     runs-on: ubuntu-latest
 
     steps:
+
     - uses: actions/checkout@v1
 
     - name: Install dependencies
@@ -23,12 +28,13 @@ jobs:
         build-command: "make html"
         docs-folder: "docs/"
 
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-pages-artifact@v3
       with:
         name: github-pages
         path: docs/build/html/
 
   deploy:
+
     permissions:
       contents: read
       pages: write
