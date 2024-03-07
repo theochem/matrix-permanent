@@ -1,5 +1,8 @@
 [![Python 3](http://img.shields.io/badge/python-3-blue.svg)](https://docs.python.org/3/)
 [![gcc](https://img.shields.io/badge/-C++-blue?logo=cplusplus)](https://gcc.gnu.org/)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/theochem/matrix-permanent/actions/workflows/pull_request.yml)
+[![GNU GPLv3](https://img.shields.io/badge/license-%20%20GNU%20GPLv3%20-green?style=plastic)](https://www.gnu.org/licenses/gpl-3.0.en.html)
+
 
 # Permanent
 
