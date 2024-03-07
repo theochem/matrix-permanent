@@ -3,7 +3,8 @@ Installation
 The permanent package allows you to solve the permanent of a given matrix using the optimal algorithm for your matrix dimensions. You can either use the pre-defined parameters or fine tune them to your machine.
 
 Setting up your environment
-===========================
+---------------------------
+
 #. Install Python on your machine. Depending on your operating system, the instructions may vary.
 
 #. Install gcc on your machine. Depending on your operating system, the instructions may vary.
@@ -43,7 +44,8 @@ Setting up your environment
 Now that you have your environment set up and activated you are ready to compile the source code into an executable. Here you have two options - compile the code as is with the pre-defined parameters for algorithm swapping, **or** compile the code with machine specific tuning for algorithm swapping. *Note that machine specific tuning will run a series of tests. This will take anywhere from 10 minutes to 1 hour depending on your system.*
 
 Option 1: Use given parameters
-==============================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 #. Compile the permanent code.
 
 	.. code-block:: bash
@@ -75,7 +77,8 @@ Option 1: Use given parameters
 		<browser> build/html/index.html
 
 Option 2: Tune parameters
-=========================
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
 #. Compile the permanent code with the ``tuning`` flag.
 
 	.. code-block:: bash
@@ -103,7 +106,8 @@ Option 2: Tune parameters
 		<browser> build/html/index.html
 
 Notes about the ``Makefile``
-===============================
+----------------------------
+
 The Makefile in this project is used to compile C and Python libraries and includes rules for installation, testing, and cleaning. Here's a breakdown of its sections:
 
 #. Variables:
@@ -135,4 +139,3 @@ The Makefile in this project is used to compile C and Python libraries and inclu
 * ``permanent/permanent.so``: Compiles Python extension module.
 * ``src/libpermanent.o``: Compiles object code.
 * ``libpermanent.a, libpermanent.so``: Compiles static and shared C libraries respectively.
-
