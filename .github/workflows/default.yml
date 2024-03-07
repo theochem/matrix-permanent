@@ -23,32 +23,39 @@ jobs:
     - name: Build library
       run: make PYTHON=python && cp -r permanent/ docs/
 
-    - uses: ammaraskar/sphinx-action@master
+    - name: Build documentation
+      uses: ammaraskar/sphinx-action@master
       with:
         build-command: "make html"
         docs-folder: "docs/"
 
-    - uses: actions/upload-pages-artifact@v3
+    - name: Fix permissions
+      run: |
+        chmod -c -R +rX "docs/build/html/" | while read line; do
+          echo "::warning title=Invalid file permissions automatically fixed::$line"
+        done
+
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v3
       with:
-        name: github-pages
         path: docs/build/html/
 
   deploy:
 
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-
     runs-on: ubuntu-latest
 
     needs: build
+
+    permissions:
+      pages: write
+      id-token: write
 
     environment:
       name: github-pages
       url: ${{steps.deployment.outputs.page_url}}
 
     steps:
-      - name: Deploy artifact
+
+      - name: Deploy artifact to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
