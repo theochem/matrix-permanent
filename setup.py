@@ -2,8 +2,6 @@
 
 from setuptools import setup
 
-import numpy as np
-
 
 name = "permanent"
 
@@ -61,7 +59,6 @@ package_data = {
 
 
 if __name__ == "__main__":
-
     setup(
         name=name,
         version=version,
