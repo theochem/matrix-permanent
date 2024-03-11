@@ -2,5 +2,3 @@ numpy
 sphinx
 sphinx-rtd-theme
 sphinx-copybutton
-pre-commit
-cppcheck
