@@ -13,10 +13,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Use the setup-cppcheck action to install cppcheck
-    - name: Install cppcheck
-      uses: lukka/run-cppcheck@v1
-
     - name: Install dependencies
       run: |
         sudo apt-get install -y build-essential python-dev-is-python3 python3-numpy python3-pytest

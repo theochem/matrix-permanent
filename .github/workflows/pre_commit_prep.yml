@@ -1,0 +1,12 @@
+name: Install cppcheck
+
+on:
+  push:
+
+jobs:
+  install-cppcheck:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install cppcheck
+      run: sudo apt-get install -y cppcheck
