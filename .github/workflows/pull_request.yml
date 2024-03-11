@@ -10,15 +10,12 @@ jobs:
 
     steps:
 
-    - name: Install cppcheck
-      run: |
-        sudo apt-get install -y cppcheck
-
-    - name: Checkout code
-      uses: actions/checkout@v2
-
     - name: Checkout repository
       uses: actions/checkout@v4
+
+    # Use the setup-cppcheck action to install cppcheck
+    - name: Install cppcheck
+      uses: lukka/run-cppcheck@v1
 
     - name: Install dependencies
       run: |
