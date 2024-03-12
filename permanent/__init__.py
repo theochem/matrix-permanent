@@ -1,6 +1,5 @@
 r"""Module for computing the permanents of matrices."""
 
-
 __all__ = [
     "opt",
     "combinatoric",
