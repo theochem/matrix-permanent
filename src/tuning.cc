@@ -1,15 +1,20 @@
-#include <cstdlib>
-#include <cmath>
-#include <ctime>
+/* Copyright 2034 QC-Devs (GPLv3) */
 
+#include <cmath>
+#include <cstdlib>
+#include <ctime>
 #include <fstream>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <string>
 
 #include "permanent.h"
 
+#ifdef WITH_TUNING_FILE
 
+#include "tuning.h"
+
+#endif  // WITH_TUNING_FILE
 
 #ifdef RUN_TUNING
 
@@ -39,14 +44,11 @@ constexpr double DEFAULT_PARAM_3 = 15.297940;
 
 constexpr double DEFAULT_PARAM_4 = 3.0;
 
-#endif /* RUN_TUNING */
-
-
+#endif  // RUN_TUNING
 
 #ifdef RUN_TUNING
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     (void)argc;
     (void)argv;
 
@@ -56,8 +58,7 @@ int main(int argc, char *argv[])
 
     csv_file.open(CSV_FILE);
 
-    if (csv_file.fail())
-    {
+    if (csv_file.fail()) {
         std::cerr << "Cannot open CSV file" << std::endl;
         return 2;
     }
@@ -78,8 +79,7 @@ int main(int argc, char *argv[])
 
     csv_file << CSV_HEADER << '\n';
 
-    if (csv_file.fail())
-    {
+    if (csv_file.fail()) {
         std::cerr << "Error writing to CSV file" << std::endl;
         csv_file.close();
         return 2;
@@ -89,95 +89,87 @@ int main(int argc, char *argv[])
 
     std::size_t i, m, n;
 
-    double soln_combn;
-    double soln_glynn;
-    double soln_ryser;
-
     std::clock_t begin, end;
+
+    double soln_combn, soln_glynn, soln_ryser;
+    double mean_combn, mean_glynn, mean_ryser;
 
     double time_combn[128];
     double time_glynn[128];
     double time_ryser[128];
 
-    double mean_combn, mean_glynn, mean_ryser;
+    double array[MAX_ROWS * MAX_COLS];
 
     int fastest;
-
-    double array[MAX_ROWS * MAX_COLS];
 
     /* Random binary matrix for testing. */
 
     std::srand(1234789789U);
-    for (i = 0; i < MAX_ROWS * MAX_COLS; ++i)
-    {
-        array[i] = (std::rand() / (double)RAND_MAX - 0.5) * 2;
+    for (i = 0; i < MAX_ROWS * MAX_COLS; ++i) {
+        array[i] = (std::rand() / static_cast<double>(RAND_MAX) - 0.5) * 2;
     }
 
     /* Iterate over number of rows and number of columns. */
 
-    for (m = 2; m <= MAX_ROWS; ++m)
-    {
-        for (n = m; n <= MAX_COLS; ++n)
-        {
-            /* Solve the permanent using each algorithm NUM_TRIALS number of times. */
+    for (m = 2; m <= MAX_ROWS; ++m) {
+        for (n = m; n <= MAX_COLS; ++n) {
+            /* Solve the permanent using each algorithm NUM_TRIALS number of
+             * times. */
 
-            if (m == n)
-            {
-                for (i = 0; i != NUM_TRIALS; ++i)
-                {
-
+            if (m == n) {
+                for (i = 0; i != NUM_TRIALS; ++i) {
                     begin = std::clock();
                     soln_combn = combinatoric<double>(m, n, array);
                     end = std::clock();
-                    time_combn[i] = (double)(end - begin);
+                    time_combn[i] = static_cast<double>(end - begin);
 
                     begin = std::clock();
                     soln_glynn = glynn<double>(m, n, array);
                     end = std::clock();
-                    time_glynn[i] = (double)(end - begin);
+                    time_glynn[i] = static_cast<double>(end - begin);
 
                     begin = std::clock();
                     soln_ryser = ryser<double>(m, n, array);
                     end = std::clock();
-                    time_ryser[i] = (double)(end - begin);
+                    time_ryser[i] = static_cast<double>(end - begin);
 
-                    if ((std::fabs(soln_combn - soln_glynn) / soln_combn > TOLERANCE) ||
-                        (std::fabs(soln_combn - soln_ryser) / soln_ryser > TOLERANCE)) {
+                    if ((std::fabs(soln_combn - soln_glynn) / soln_combn >
+                         TOLERANCE) ||
+                        (std::fabs(soln_combn - soln_ryser) / soln_ryser >
+                         TOLERANCE)) {
                         std::cerr << "Bad permanent values:"
-                            << "\nCombn: " << soln_combn
-                            << "\nGlynn: " << soln_glynn
-                            << "\nRyser: " << soln_ryser << std::endl;
+                                  << "\nCombn: " << soln_combn
+                                  << "\nGlynn: " << soln_glynn
+                                  << "\nRyser: " << soln_ryser << std::endl;
                         csv_file.close();
                         return 1;
                     }
                 }
-            }
-            else
-            {
-                for (i = 0; i != NUM_TRIALS; ++i)
-                {
+            } else {
+                for (i = 0; i != NUM_TRIALS; ++i) {
                     begin = std::clock();
                     soln_combn = combinatoric_rectangular<double>(m, n, array);
                     end = std::clock();
-                    time_combn[i] = (double)(end - begin);
+                    time_combn[i] = static_cast<double>(end - begin);
 
                     begin = std::clock();
                     soln_glynn = glynn_rectangular<double>(m, n, array);
                     end = std::clock();
-                    time_glynn[i] = (double)(end - begin);
+                    time_glynn[i] = static_cast<double>(end - begin);
 
                     begin = std::clock();
                     soln_ryser = ryser_rectangular<double>(m, n, array);
                     end = std::clock();
-                    time_ryser[i] = (double)(end - begin);
+                    time_ryser[i] = static_cast<double>(end - begin);
 
-                    if ((std::fabs(soln_combn - soln_glynn) / soln_combn > TOLERANCE) ||
-                        (std::fabs(soln_combn - soln_ryser) / soln_ryser > TOLERANCE)) {
-                        std::cerr << std::scientific
-                            << "Bad permanent values:"
-                            << "\nCombn: " << soln_combn
-                            << "\nGlynn: " << soln_glynn
-                            << "\nRyser: " << soln_ryser << std::endl;
+                    if ((std::fabs(soln_combn - soln_glynn) / soln_combn >
+                         TOLERANCE) ||
+                        (std::fabs(soln_combn - soln_ryser) / soln_ryser >
+                         TOLERANCE)) {
+                        std::cerr << std::scientific << "Bad permanent values:"
+                                  << "\nCombn: " << soln_combn
+                                  << "\nGlynn: " << soln_glynn
+                                  << "\nRyser: " << soln_ryser << std::endl;
                         csv_file.close();
                         return 1;
                     }
@@ -190,16 +182,15 @@ int main(int argc, char *argv[])
             mean_glynn = 0.0;
             mean_ryser = 0.0;
 
-            for (i = 0; i != NUM_TRIALS; ++i)
-            {
+            for (i = 0; i != NUM_TRIALS; ++i) {
                 mean_combn += time_combn[i];
                 mean_glynn += time_glynn[i];
                 mean_ryser += time_ryser[i];
             }
 
-            mean_combn = (double)mean_combn / (double)NUM_TRIALS;
-            mean_glynn = (double)mean_glynn / (double)NUM_TRIALS;
-            mean_ryser = (double)mean_ryser / (double)NUM_TRIALS;
+            mean_combn = mean_combn / NUM_TRIALS;
+            mean_glynn = mean_glynn / NUM_TRIALS;
+            mean_ryser = mean_ryser / NUM_TRIALS;
 
             /* Find the fastest algorithm */
 
@@ -213,17 +204,18 @@ int main(int argc, char *argv[])
 
             /* Write line */
 
-            std::cout << std::scientific << (double)m / n << ',' << std::setw(2) << n << ','
-                      << std::scientific << mean_combn << ',' << mean_glynn << ','
-                      << std::scientific << mean_ryser << ',' << fastest << std::endl;
+            std::cout << std::scientific << static_cast<double>(m) / n << ','
+                      << std::setw(2) << n << ',' << std::scientific
+                      << mean_combn << ',' << mean_glynn << ','
+                      << std::scientific << mean_ryser << ',' << fastest
+                      << std::endl;
 
-
-            csv_file << std::scientific << (double)m / n << ',' << std::setw(2) << n << ','
-                     << std::scientific << mean_combn << ',' << mean_glynn << ','
+            csv_file << std::scientific << static_cast<double>(m) / n << ','
+                     << std::setw(2) << n << ',' << std::scientific
+                     << mean_combn << ',' << mean_glynn << ','
                      << std::scientific << mean_ryser << ',' << fastest << '\n';
 
-            if (csv_file.fail())
-            {
+            if (csv_file.fail()) {
                 std::cerr << "Error writing to CSV file" << std::endl;
                 csv_file.close();
                 return 2;
@@ -240,12 +232,9 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-
 #else
 
-
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     (void)argc;
     (void)argv;
 
@@ -255,8 +244,7 @@ int main(int argc, char *argv[])
 
     header_file.open(HEADER_FILE);
 
-    if (header_file.fail())
-    {
+    if (header_file.fail()) {
         std::cerr << "Cannot open header file" << std::endl;
         return 2;
     }
@@ -267,15 +255,19 @@ int main(int argc, char *argv[])
 
     /* Write default header file */
 
-    header_file << "#ifndef PERMANENT_TUNING_H\n";
-    header_file << "#define PERMANENT_TUNING_H\n";
+    header_file << "#ifndef TUNING_H_\n";
+    header_file << "#define TUNING_H_\n";
     header_file << "\n\n";
-    header_file << "#define PARAM_1 " << std::scientific << DEFAULT_PARAM_1 << '\n';
-    header_file << "#define PARAM_2 " << std::scientific << DEFAULT_PARAM_2 << '\n';
-    header_file << "#define PARAM_3 " << std::scientific << DEFAULT_PARAM_3 << '\n';
-    header_file << "#define PARAM_4 " << std::scientific << DEFAULT_PARAM_4 << '\n';
+    header_file << "constexpr double PARAM_1 = " << std::scientific
+                << DEFAULT_PARAM_1 << ";\n";
+    header_file << "constexpr double PARAM_2 = " << std::scientific
+                << DEFAULT_PARAM_2 << ";\n";
+    header_file << "constexpr double PARAM_3 = " << std::scientific
+                << DEFAULT_PARAM_3 << ";\n";
+    header_file << "constexpr double PARAM_4 = " << std::scientific
+                << DEFAULT_PARAM_4 << ";\n";
     header_file << "\n\n";
-    header_file << "#endif /* PERMANENT_TUNING_H */\n";
+    header_file << "#endif  // TUNING_H_\n";
 
     if (header_file.fail()) {
         std::cerr << "Error writing to header file" << std::endl;
@@ -292,5 +284,4 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-
-#endif /* RUN_TUNING */
+#endif  // RUN_TUNING

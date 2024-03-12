@@ -79,17 +79,17 @@ param_4 = ryser_limit
 try:
     with open(HEADER_FILE, "w") as file_ptr:
         file_ptr.write(
-            f"""#ifndef PERMANENT_TUNING_H
-#define PERMANENT_TUNING_H
+            f"""#ifndef SRC_TUNING_H_
+#define TUNING_H_
 
 
-#define PARAM_1 {param_1:.9f}
-#define PARAM_2 {param_2:.9f}
-#define PARAM_3 {param_3:.9f}
-#define PARAM_4 {param_4:.9f}
+ constexpr double PARAM_1 = {param_1:.9f};
+ constexpr double PARAM_2 = {param_2:.9f};
+ constexpr double PARAM_3 = {param_3:.9f};
+ constexpr double PARAM_4 = {param_4:.9f};
 
 
-#endif /* PERMANENT_TUNING_H */
+#endif  // TUNING_H_
 """
         )
 

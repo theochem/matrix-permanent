@@ -1,7 +1,4 @@
-#include <cstdlib>
-#include <cstdint>
-
-#include <complex>
+/* Copyright 2034 QC-Devs (GPLv3) */
 
 #include <Python.h>
 
@@ -9,14 +6,16 @@
 #include <numpy/arrayobject.h>
 #include <numpy/ndarraytypes.h>
 
-#include "permanent.h"
+#include <complex>
+#include <cstdint>
+#include <cstdlib>
 
+#include "permanent.h"
 
 static const char DOCSTRING_MODULE[] = R"""(
 Permanent module C extension.
 
 )""";
-
 
 static const char DOCSTRING_PERMANENT[] = R"""(
 Compute the permanent of a matrix using the best algorithm for the shape of the given matrix.
@@ -31,7 +30,6 @@ permanent : (np.double|np.complex)
     Permanent of matrix.
 
 )""";
-
 
 static const char DOCSTRING_COMBINATORIC[] = R"""(
 Compute the permanent of a matrix combinatorically.
@@ -52,7 +50,6 @@ permanent : (np.double|np.complex)
     Permanent of matrix.
 
 )""";
-
 
 static const char DOCSTRING_GLYNN[] = R"""(
 Compute the permanent of a matrix via Glynn's algorithm [Glynn]_.
@@ -112,7 +109,6 @@ permanent : (np.double|np.complex)
 
 )""";
 
-
 static const char DOCSTRING_RYSER[] = R"""(
 Compute the permanent of a matrix via Ryser's algorithm [Ryser]_.
 
@@ -142,14 +138,14 @@ permanent : (np.double|np.complex)
 
 )""";
 
-
-static PyObject *py_opt(PyObject *module, PyObject *object)
-{
+static PyObject *py_opt(PyObject *module, PyObject *object) {
     (void)module;
 
-    PyArrayObject *matrix = (PyArrayObject *)PyArray_FromAny(object, nullptr, 2, 2, NPY_ARRAY_CARRAY_RO, nullptr);
+    PyArrayObject *matrix = reinterpret_cast<PyArrayObject *>(
+        PyArray_FromAny(object, nullptr, 2, 2, NPY_ARRAY_CARRAY_RO, nullptr));
     if (!matrix) {
-        PyErr_SetString(PyExc_TypeError, "Argument must be a 2-dimensional array");
+        PyErr_SetString(PyExc_TypeError,
+                        "Argument must be a 2-dimensional array");
         return nullptr;
     }
 
@@ -158,33 +154,35 @@ static PyObject *py_opt(PyObject *module, PyObject *object)
     if (m > n) {
         return py_opt(module, PyArray_Transpose(matrix, nullptr));
     } else if (m > 64 || n > 64) {
-        PyErr_SetString(PyExc_ValueError, "Argument array must have <=64 rows and columns");
+        PyErr_SetString(PyExc_ValueError,
+                        "Argument array must have <=64 rows and columns");
         return nullptr;
     }
 
     int type = PyArray_TYPE(matrix);
     if (type == NPY_DOUBLE) {
-        double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
+        double *ptr = reinterpret_cast<double *>(PyArray_GETPTR2(matrix, 0, 0));
         return PyFloat_FromDouble(opt<double>(m, n, ptr));
-    }
-    else if (type == NPY_COMPLEX128) {
-        std::complex<double> *ptr = (std::complex<double> *)PyArray_GETPTR2(matrix, 0, 0);
+    } else if (type == NPY_COMPLEX128) {
+        std::complex<double> *ptr = reinterpret_cast<std::complex<double> *>(
+            PyArray_GETPTR2(matrix, 0, 0));
         std::complex<double> out = opt<std::complex<double>>(m, n, ptr);
         return PyComplex_FromDoubles(out.real(), out.imag());
     } else {
-        PyErr_SetString(PyExc_TypeError, "Array must have dtype (double|complex)");
+        PyErr_SetString(PyExc_TypeError,
+                        "Array must have dtype (double|complex)");
         return nullptr;
     }
 }
 
-
-static PyObject *py_combinatoric(PyObject *module, PyObject *object)
-{
+static PyObject *py_combinatoric(PyObject *module, PyObject *object) {
     (void)module;
 
-    PyArrayObject *matrix = (PyArrayObject *)PyArray_FromAny(object, nullptr, 2, 2, NPY_ARRAY_CARRAY_RO, nullptr);
+    PyArrayObject *matrix = reinterpret_cast<PyArrayObject *>(
+        PyArray_FromAny(object, nullptr, 2, 2, NPY_ARRAY_CARRAY_RO, nullptr));
     if (!matrix) {
-        PyErr_SetString(PyExc_TypeError, "Argument must be a 2-dimensional array");
+        PyErr_SetString(PyExc_TypeError,
+                        "Argument must be a 2-dimensional array");
         return nullptr;
     }
 
@@ -196,32 +194,33 @@ static PyObject *py_combinatoric(PyObject *module, PyObject *object)
 
     int type = PyArray_TYPE(matrix);
     if (type == NPY_DOUBLE) {
-        double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
+        double *ptr = reinterpret_cast<double *>(PyArray_GETPTR2(matrix, 0, 0));
         return PyFloat_FromDouble(
             (m == n) ? combinatoric<double>(m, n, ptr)
-                     : combinatoric_rectangular<double>(m, n, ptr)
-        );
-    }
-    else if (type == NPY_COMPLEX128) {
-        std::complex<double> *ptr = (std::complex<double> *)PyArray_GETPTR2(matrix, 0, 0);
+                     : combinatoric_rectangular<double>(m, n, ptr));
+    } else if (type == NPY_COMPLEX128) {
+        std::complex<double> *ptr = reinterpret_cast<std::complex<double> *>(
+            PyArray_GETPTR2(matrix, 0, 0));
         std::complex<double> out =
-            (m == n) ? combinatoric<std::complex<double>>(m, n, ptr)
-                     : combinatoric_rectangular<std::complex<double>>(m, n, ptr);
+            (m == n)
+                ? combinatoric<std::complex<double>>(m, n, ptr)
+                : combinatoric_rectangular<std::complex<double>>(m, n, ptr);
         return PyComplex_FromDoubles(out.real(), out.imag());
     } else {
-        PyErr_SetString(PyExc_TypeError, "Array must have dtype (double|complex)");
+        PyErr_SetString(PyExc_TypeError,
+                        "Array must have dtype (double|complex)");
         return nullptr;
     }
 }
 
-
-static PyObject *py_glynn(PyObject *module, PyObject *object)
-{
+static PyObject *py_glynn(PyObject *module, PyObject *object) {
     (void)module;
 
-    PyArrayObject *matrix = (PyArrayObject *)PyArray_FromAny(object, nullptr, 2, 2, NPY_ARRAY_CARRAY_RO, nullptr);
+    PyArrayObject *matrix = reinterpret_cast<PyArrayObject *>(
+        PyArray_FromAny(object, nullptr, 2, 2, NPY_ARRAY_CARRAY_RO, nullptr));
     if (!matrix) {
-        PyErr_SetString(PyExc_TypeError, "Argument must be a 2-dimensional array");
+        PyErr_SetString(PyExc_TypeError,
+                        "Argument must be a 2-dimensional array");
         return nullptr;
     }
 
@@ -233,32 +232,32 @@ static PyObject *py_glynn(PyObject *module, PyObject *object)
 
     int type = PyArray_TYPE(matrix);
     if (type == NPY_DOUBLE) {
-        double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
-        return PyFloat_FromDouble(
-            (m == n) ? glynn<double>(m, n, ptr)
-                     : glynn_rectangular<double>(m, n, ptr)
-        );
-    }
-    else if (type == NPY_COMPLEX128) {
-        std::complex<double> *ptr = (std::complex<double> *)PyArray_GETPTR2(matrix, 0, 0);
+        double *ptr = reinterpret_cast<double *>(PyArray_GETPTR2(matrix, 0, 0));
+        return PyFloat_FromDouble((m == n)
+                                      ? glynn<double>(m, n, ptr)
+                                      : glynn_rectangular<double>(m, n, ptr));
+    } else if (type == NPY_COMPLEX128) {
+        std::complex<double> *ptr = reinterpret_cast<std::complex<double> *>(
+            PyArray_GETPTR2(matrix, 0, 0));
         std::complex<double> out =
             (m == n) ? glynn<std::complex<double>>(m, n, ptr)
                      : glynn_rectangular<std::complex<double>>(m, n, ptr);
         return PyComplex_FromDoubles(out.real(), out.imag());
     } else {
-        PyErr_SetString(PyExc_TypeError, "Array must have dtype (double|complex)");
+        PyErr_SetString(PyExc_TypeError,
+                        "Array must have dtype (double|complex)");
         return nullptr;
     }
 }
 
-
-static PyObject *py_ryser(PyObject *module, PyObject *object)
-{
+static PyObject *py_ryser(PyObject *module, PyObject *object) {
     (void)module;
 
-    PyArrayObject *matrix = (PyArrayObject *)PyArray_FromAny(object, nullptr, 2, 2, NPY_ARRAY_CARRAY_RO, nullptr);
+    PyArrayObject *matrix = reinterpret_cast<PyArrayObject *>(
+        PyArray_FromAny(object, nullptr, 2, 2, NPY_ARRAY_CARRAY_RO, nullptr));
     if (!matrix) {
-        PyErr_SetString(PyExc_TypeError, "Argument must be a 2-dimensional array");
+        PyErr_SetString(PyExc_TypeError,
+                        "Argument must be a 2-dimensional array");
         return nullptr;
     }
 
@@ -270,24 +269,23 @@ static PyObject *py_ryser(PyObject *module, PyObject *object)
 
     int type = PyArray_TYPE(matrix);
     if (type == NPY_DOUBLE) {
-        double *ptr = (double *)PyArray_GETPTR2(matrix, 0, 0);
-        return PyFloat_FromDouble(
-            (m == n) ? ryser<double>(m, n, ptr)
-                     : ryser_rectangular<double>(m, n, ptr)
-        );
-    }
-    else if (type == NPY_COMPLEX128) {
-        std::complex<double> *ptr = (std::complex<double> *)PyArray_GETPTR2(matrix, 0, 0);
+        double *ptr = reinterpret_cast<double *>(PyArray_GETPTR2(matrix, 0, 0));
+        return PyFloat_FromDouble((m == n)
+                                      ? ryser<double>(m, n, ptr)
+                                      : ryser_rectangular<double>(m, n, ptr));
+    } else if (type == NPY_COMPLEX128) {
+        std::complex<double> *ptr = reinterpret_cast<std::complex<double> *>(
+            PyArray_GETPTR2(matrix, 0, 0));
         std::complex<double> out =
             (m == n) ? ryser<std::complex<double>>(m, n, ptr)
                      : ryser_rectangular<std::complex<double>>(m, n, ptr);
         return PyComplex_FromDoubles(out.real(), out.imag());
     } else {
-        PyErr_SetString(PyExc_TypeError, "Array must have dtype (double|complex)");
+        PyErr_SetString(PyExc_TypeError,
+                        "Array must have dtype (double|complex)");
         return nullptr;
     }
 }
-
 
 /* Define the Python methods that will go into the C extension module.       *
  *                                                                           *
@@ -298,25 +296,31 @@ static PyObject *py_ryser(PyObject *module, PyObject *object)
 
 static PyMethodDef methods[] = {
     /* Python function name     C function          Args flag   Docstring */
-    { "opt",                    py_opt,             METH_O,     DOCSTRING_PERMANENT },
-    { "combinatoric",           py_combinatoric,    METH_O,     DOCSTRING_COMBINATORIC },
-    { "glynn",                  py_glynn,           METH_O,     DOCSTRING_GLYNN },
-    { "ryser",                  py_ryser,           METH_O,     DOCSTRING_RYSER },
-    { nullptr,                  nullptr,            0,          nullptr } /* sentinel value */
+    {"opt", py_opt, METH_O, DOCSTRING_PERMANENT},
+    {"combinatoric", py_combinatoric, METH_O, DOCSTRING_COMBINATORIC},
+    {"glynn", py_glynn, METH_O, DOCSTRING_GLYNN},
+    {"ryser", py_ryser, METH_O, DOCSTRING_RYSER},
+    {nullptr, nullptr, 0, nullptr} /* sentinel value */
 };
-
 
 /* Define the C extension module. */
 
 static struct PyModuleDef definition = {
-    PyModuleDef_HEAD_INIT, "permanent", DOCSTRING_MODULE, -1, methods, nullptr, nullptr, nullptr, nullptr
+    PyModuleDef_HEAD_INIT,
+    "permanent",
+    DOCSTRING_MODULE,
+    -1,
+    methods,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
 };
-
 
 /* Initialize the C extension module. */
 
 PyMODINIT_FUNC PyInit_permanent(void) {
-    Py_Initialize();                      /* Initialize Python API */
-    import_array();                       /* Initialize NumPy NDArray API */
-    return PyModule_Create(&definition);  /* Create module. */
+    Py_Initialize();                     /* Initialize Python API */
+    import_array();                      /* Initialize NumPy NDArray API */
+    return PyModule_Create(&definition); /* Create module. */
 }
