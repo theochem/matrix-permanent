@@ -79,7 +79,7 @@ param_4 = ryser_limit
 try:
     with open(HEADER_FILE, "w") as file_ptr:
         file_ptr.write(
-            f"""#ifndef SRC_TUNING_H_
+            f"""#ifndef TUNING_H_
 #define TUNING_H_
 
 
