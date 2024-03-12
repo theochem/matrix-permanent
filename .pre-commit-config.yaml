@@ -49,4 +49,5 @@ repos:
     rev: v1.3.5
     hooks:
       - id: cppcheck                                  # Perform static code analysis of the C/C++ files
+        additional_dependencies: ["cppcheck"]
         args: [--suppress=missingIncludeSystem,--enable=all,--suppress=cstyleCast:src/py_permanent.cc,--suppress=unusedFunction:src/py_permanent.cc,"--suppress=*:src/perm-mv0.h","--suppress=*:src/kperm-gray.h","--suppress=*:src/tables.h","--suppress=*:src/swap.h","--suppress=*:src/permanent.h"]
