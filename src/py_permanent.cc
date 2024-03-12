@@ -161,7 +161,8 @@ static PyObject *py_opt(PyObject *module, PyObject *object) {
 
     int type = PyArray_TYPE(matrix);
     if (type == NPY_DOUBLE) {
-        double *ptr = reinterpret_cast<double *>(PyArray_GETPTR2(matrix, 0, 0));
+        const double *ptr =
+            reinterpret_cast<const double *>(PyArray_GETPTR2(matrix, 0, 0));
         return PyFloat_FromDouble(opt<double>(m, n, ptr));
     } else if (type == NPY_COMPLEX128) {
         std::complex<double> *ptr = reinterpret_cast<std::complex<double> *>(
@@ -319,6 +320,7 @@ static struct PyModuleDef definition = {
 
 /* Initialize the C extension module. */
 
+// cppcheck-suppress unusedFunction
 PyMODINIT_FUNC PyInit_permanent(void) {
     Py_Initialize();                     /* Initialize Python API */
     import_array();                      /* Initialize NumPy NDArray API */

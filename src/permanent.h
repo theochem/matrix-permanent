@@ -56,7 +56,7 @@ COMPLEX_OPS(/)
 #undef COMPLEX_OPS
 
 template <typename T>
-T combinatoric(const std::size_t m, const std::size_t n, T *const ptr) {
+T combinatoric(const std::size_t m, const std::size_t n, const T *ptr) {
     (void)n;
 
     perm_mv0 permutations(m);
@@ -64,11 +64,10 @@ T combinatoric(const std::size_t m, const std::size_t n, T *const ptr) {
     const std::size_t *perm = permutations.data();
 
     std::size_t i;
-    T prod;
     T out = 0.0;
 
     do {
-        prod = 1.0;
+        T prod = 1.0;
         for (i = 0; i < m; ++i) {
             prod *= ptr[i * m + perm[i]];
         }
@@ -80,18 +79,17 @@ T combinatoric(const std::size_t m, const std::size_t n, T *const ptr) {
 
 template <typename T>
 T combinatoric_rectangular(const std::size_t m, const std::size_t n,
-                           T *const ptr) {
+                           const T *ptr) {
     kperm_gray permutations(n);
     permutations.first(m);
 
     const std::size_t *perm = permutations.data();
 
     std::size_t i;
-    T prod;
     T out = 0.0;
 
     do {
-        prod = 1.0;
+        T prod = 1.0;
         for (i = 0; i < m; ++i) {
             prod *= ptr[i * n + perm[i]];
         }
@@ -102,7 +100,7 @@ T combinatoric_rectangular(const std::size_t m, const std::size_t n,
 }
 
 template <typename T>
-T glynn(const std::size_t m, const std::size_t n, T *const ptr) {
+T glynn(const std::size_t m, const std::size_t n, const T *ptr) {
     (void)n;
 
     std::size_t i, j;
@@ -113,7 +111,7 @@ T glynn(const std::size_t m, const std::size_t n, T *const ptr) {
     int sign = 1;
     int delta[64];
 
-    T sum, prod;
+    T sum;
     T out = 1.0;
     T vec[64];
 
@@ -158,7 +156,7 @@ T glynn(const std::size_t m, const std::size_t n, T *const ptr) {
 
         /* Multiply by the product of the vectors in delta. */
 
-        prod = 1.0;
+        T prod = 1.0;
         for (i = 0; i < m; ++i) {
             prod *= vec[i];
         }
@@ -179,7 +177,7 @@ T glynn(const std::size_t m, const std::size_t n, T *const ptr) {
 }
 
 template <typename T>
-T glynn_rectangular(const std::size_t m, const std::size_t n, T *const ptr) {
+T glynn_rectangular(const std::size_t m, const std::size_t n, const T *ptr) {
     std::size_t i, j, k;
     std::size_t pos = 0;
     std::size_t bound = n - 1;
@@ -188,7 +186,7 @@ T glynn_rectangular(const std::size_t m, const std::size_t n, T *const ptr) {
     int sign = 1;
     int delta[64];
 
-    T sum, prod;
+    T sum;
     T out = 1.0;
     T vec[64];
 
@@ -240,7 +238,7 @@ T glynn_rectangular(const std::size_t m, const std::size_t n, T *const ptr) {
 
         /* Multiply by the product of the vectors in delta. */
 
-        prod = 1.0;
+        T prod = 1.0;
         for (i = 0; i < n; ++i) {
             prod *= vec[i];
         }
@@ -261,12 +259,12 @@ T glynn_rectangular(const std::size_t m, const std::size_t n, T *const ptr) {
 }
 
 template <typename T>
-T ryser(const std::size_t m, const std::size_t n, T *const ptr) {
+T ryser(const std::size_t m, const std::size_t n, const T *ptr) {
     (void)n;
 
     std::size_t i, j;
     std::size_t k;
-    T rowsum, rowsumprod;
+    T rowsum;
     T out = 0;
 
     /* Iterate over c = pow(2, m) submatrices (equal to (1 << m)) submatrices.
@@ -277,7 +275,7 @@ T ryser(const std::size_t m, const std::size_t n, T *const ptr) {
     /* Loop over columns of submatrix; compute product of row sums. */
 
     for (k = 0; k < c; ++k) {
-        rowsumprod = 1.0;
+        T rowsumprod = 1.0;
         for (i = 0; i < m; ++i) {
             /* Loop over rows of submatrix; compute row sum. */
 
@@ -308,7 +306,7 @@ T ryser(const std::size_t m, const std::size_t n, T *const ptr) {
 }
 
 // template<typename T>
-// T ryser_rectangular(const std::size_t m, const std::size_t n, T *const ptr)
+// T ryser_rectangular(const std::size_t m, const std::size_t n, const T *ptr)
 // {
 //     kperm_gray permutations(n);
 //
@@ -421,43 +419,43 @@ bool gen_next_perm(T *const falling_fact, T *const perm, T *const inv_perm,
         while (inv_perm[y] < i) {
             ++y;
         }
-        const T j = inv_perm[y];
-        swap2(perm, i, j);
-        swap2(inv_perm, perm[i], perm[j]);
+        const T k = inv_perm[y];
+        swap2(perm, i, k);
+        swap2(inv_perm, perm[i], perm[k]);
         ++i;
     }
     return true;
 }
 
 template <typename T>
-T ryser_rectangular(const std::size_t m, const std::size_t n, T *const ptr) {
+T ryser_rectangular(const std::size_t m, const std::size_t n, const T *ptr) {
     std::size_t falling_fact[128];
     std::size_t perm[128];
     std::size_t inv_perm[128];
     falling_fact[0] = 0;
 
-    std::size_t i, j, k, counter, sort_up_to;
+    std::size_t i, j, k;
 
     int value_sign = 1;
 
-    T bin_c, sum_of_matrix_vals, prod_of_cols, result;
+    T sum_of_matrix_vals;
     T sum_over_k_vals = 0.0;
     T vec[64];
 
     /* Dealing with a rectangle. Can't use bit hacking trick here. */
     for (k = 0; k < m; ++k) {
         /* Store the binomial coefficient for this k value bin_c. */
-        bin_c = BINOMIAL((n - m + k), k);
-        counter = 0;  // Count how many permutations you have generated
-        sum_of_matrix_vals = 0.0;
-        prod_of_cols = 1.0;
-        result = 0.0;
+        std::size_t counter =
+            0;  // Count how many permutations you have generated
+        T bin_c = BINOMIAL((n - m + k), k);
+        T prod_of_cols = 1.0;
+        T result = 0.0;
 
         /* (Re)initialize the set to permute for this k value. */
         init_perm(n, falling_fact, perm, inv_perm);
 
         /* sort up to position u + 1 where u = min(m - k, n - 1). */
-        sort_up_to = n - 1;
+        std::size_t sort_up_to = n - 1;
 
         if ((m - k) < sort_up_to) {
             sort_up_to = (m - k);
@@ -469,7 +467,6 @@ T ryser_rectangular(const std::size_t m, const std::size_t n, T *const ptr) {
                 sum_of_matrix_vals += ptr[i * n + perm[j]];
             }
             vec[i] = sum_of_matrix_vals;
-            sum_of_matrix_vals = 0.0;
         }
         for (i = 0; i < m; ++i) {
             prod_of_cols *= vec[i];
@@ -480,14 +477,12 @@ T ryser_rectangular(const std::size_t m, const std::size_t n, T *const ptr) {
 
         /* Iterate over second to last permutations of the set. */
         while (gen_next_perm(falling_fact, perm, inv_perm, n, sort_up_to)) {
-            sum_of_matrix_vals = 0.0;
             for (i = 0; i < m; ++i) {
                 sum_of_matrix_vals = 0.0;
                 for (j = 0; j < m - k; ++j) {
                     sum_of_matrix_vals += ptr[i * n + perm[j]];
                 }
                 vec[i] = sum_of_matrix_vals;
-                sum_of_matrix_vals = 0.0;
             }
             prod_of_cols = 1.0;
             for (i = 0; i < m; ++i) {
@@ -504,7 +499,7 @@ T ryser_rectangular(const std::size_t m, const std::size_t n, T *const ptr) {
 }
 
 template <typename T>
-T opt(const std::size_t m, const std::size_t n, T *const ptr) {
+T opt(const std::size_t m, const std::size_t n, const T *ptr) {
     /* Use the fastest algorithm. */
 
     if (m == n && n <= PARAM_4) {

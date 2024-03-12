@@ -5,6 +5,10 @@ exclude: |
     src/swap\.h$
   )
 
+ci:
+  skip:
+    [cppcheck, cpplint, clang-format]
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
@@ -46,6 +50,9 @@ repos:
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5
     hooks:
+      - id: cppcheck
+        args: ["--inline-suppr", "--suppress=missingIncludeSystem",
+          "--suppress=*:src/swap.h", "--suppress=*:src/perm-mv0.h", "--suppress=*:src/kperm-gray.h"]
       - id: cpplint
         args: ["--root=src", "--filter=-build/include_subdir"]
       - id: clang-format
