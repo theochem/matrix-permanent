@@ -1,4 +1,4 @@
-/* Copyright 2034 QC-Devs (GPLv3) */
+/* Copyright 2024 QC-Devs (GPLv3) */
 
 #include <cmath>
 #include <cstdlib>
@@ -9,12 +9,6 @@
 #include <string>
 
 #include "permanent.h"
-
-#ifdef WITH_TUNING_FILE
-
-#include "tuning.h"
-
-#endif  // WITH_TUNING_FILE
 
 #ifdef RUN_TUNING
 
@@ -119,17 +113,17 @@ int main(int argc, char *argv[]) {
             if (m == n) {
                 for (i = 0; i != NUM_TRIALS; ++i) {
                     begin = std::clock();
-                    soln_combn = combinatoric<double>(m, n, array);
+                    soln_combn = permanent::combinatoric<double>(m, n, array);
                     end = std::clock();
                     time_combn[i] = static_cast<double>(end - begin);
 
                     begin = std::clock();
-                    soln_glynn = glynn<double>(m, n, array);
+                    soln_glynn = permanent::glynn<double>(m, n, array);
                     end = std::clock();
                     time_glynn[i] = static_cast<double>(end - begin);
 
                     begin = std::clock();
-                    soln_ryser = ryser<double>(m, n, array);
+                    soln_ryser = permanent::ryser<double>(m, n, array);
                     end = std::clock();
                     time_ryser[i] = static_cast<double>(end - begin);
 
@@ -148,17 +142,17 @@ int main(int argc, char *argv[]) {
             } else {
                 for (i = 0; i != NUM_TRIALS; ++i) {
                     begin = std::clock();
-                    soln_combn = combinatoric_rectangular<double>(m, n, array);
+                    soln_combn = permanent::combinatoric_rectangular<double>(m, n, array);
                     end = std::clock();
                     time_combn[i] = static_cast<double>(end - begin);
 
                     begin = std::clock();
-                    soln_glynn = glynn_rectangular<double>(m, n, array);
+                    soln_glynn = permanent::glynn_rectangular<double>(m, n, array);
                     end = std::clock();
                     time_glynn[i] = static_cast<double>(end - begin);
 
                     begin = std::clock();
-                    soln_ryser = ryser_rectangular<double>(m, n, array);
+                    soln_ryser = permanent::ryser_rectangular<double>(m, n, array);
                     end = std::clock();
                     time_ryser[i] = static_cast<double>(end - begin);
 
@@ -255,8 +249,8 @@ int main(int argc, char *argv[]) {
 
     /* Write default header file */
 
-    header_file << "#ifndef TUNING_H_\n";
-    header_file << "#define TUNING_H_\n";
+    header_file << "#ifndef PERMANENT_TUNING_H_\n";
+    header_file << "#define PERMANENT_TUNING_H_\n";
     header_file << "\n\n";
     header_file << "constexpr double PARAM_1 = " << std::scientific
                 << DEFAULT_PARAM_1 << ";\n";
@@ -267,7 +261,7 @@ int main(int argc, char *argv[]) {
     header_file << "constexpr double PARAM_4 = " << std::scientific
                 << DEFAULT_PARAM_4 << ";\n";
     header_file << "\n\n";
-    header_file << "#endif  // TUNING_H_\n";
+    header_file << "#endif  // PERMANENT_TUNING_H_\n";
 
     if (header_file.fail()) {
         std::cerr << "Error writing to header file" << std::endl;

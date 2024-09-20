@@ -1,74 +1,30 @@
-/* Copyright 2034 QC-Devs (GPLv3) */
+/* Copyright 2024 QC-Devs (GPLv3) */
 
-#ifndef PERMANENT_H_
+#if !defined(PERMANENT_H_)
 #define PERMANENT_H_
 
-#include <complex>
-#include <cstdlib>
+#include <bit>
 
 #include "kperm-gray.h"
 #include "perm-mv0.h"
 #include "tables.h"
 
-#ifdef WITH_TUNING_FILE
+#include "common.h"
+#include "complex.h"
 
-/* Include tuning file. */
-
-#include "tuning.h"
-
-#else
-
-/* Set default tuning parameters. */
-
-constexpr double PARAM_1 = -0.572098;
-constexpr double PARAM_2 = -22.014212;
-constexpr double PARAM_3 = 15.29794;
-constexpr double PARAM_4 = 3.0;
-
-#endif  // WITH_TUNING_FILE
-
-/* Allow type promotion to complex. */
+namespace permanent {
 
 template <typename T>
-struct identity_t {
-    typedef T type;
-};
-
-#define COMPLEX_OPS(OP)                                                       \
-                                                                              \
-    template <typename _Tp>                                                   \
-    std::complex<_Tp> operator OP(                                            \
-        std::complex<_Tp> lhs, const typename identity_t<_Tp>::type & rhs) {  \
-        return lhs OP rhs;                                                    \
-    }                                                                         \
-                                                                              \
-    template <typename _Tp>                                                   \
-    std::complex<_Tp> operator OP(const typename identity_t<_Tp>::type & lhs, \
-                                  const std::complex<_Tp> &rhs) {             \
-        return lhs OP rhs;                                                    \
-    }
-
-COMPLEX_OPS(+)
-COMPLEX_OPS(-)
-COMPLEX_OPS(*)
-COMPLEX_OPS(/)
-
-#undef COMPLEX_OPS
-
-template <typename T>
-T combinatoric(const std::size_t m, const std::size_t n, const T *ptr) {
+result_t<T> combinatoric(const size_t m, const size_t n, const T *ptr) {
     (void)n;
 
     perm_mv0 permutations(m);
 
-    const std::size_t *perm = permutations.data();
-
-    std::size_t i;
-    T out = 0.0;
-
+    result_t<T> out = 0;
+    const size_t *perm = permutations.data();
     do {
-        T prod = 1.0;
-        for (i = 0; i < m; ++i) {
+        result_t<T> prod = 1;
+        for (size_t i = 0; i != m; ++i) {
             prod *= ptr[i * m + perm[i]];
         }
         out += prod;
@@ -78,19 +34,15 @@ T combinatoric(const std::size_t m, const std::size_t n, const T *ptr) {
 }
 
 template <typename T>
-T combinatoric_rectangular(const std::size_t m, const std::size_t n,
-                           const T *ptr) {
+result_t<T> combinatoric_rectangular(const size_t m, const size_t n, const T *ptr) {
     kperm_gray permutations(n);
     permutations.first(m);
 
-    const std::size_t *perm = permutations.data();
-
-    std::size_t i;
-    T out = 0.0;
-
+    result_t<T> out = 0;
+    const size_t *perm = permutations.data();
     do {
-        T prod = 1.0;
-        for (i = 0; i < m; ++i) {
+        result_t<T> prod = 1;
+        for (size_t i = 0; i != m; ++i) {
             prod *= ptr[i * n + perm[i]];
         }
         out += prod;
@@ -100,182 +52,213 @@ T combinatoric_rectangular(const std::size_t m, const std::size_t n,
 }
 
 template <typename T>
-T glynn(const std::size_t m, const std::size_t n, const T *ptr) {
+result_t<T> glynn(const size_t m, const size_t n, const T *ptr) {
     (void)n;
 
-    std::size_t i, j;
-    std::size_t pos = 0;
-    std::size_t bound = m - 1;
-    std::size_t perm[64 + 1];
-
-    int sign = 1;
-    int delta[64];
-
-    T sum;
-    T out = 1.0;
-    T vec[64];
-
-    /* Fill delta array (all +1 to start), and permutation array with [0...m].
-     */
-
-    for (i = 0; i < m; ++i) {
+    // Fill delta array ([+1...+1]) and permutation array ([0...m])
+    size_t perm[64 + 1];
+    sgn_t delta[64];
+    for (size_t i = 0; i != m; ++i) {
         perm[i] = i;
         delta[i] = 1;
     }
 
-    /* Handle first permutation. */
-
-    for (j = 0; j < m; ++j) {
-        sum = 0.0;
-        for (i = 0; i < m; ++i) {
-            sum += ptr[i * m + j] * delta[i];
+    // Compute first permutation
+    result_t<T> vec[64];
+    result_t<T> out = 1;
+    for (size_t j = 0; j != m; ++j) {
+        // Compute inner terms
+        result_t<T> sum = 0;
+        for (size_t i = 0; i != m; ++i) {
+            sum += ptr[i * m + j];
         }
         vec[j] = sum;
-    }
-    for (j = 0; j < m; ++j) {
-        out *= vec[j];
+
+        // Compute first outer term
+        out *= sum;
     }
 
-    /* Iterate from the second to the final permutation. */
-
+    // Iterate from the second to the final permutation
+    size_t bound = m - 1;
+    size_t pos = 0;
+    sgn_t sign = -1;
     while (pos != bound) {
-        /* Update sign and delta. */
+        // Update delta
+        size_t idx = bound - pos;
+        delta[idx] *= -1;
 
-        sign *= -1;
-        delta[bound - pos] *= -1;
-
-        /* Compute term. */
-
-        for (j = 0; j < m; ++j) {
-            sum = 0.0;
-            for (i = 0; i < m; ++i) {
-                sum += ptr[i * m + j] * delta[i];
-            }
-            vec[j] = sum;
+        // Update inner terms
+        for (size_t i = 0; i != m; ++i) {
+            vec[i] += ptr[idx * m + i] * delta[idx] * 2;
         }
 
-        /* Multiply by the product of the vectors in delta. */
-
-        T prod = 1.0;
-        for (i = 0; i < m; ++i) {
+        // Add product of inner terms to outer term
+        result_t<T> prod = 1;
+        for (size_t i = 0; i != m; ++i) {
             prod *= vec[i];
         }
         out += sign * prod;
 
-        /* Go to next permutation. */
-
+        // Go to next permutation
         perm[0] = 0;
         perm[pos] = perm[pos + 1];
         ++pos;
         perm[pos] = pos;
         pos = perm[0];
+        sign *= -1;
     }
 
-    /* Divide by external factor and return permanent. */
-
+    // Divide outer term by external factor and return permanent
     return out / (1UL << bound);
 }
 
 template <typename T>
-T glynn_rectangular(const std::size_t m, const std::size_t n, const T *ptr) {
-    std::size_t i, j, k;
-    std::size_t pos = 0;
-    std::size_t bound = n - 1;
-    std::size_t perm[64 + 1];
-
-    int sign = 1;
-    int delta[64];
-
-    T sum;
-    T out = 1.0;
-    T vec[64];
-
-    /* Fill delta array (all +1 to start), and permutation array with [0...n].
-     */
-
-    for (i = 0; i < n; ++i) {
-        delta[i] = 1;
+result_t<T> glynn_rectangular(const size_t m, const size_t n, const T *ptr) {
+    // Fill delta array ([+1...+1]) and permutation array ([0...m])
+    size_t perm[64 + 1];
+    sgn_t delta[64];
+    for (size_t i = 0; i != n; ++i) {
         perm[i] = i;
+        delta[i] = 1;
     }
 
-    /* Handle first permutation. */
-
-    for (j = 0; j < n; ++j) {
-        sum = 0.0;
-        for (i = 0; i < m; ++i) {
-            sum += ptr[i * n + j] * delta[i];
-        }
-        for (k = m; k < n; ++k) {
-            sum += delta[k];
+    // Compute first permutation
+    result_t<T> vec[64];
+    result_t<T> out = n * (n - m);
+    for (size_t j = 0; j != m; ++j) {
+        // Compute inner terms
+        result_t<T> sum = 0;
+        for (size_t i = 0; i != n; ++i) {
+            sum += ptr[j * n + i];
         }
         vec[j] = sum;
+
+        // Compute first outer term
+        out *= sum;
     }
-    for (i = 0; i < n; ++i) {
-        out *= vec[i];
+    for (size_t j = m; j != n; ++j) {
+        vec[j] = n;
     }
 
-    /* Iterate from the second to the final permutation. */
-
+    // Iterate from the second to the final permutation
+    size_t bound = n - 1;
+    size_t pos = 0;
+    sgn_t sign = -1;
     while (pos != bound) {
-        /* Update sign and delta. */
+        // Update delta
+        size_t idx = bound - pos;
+        delta[idx] *= -1;
 
-        sign *= -1;
-        delta[bound - pos] *= -1;
-
-        /* Compute term. */
-
-        for (j = 0; j < n; ++j) {
-            sum = 0.0;
-            for (i = 0; i < m; ++i) {
-                sum += ptr[i * n + j] * delta[i];
-            }
-
-            for (k = m; k < n; ++k) {
-                sum += delta[k];
-            }
-            vec[j] = sum;
+        // Update inner terms
+        for (size_t i = 0; i != m; ++i) {
+            vec[i] += ptr[i * n + idx] * delta[idx] * 2;
+        }
+        for (size_t i = m; i != n; ++i) {
+            vec[i] += delta[idx] * 2;
         }
 
-        /* Multiply by the product of the vectors in delta. */
-
-        T prod = 1.0;
-        for (i = 0; i < n; ++i) {
+        // Add product of inner terms to outer term
+        result_t<T> prod = 1;
+        for (size_t i = 0; i != n; ++i) {
             prod *= vec[i];
         }
         out += sign * prod;
 
-        /* Go to next permutation. */
-
+        // Go to next permutation
         perm[0] = 0;
         perm[pos] = perm[pos + 1];
         ++pos;
         perm[pos] = pos;
         pos = perm[0];
+        sign *= -1;
     }
 
-    /* Divide by external factor and return permanent. */
-
-    return out / ((1UL << bound) * FACTORIAL(n - m));
+    // Divide outer term by external factor and return permanent
+    return (out / (1UL << bound)) / FACTORIAL(n - m);
 }
 
 template <typename T>
-T ryser(const std::size_t m, const std::size_t n, const T *ptr) {
+result_t<T> glynn_rectangular2(const size_t m, const size_t n, const T *ptr) {
+    // Fill delta array ([+1...+1]) and permutation array ([0...m])
+    size_t perm[64 + 1];
+    sgn_t delta[64];
+    for (size_t i = 0; i != n; ++i) {
+        perm[i] = i;
+        delta[i] = 1;
+    }
+
+    // Compute first permutation
+    result_t<T> vec[64];
+    result_t<T> out = 1;
+    for (size_t j = 0; j != n; ++j) {
+        // Compute inner terms
+        result_t<T> sum = n - m;
+        for (size_t i = 0; i != m; ++i) {
+            sum += ptr[i * n + j];
+        }
+        vec[j] = sum;
+
+        // Compute first outer term
+        out *= sum;
+    }
+
+    // Iterate from the second to the final permutation
+    size_t bound = n - 1;
+    size_t pos = 0;
+    sgn_t sign = -1;
+    while (pos != bound) {
+        // Update delta
+        size_t idx = bound - pos;
+        delta[idx] *= -1;
+
+        // Update inner terms
+        if (idx < m) {
+            for (size_t i = 0; i != n; ++i) {
+                vec[i] += ptr[idx * n + i] * delta[idx] * 2;
+            }
+        } else {
+            for (size_t i = 0; i != n; ++i) {
+                vec[i] += delta[idx] * 2;
+            }
+        }
+
+        // Add product of inner terms to outer term
+        result_t<T> prod = 1;
+        for (size_t i = 0; i != n; ++i) {
+            prod *= vec[i];
+        }
+        out += sign * prod;
+
+        // Go to next permutation
+        perm[0] = 0;
+        perm[pos] = perm[pos + 1];
+        ++pos;
+        perm[pos] = pos;
+        pos = perm[0];
+        sign *= -1;
+    }
+
+    // Divide outer term by external factor and return permanent
+    return (out / (1UL << bound)) / FACTORIAL(n - m);
+}
+
+template <typename T>
+result_t<T> ryser(const size_t m, const size_t n, const T *ptr) {
     (void)n;
 
-    std::size_t i, j;
-    std::size_t k;
-    T rowsum;
-    T out = 0;
+    size_t i, j;
+    size_t k;
+    result_t<T> rowsum;
+    result_t<T> out = 0;
 
-    /* Iterate over c = pow(2, m) submatrices (equal to (1 << m)) submatrices.
-     */
+    /* Iterate over c = pow(2, m) submatrices (equal to (1 << m)) submatrices. */
 
-    std::size_t c = 1UL << m;
+    size_t c = 1UL << m;
 
     /* Loop over columns of submatrix; compute product of row sums. */
 
     for (k = 0; k < c; ++k) {
-        T rowsumprod = 1.0;
+        result_t<T> rowsumprod = 1.0;
         for (i = 0; i < m; ++i) {
             /* Loop over rows of submatrix; compute row sum. */
 
@@ -297,66 +280,13 @@ T ryser(const std::size_t m, const std::size_t n, const T *ptr) {
 
         /* Add term multiplied by the parity of the characteristic vector. */
 
-        out += rowsumprod * (1 - ((__builtin_popcountll(k) & 1) << 1));
+        out += rowsumprod * parity(std::popcount(k));
     }
 
     /* Return answer with the correct sign (times -1 for odd m). */
 
-    return out * ((m % 2 == 1) ? -1 : 1);
+    return out * parity(m);
 }
-
-// template<typename T>
-// T ryser_rectangular(const std::size_t m, const std::size_t n, const T *ptr)
-// {
-//     kperm_gray permutations(n);
-//
-//     const std::size_t *perm = permutations.data();
-//
-//     std::size_t i, j, k, bin;
-//     int sign = 1;
-//
-//     T colprod, matsum, permsum;
-//     T out = 0.0;
-//     T vec[64];
-//
-//     /* Iterate over subsets from size 0 to size m */
-//
-//     for (k = 0; k < m; ++k) {
-//
-//         permutations.first(m - k);
-//
-//         bin = BINOMIAL((n - m + k), k);
-//         permsum = 0.0;
-//
-//         do {
-//
-//             /* Compute permanents of each submatrix */
-//
-//             for (i = 0; i < m; ++i) {
-//                 matsum = 0.0;
-//                 for (j = 0; j < m - k; ++j)
-//                     matsum += ptr[i * n + perm[j]];
-//                 vec[i] = matsum;
-//             }
-//
-//             colprod = 1.0;
-//             for (i = 0; i < m; ++i) {
-//                 colprod *= vec[i];
-//             }
-//
-//             permsum += colprod;
-//         }
-//         while (permutations.next());
-//
-//         /* Add term to result */
-//
-//         out += permsum * sign * bin;
-//
-//         sign *= -1;
-//     }
-//
-//     return out;
-// }
 
 template <typename T>
 void swap2(T *perm, T i, T j) {
@@ -428,34 +358,34 @@ bool gen_next_perm(T *const falling_fact, T *const perm, T *const inv_perm,
 }
 
 template <typename T>
-T ryser_rectangular(const std::size_t m, const std::size_t n, const T *ptr) {
-    std::size_t falling_fact[128];
-    std::size_t perm[128];
-    std::size_t inv_perm[128];
+result_t<T> ryser_rectangular(const size_t m, const size_t n, const T *ptr) {
+    size_t falling_fact[128];
+    size_t perm[128];
+    size_t inv_perm[128];
     falling_fact[0] = 0;
 
-    std::size_t i, j, k;
+    size_t i, j, k;
 
     int value_sign = 1;
 
-    T sum_of_matrix_vals;
-    T sum_over_k_vals = 0.0;
-    T vec[64];
+    result_t<T> sum_of_matrix_vals;
+    result_t<T> sum_over_k_vals = 0.0;
+    result_t<T> vec[64];
 
     /* Dealing with a rectangle. Can't use bit hacking trick here. */
     for (k = 0; k < m; ++k) {
         /* Store the binomial coefficient for this k value bin_c. */
-        std::size_t counter =
+        size_t counter =
             0;  // Count how many permutations you have generated
-        T bin_c = BINOMIAL((n - m + k), k);
-        T prod_of_cols = 1.0;
-        T result = 0.0;
+        size_t bin_c = BINOMIAL((n - m + k), k);
+        result_t<T> prod_of_cols = 1;
+        result_t<T> result = 0;
 
         /* (Re)initialize the set to permute for this k value. */
         init_perm(n, falling_fact, perm, inv_perm);
 
         /* sort up to position u + 1 where u = min(m - k, n - 1). */
-        std::size_t sort_up_to = n - 1;
+        size_t sort_up_to = n - 1;
 
         if ((m - k) < sort_up_to) {
             sort_up_to = (m - k);
@@ -499,7 +429,7 @@ T ryser_rectangular(const std::size_t m, const std::size_t n, const T *ptr) {
 }
 
 template <typename T>
-T opt(const std::size_t m, const std::size_t n, const T *ptr) {
+result_t<T> opt(const size_t m, const size_t n, const T *ptr) {
     /* Use the fastest algorithm. */
 
     if (m == n && n <= PARAM_4) {
@@ -511,5 +441,7 @@ T opt(const std::size_t m, const std::size_t n, const T *ptr) {
         return (m == n) ? glynn(m, n, ptr) : glynn_rectangular(m, n, ptr);
     }
 }
+
+}  // namespace permanent
 
 #endif  // PERMANENT_H_

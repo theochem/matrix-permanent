@@ -1,4 +1,4 @@
-/* Copyright 2034 QC-Devs (GPLv3) */
+/* Copyright 2024 QC-Devs (GPLv3) */
 
 #include <Python.h>
 
@@ -7,7 +7,6 @@
 #include <numpy/ndarraytypes.h>
 
 #include <complex>
-#include <cstdint>
 #include <cstdlib>
 
 #include "permanent.h"
@@ -149,8 +148,8 @@ static PyObject *py_opt(PyObject *module, PyObject *object) {
         return nullptr;
     }
 
-    std::size_t m = PyArray_DIMS(matrix)[0];
-    std::size_t n = PyArray_DIMS(matrix)[1];
+    size_t m = PyArray_DIMS(matrix)[0];
+    size_t n = PyArray_DIMS(matrix)[1];
     if (m > n) {
         return py_opt(module, PyArray_Transpose(matrix, nullptr));
     } else if (m > 64 || n > 64) {
@@ -163,11 +162,11 @@ static PyObject *py_opt(PyObject *module, PyObject *object) {
     if (type == NPY_DOUBLE) {
         const double *ptr =
             reinterpret_cast<const double *>(PyArray_GETPTR2(matrix, 0, 0));
-        return PyFloat_FromDouble(opt<double>(m, n, ptr));
+        return PyFloat_FromDouble(permanent::opt<double>(m, n, ptr));
     } else if (type == NPY_COMPLEX128) {
         std::complex<double> *ptr = reinterpret_cast<std::complex<double> *>(
             PyArray_GETPTR2(matrix, 0, 0));
-        std::complex<double> out = opt<std::complex<double>>(m, n, ptr);
+        std::complex<double> out = permanent::opt<std::complex<double>>(m, n, ptr);
         return PyComplex_FromDoubles(out.real(), out.imag());
     } else {
         PyErr_SetString(PyExc_TypeError,
@@ -187,8 +186,8 @@ static PyObject *py_combinatoric(PyObject *module, PyObject *object) {
         return nullptr;
     }
 
-    std::size_t m = PyArray_DIMS(matrix)[0];
-    std::size_t n = PyArray_DIMS(matrix)[1];
+    size_t m = PyArray_DIMS(matrix)[0];
+    size_t n = PyArray_DIMS(matrix)[1];
     if (m > n) {
         return py_combinatoric(module, PyArray_Transpose(matrix, nullptr));
     }
@@ -197,15 +196,15 @@ static PyObject *py_combinatoric(PyObject *module, PyObject *object) {
     if (type == NPY_DOUBLE) {
         double *ptr = reinterpret_cast<double *>(PyArray_GETPTR2(matrix, 0, 0));
         return PyFloat_FromDouble(
-            (m == n) ? combinatoric<double>(m, n, ptr)
-                     : combinatoric_rectangular<double>(m, n, ptr));
+            (m == n) ? permanent::combinatoric<double>(m, n, ptr)
+                     : permanent::combinatoric_rectangular<double>(m, n, ptr));
     } else if (type == NPY_COMPLEX128) {
         std::complex<double> *ptr = reinterpret_cast<std::complex<double> *>(
             PyArray_GETPTR2(matrix, 0, 0));
         std::complex<double> out =
             (m == n)
-                ? combinatoric<std::complex<double>>(m, n, ptr)
-                : combinatoric_rectangular<std::complex<double>>(m, n, ptr);
+                ? permanent::combinatoric<std::complex<double>>(m, n, ptr)
+                : permanent::combinatoric_rectangular<std::complex<double>>(m, n, ptr);
         return PyComplex_FromDoubles(out.real(), out.imag());
     } else {
         PyErr_SetString(PyExc_TypeError,
@@ -225,8 +224,8 @@ static PyObject *py_glynn(PyObject *module, PyObject *object) {
         return nullptr;
     }
 
-    std::size_t m = PyArray_DIMS(matrix)[0];
-    std::size_t n = PyArray_DIMS(matrix)[1];
+    size_t m = PyArray_DIMS(matrix)[0];
+    size_t n = PyArray_DIMS(matrix)[1];
     if (m > n) {
         return py_glynn(module, PyArray_Transpose(matrix, nullptr));
     }
@@ -235,14 +234,14 @@ static PyObject *py_glynn(PyObject *module, PyObject *object) {
     if (type == NPY_DOUBLE) {
         double *ptr = reinterpret_cast<double *>(PyArray_GETPTR2(matrix, 0, 0));
         return PyFloat_FromDouble((m == n)
-                                      ? glynn<double>(m, n, ptr)
-                                      : glynn_rectangular<double>(m, n, ptr));
+                                      ? permanent::glynn<double>(m, n, ptr)
+                                      : permanent::glynn_rectangular<double>(m, n, ptr));
     } else if (type == NPY_COMPLEX128) {
         std::complex<double> *ptr = reinterpret_cast<std::complex<double> *>(
             PyArray_GETPTR2(matrix, 0, 0));
         std::complex<double> out =
-            (m == n) ? glynn<std::complex<double>>(m, n, ptr)
-                     : glynn_rectangular<std::complex<double>>(m, n, ptr);
+            (m == n) ? permanent::glynn<std::complex<double>>(m, n, ptr)
+                     : permanent::glynn_rectangular<std::complex<double>>(m, n, ptr);
         return PyComplex_FromDoubles(out.real(), out.imag());
     } else {
         PyErr_SetString(PyExc_TypeError,
@@ -262,8 +261,8 @@ static PyObject *py_ryser(PyObject *module, PyObject *object) {
         return nullptr;
     }
 
-    std::size_t m = PyArray_DIMS(matrix)[0];
-    std::size_t n = PyArray_DIMS(matrix)[1];
+    size_t m = PyArray_DIMS(matrix)[0];
+    size_t n = PyArray_DIMS(matrix)[1];
     if (m > n) {
         return py_ryser(module, PyArray_Transpose(matrix, nullptr));
     }
@@ -272,14 +271,14 @@ static PyObject *py_ryser(PyObject *module, PyObject *object) {
     if (type == NPY_DOUBLE) {
         double *ptr = reinterpret_cast<double *>(PyArray_GETPTR2(matrix, 0, 0));
         return PyFloat_FromDouble((m == n)
-                                      ? ryser<double>(m, n, ptr)
-                                      : ryser_rectangular<double>(m, n, ptr));
+                                      ? permanent::ryser<double>(m, n, ptr)
+                                      : permanent::ryser_rectangular<double>(m, n, ptr));
     } else if (type == NPY_COMPLEX128) {
         std::complex<double> *ptr = reinterpret_cast<std::complex<double> *>(
             PyArray_GETPTR2(matrix, 0, 0));
         std::complex<double> out =
-            (m == n) ? ryser<std::complex<double>>(m, n, ptr)
-                     : ryser_rectangular<std::complex<double>>(m, n, ptr);
+            (m == n) ? permanent::ryser<std::complex<double>>(m, n, ptr)
+                     : permanent::ryser_rectangular<std::complex<double>>(m, n, ptr);
         return PyComplex_FromDoubles(out.real(), out.imag());
     } else {
         PyErr_SetString(PyExc_TypeError,
