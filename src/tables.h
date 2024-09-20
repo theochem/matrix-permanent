@@ -1,13 +1,15 @@
-/* Copyright 2034 QC-Devs (GPLv3) */
+/* Copyright 2024 QC-Devs (GPLv3) */
 
 #ifndef TABLES_H_
 #define TABLES_H_
 
-#include <cstdlib>
+#include <cstdint>
 
 #define BINOMIAL(N, K) binom_table[65 * N + K]
 
 #define FACTORIAL(N) factorial_table[N]
+
+#define IFACTORIAL(N) int_factorial_table[N]
 
 static const std::size_t binom_table[] = {
     1,
@@ -4260,6 +4262,30 @@ static const double factorial_table[] = {
     4.0526919504877214e+76, 2.3505613312828785e+78, 1.3868311854568984e+80,
     8.3209871127413899e+81, 5.0758021387722484e+83, 3.1469973260387939e+85,
     1.9826083154044403e+87, 1.2688693218588415e+89,
+};
+
+static const std::uint64_t int_factorial_table[] = {
+    1,
+    1,
+    2,
+    6,
+    24,
+    120,
+    720,
+    5040,
+    40320,
+    362880,
+    3628800,
+    39916800,
+    479001600,
+    6227020800,
+    87178291200,
+    1307674368000,
+    20922789888000,
+    355687428096000,
+    6402373705728000,
+    121645100408832000,
+    2432902008176640000,
 };
 
 #endif  // TABLES_H_
