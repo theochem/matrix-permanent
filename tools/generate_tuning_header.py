@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 
 import pandas as pd
@@ -6,9 +8,9 @@ from sklearn import svm
 from sklearn.metrics import accuracy_score
 
 
-CSV_FILE = "src/tuning.csv"
+CSV_FILE = sys.argv[1]
 
-HEADER_FILE = "src/tuning.h"
+HEADER_FILE = sys.argv[2]
 
 
 # Read output from tuning program
@@ -79,17 +81,19 @@ param_4 = ryser_limit
 try:
     with open(HEADER_FILE, "w") as file_ptr:
         file_ptr.write(
-            f"""#ifndef TUNING_H_
-#define TUNING_H_
+            f"""#if !defined(permanent_tuning_h_)
+#define permanent_tuning_h_
 
+namespace permanent {{
 
  constexpr double PARAM_1 = {param_1:.9f};
  constexpr double PARAM_2 = {param_2:.9f};
  constexpr double PARAM_3 = {param_3:.9f};
  constexpr double PARAM_4 = {param_4:.9f};
 
+}}  // namespace permanent
 
-#endif  // TUNING_H_
+#endif  // permanent_tuning_h_
 """
         )
 

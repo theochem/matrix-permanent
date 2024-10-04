@@ -1,54 +1,28 @@
-CXX    ?= g++
-AR     ?= ar
-PYTHON ?= python3
+PREFIX ?= /usr/local
 
-CXXFLAGS := -std=c++20 -Wall -Wextra -g -fPIC -O3
-
-ifeq ($(shell uname -s),Darwin)
-CXXFLAGS += -undefined dynamic_lookup
+CMAKE_FLAGS :=
+CMAKE_FLAGS += -DCMAKE_INSTALL_PREFIX=$(DESTDIR)$(PREFIX)
+ifdef PERMANENT_TUNE
+CMAKE_FLAGS += -DPERMANENT_TUNE=ON
 endif
 
-ifneq ($(BUILD_NATIVE),)
-CXXFLAGS += -march=native -mtune=native
-endif
+CLEAN_TARGETS :=
+CLEAN_TARGETS += include/permanent/tuning.h
+CLEAN_TARGETS += build dist _build _generate
+CLEAN_TARGETS += permanent.*egg-info permanent.*so
 
-ifneq ($(RUN_TUNING),)
-CXXFLAGS += -DRUN_TUNING=1
-endif
+.PHONY: all clean install _build
 
-# Build Python library
-.PHONY: all
-all: permanent/permanent.so
+all: _build
 
-# Run tests
-.PHONY: test
-test: permanent/permanent.so
-	$(PYTHON) -m pytest -v .
-
-# Clean directory
-.PHONY: clean
 clean:
-	rm -f src/tuning src/tuning.h src/tuning.csv permanent/permanent.so
+	rm -rf $(CLEAN_TARGETS)
 
-# compile_flags.txt (clangd)
-compile_flags.txt:
-	echo "$(CXXFLAGS)" | sed 's/ /\n/g' > $@
+install: _build
+	cmake --install build
 
-# Find tuning parameters
-src/tuning.h: src/permanent.h src/tuning.cc tools/tuning.py
-	$(CXX) $(CXXFLAGS) -o src/tuning src/tuning.cc
-	@if [ -n "$(RUN_TUNING)" ]; then \
-		echo "running tuning..."; \
-		src/tuning; \
-		echo "writing custom tuning.h"; \
-		$(PYTHON) tools/tuning.py; \
-	else \
-		echo "writing default tuning.h"; \
-		src/tuning; \
-	fi
+_build: build
+	cmake --build build --target all
 
-# Compile Python library
-permanent/permanent.so: src/tuning.h src/permanent.h src/py_permanent.cc tools/include_dirs.py
-	$(CXX) $(CXXFLAGS) -DWITH_TUNING_FILE=1 \
-		$(shell $(PYTHON) tools/include_dirs.py) \
-		-shared -o $@ src/py_permanent.cc
+build:
+	cmake -B build $(CMAKE_FLAGS) .

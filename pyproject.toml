@@ -1,0 +1,72 @@
+[build-system]
+requires = ["numpy>=2.0", "pandas", "scikit-learn", "scikit-build-core>=0.3.3"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "permanent"
+version = "0.0.1"
+description = "Extension module for computing permanents of square and rectangular matrices."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{name = "QC-Devs", email = "qcdevs@gmail.com"}]
+keywords = ["math", "linear algebra", "combinatorics", "permanent"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  # "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS",
+  "Operating System :: Microsoft :: Windows",
+  "Topic :: Scientific/Engineering :: Mathematics",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Education",
+  "Intended Audience :: Developers",
+  "Natural Language :: English",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+license = {file = "LICENSE"}
+urls = {home = "https://permanent.qcdevs.org/"}
+dependencies = ["numpy>=2.0"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.scikit-build]
+wheel.expand-macos-universal-tags = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+xfail_strict = true
+log_cli_level = "INFO"
+filterwarnings = [
+  "error",
+  "ignore::pytest.PytestCacheWarning",
+]
+testpaths = ["tests"]
+
+[tool.cibuildwheel]
+build-frontend = "build[uv]"
+test-command = "pytest tests"
+test-extras = ["test"]
+
+[tool.cibuildwheel.pyodide]
+environment.CFLAGS = "-fexceptions"
+environment.LDFLAGS = "-fexceptions"
+build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
+
+[tool.ruff]
+target-version = "py311"
+
+[tool.ruff.lint]
+extend-select = [
+  "B",    # flake8-bugbear
+  "I",    # isort
+  "PGH",  # pygrep-hooks
+  "RUF",  # Ruff-specific
+  "UP",   # pyupgrade
+]
