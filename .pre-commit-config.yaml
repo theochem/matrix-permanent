@@ -52,8 +52,8 @@ repos:
     hooks:
       - id: cppcheck
         args: ["--inline-suppr", "--suppress=missingIncludeSystem",
-          "--suppress=*:src/swap.h", "--suppress=*:src/perm-mv0.h", "--suppress=*:src/kperm-gray.h"]
+          "--suppress=*:include/permanent/swap.h", "--suppress=*:include/permanent/perm-mv0.h", "--suppress=*:include/permanent/kperm-gray.h"]
       - id: cpplint
         args: ["--root=src", "--filter=-build/include_subdir"]
       - id: clang-format
-        args: ["-i", "-style={BasedOnStyle: google, IndentWidth: 4}"]
+        args: ["-i", "-style=file"]

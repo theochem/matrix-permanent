@@ -84,7 +84,8 @@ tags
 .vscode/
 
 # Project files
-compile_flags.txt
-src/tuning
-src/tuning.h
-src/tuning.csv
+/include/permanent/tuning.h
+
+# Language server files
+compile_commands.json
+.ccls-cache

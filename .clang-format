@@ -1,0 +1,19 @@
+---
+Language:                 Cpp
+BasedOnStyle:             Google
+
+ColumnLimit:              100
+
+BreakBeforeBraces:        Custom
+BraceWrapping:
+  AfterClass:             true
+  AfterControlStatement:  false
+  AfterEnum:              true
+  AfterFunction:          true
+  AfterNamespace:         false
+  AfterObjCDeclaration:   true
+  AfterStruct:            true
+  AfterUnion:             true
+  BeforeCatch:            false
+  BeforeElse:             false
+  IndentBraces:           false
