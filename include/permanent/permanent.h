@@ -19,8 +19,8 @@
 
 namespace permanent {
 
-template <typename T>
-result_t<T> combinatoric(const size_t m, const size_t n, const T *ptr)
+template <typename T, typename I = void>
+result_t<T, I> combinatoric(const size_t m, const size_t n, const T *ptr)
 {
   (void)n;
 
@@ -39,8 +39,8 @@ result_t<T> combinatoric(const size_t m, const size_t n, const T *ptr)
   return out;
 }
 
-template <typename T>
-result_t<T> combinatoric_rectangular(const size_t m, const size_t n, const T *ptr)
+template <typename T, typename I = void>
+result_t<T, I> combinatoric_rectangular(const size_t m, const size_t n, const T *ptr)
 {
   kperm_gray permutations(n);
   permutations.first(m);
@@ -58,8 +58,8 @@ result_t<T> combinatoric_rectangular(const size_t m, const size_t n, const T *pt
   return out;
 }
 
-template <typename T>
-result_t<T> glynn(const size_t m, const size_t n, const T *ptr)
+template <typename T, typename I = void>
+result_t<T, I> glynn(const size_t m, const size_t n, const T *ptr)
 {
   (void)n;
 
@@ -120,8 +120,8 @@ result_t<T> glynn(const size_t m, const size_t n, const T *ptr)
   return out / (1UL << bound);
 }
 
-template <typename T>
-result_t<T> glynn_rectangular(const size_t m, const size_t n, const T *ptr)
+template <typename T, typename I = void>
+result_t<T, I> glynn_rectangular(const size_t m, const size_t n, const T *ptr)
 {
   // Fill delta array ([+1...+1]) and permutation array ([0...m])
   size_t perm[64 + 1];
@@ -186,8 +186,8 @@ result_t<T> glynn_rectangular(const size_t m, const size_t n, const T *ptr)
   return (out / (1UL << bound)) / FACTORIAL(n - m);
 }
 
-template <typename T>
-result_t<T> glynn_rectangular2(const size_t m, const size_t n, const T *ptr)
+template <typename T, typename I = void>
+result_t<T, I> glynn_rectangular2(const size_t m, const size_t n, const T *ptr)
 {
   // Fill delta array ([+1...+1]) and permutation array ([0...m])
   size_t perm[64 + 1];
@@ -252,8 +252,8 @@ result_t<T> glynn_rectangular2(const size_t m, const size_t n, const T *ptr)
   return (out / (1UL << bound)) / FACTORIAL(n - m);
 }
 
-template <typename T>
-result_t<T> ryser(const size_t m, const size_t n, const T *ptr)
+template <typename T, typename I = void>
+result_t<T, I> ryser(const size_t m, const size_t n, const T *ptr)
 {
   (void)n;
 
@@ -371,8 +371,8 @@ bool gen_next_perm(T *const falling_fact, T *const perm, T *const inv_perm, cons
   return true;
 }
 
-template <typename T>
-result_t<T> ryser_rectangular(const size_t m, const size_t n, const T *ptr)
+template <typename T, typename I = void>
+result_t<T, I> ryser_rectangular(const size_t m, const size_t n, const T *ptr)
 {
   size_t falling_fact[128];
   size_t perm[128];
@@ -442,8 +442,8 @@ result_t<T> ryser_rectangular(const size_t m, const size_t n, const T *ptr)
   return sum_over_k_vals;
 }
 
-template <typename T>
-result_t<T> opt(const size_t m, const size_t n, const T *ptr)
+template <typename T, typename I = void>
+result_t<T, I> opt(const size_t m, const size_t n, const T *ptr)
 {
   /* Use the fastest algorithm. */
 
