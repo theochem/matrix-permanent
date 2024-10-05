@@ -20,16 +20,16 @@
 namespace permanent {
 
 template <typename T, typename I = void>
-result_t<T, I> combinatoric(const size_t m, const size_t n, const T *ptr)
+result_t<T, I> combinatoric_square(const size_t m, const size_t n, const T *ptr)
 {
   (void)n;
 
   perm_mv0 permutations(m);
 
-  result_t<T> out = 0;
+  result_t<T, I> out = 0;
   const size_t *perm = permutations.data();
   do {
-    result_t<T> prod = 1;
+    result_t<T, I> prod = 1;
     for (size_t i = 0; i != m; ++i) {
       prod *= ptr[i * m + perm[i]];
     }
@@ -45,10 +45,10 @@ result_t<T, I> combinatoric_rectangular(const size_t m, const size_t n, const T 
   kperm_gray permutations(n);
   permutations.first(m);
 
-  result_t<T> out = 0;
+  result_t<T, I> out = 0;
   const size_t *perm = permutations.data();
   do {
-    result_t<T> prod = 1;
+    result_t<T, I> prod = 1;
     for (size_t i = 0; i != m; ++i) {
       prod *= ptr[i * n + perm[i]];
     }
@@ -59,7 +59,7 @@ result_t<T, I> combinatoric_rectangular(const size_t m, const size_t n, const T 
 }
 
 template <typename T, typename I = void>
-result_t<T, I> glynn(const size_t m, const size_t n, const T *ptr)
+result_t<T, I> glynn_square(const size_t m, const size_t n, const T *ptr)
 {
   (void)n;
 
@@ -72,11 +72,11 @@ result_t<T, I> glynn(const size_t m, const size_t n, const T *ptr)
   }
 
   // Compute first permutation
-  result_t<T> vec[64];
-  result_t<T> out = 1;
+  result_t<T, I> vec[64];
+  result_t<T, I> out = 1;
   for (size_t j = 0; j != m; ++j) {
     // Compute inner terms
-    result_t<T> sum = 0;
+    result_t<T, I> sum = 0;
     for (size_t i = 0; i != m; ++i) {
       sum += ptr[i * m + j];
     }
@@ -101,7 +101,7 @@ result_t<T, I> glynn(const size_t m, const size_t n, const T *ptr)
     }
 
     // Add product of inner terms to outer term
-    result_t<T> prod = 1;
+    result_t<T, I> prod = 1;
     for (size_t i = 0; i != m; ++i) {
       prod *= vec[i];
     }
@@ -132,11 +132,11 @@ result_t<T, I> glynn_rectangular(const size_t m, const size_t n, const T *ptr)
   }
 
   // Compute first permutation
-  result_t<T> vec[64];
-  result_t<T> out = n * (n - m);
+  result_t<T, I> vec[64];
+  result_t<T, I> out = n * (n - m);
   for (size_t j = 0; j != m; ++j) {
     // Compute inner terms
-    result_t<T> sum = 0;
+    result_t<T, I> sum = 0;
     for (size_t i = 0; i != n; ++i) {
       sum += ptr[j * n + i];
     }
@@ -167,7 +167,7 @@ result_t<T, I> glynn_rectangular(const size_t m, const size_t n, const T *ptr)
     }
 
     // Add product of inner terms to outer term
-    result_t<T> prod = 1;
+    result_t<T, I> prod = 1;
     for (size_t i = 0; i != n; ++i) {
       prod *= vec[i];
     }
@@ -198,11 +198,11 @@ result_t<T, I> glynn_rectangular2(const size_t m, const size_t n, const T *ptr)
   }
 
   // Compute first permutation
-  result_t<T> vec[64];
-  result_t<T> out = 1;
+  result_t<T, I> vec[64];
+  result_t<T, I> out = 1;
   for (size_t j = 0; j != n; ++j) {
     // Compute inner terms
-    result_t<T> sum = n - m;
+    result_t<T, I> sum = n - m;
     for (size_t i = 0; i != m; ++i) {
       sum += ptr[i * n + j];
     }
@@ -233,7 +233,7 @@ result_t<T, I> glynn_rectangular2(const size_t m, const size_t n, const T *ptr)
     }
 
     // Add product of inner terms to outer term
-    result_t<T> prod = 1;
+    result_t<T, I> prod = 1;
     for (size_t i = 0; i != n; ++i) {
       prod *= vec[i];
     }
@@ -253,14 +253,14 @@ result_t<T, I> glynn_rectangular2(const size_t m, const size_t n, const T *ptr)
 }
 
 template <typename T, typename I = void>
-result_t<T, I> ryser(const size_t m, const size_t n, const T *ptr)
+result_t<T, I> ryser_square(const size_t m, const size_t n, const T *ptr)
 {
   (void)n;
 
   size_t i, j;
   size_t k;
-  result_t<T> rowsum;
-  result_t<T> out = 0;
+  result_t<T, I> rowsum;
+  result_t<T, I> out = 0;
 
   /* Iterate over c = pow(2, m) submatrices (equal to (1 << m)) submatrices.
    */
@@ -270,7 +270,7 @@ result_t<T, I> ryser(const size_t m, const size_t n, const T *ptr)
   /* Loop over columns of submatrix; compute product of row sums. */
 
   for (k = 0; k < c; ++k) {
-    result_t<T> rowsumprod = 1.0;
+    result_t<T, I> rowsumprod = 1.0;
     for (i = 0; i < m; ++i) {
       /* Loop over rows of submatrix; compute row sum. */
 
@@ -383,17 +383,17 @@ result_t<T, I> ryser_rectangular(const size_t m, const size_t n, const T *ptr)
 
   int value_sign = 1;
 
-  result_t<T> sum_of_matrix_vals;
-  result_t<T> sum_over_k_vals = 0.0;
-  result_t<T> vec[64];
+  result_t<T, I> sum_of_matrix_vals;
+  result_t<T, I> sum_over_k_vals = 0.0;
+  result_t<T, I> vec[64];
 
   /* Dealing with a rectangle. Can't use bit hacking trick here. */
   for (k = 0; k < m; ++k) {
     /* Store the binomial coefficient for this k value bin_c. */
     size_t counter = 0;  // Count how many permutations you have generated
     size_t bin_c = BINOMIAL((n - m + k), k);
-    result_t<T> prod_of_cols = 1;
-    result_t<T> result = 0;
+    result_t<T, I> prod_of_cols = 1;
+    result_t<T, I> result = 0;
 
     /* (Re)initialize the set to permute for this k value. */
     init_perm(n, falling_fact, perm, inv_perm);
@@ -443,17 +443,49 @@ result_t<T, I> ryser_rectangular(const size_t m, const size_t n, const T *ptr)
 }
 
 template <typename T, typename I = void>
+result_t<T, I> opt_square(const size_t m, const size_t n, const T *ptr)
+{
+  if (n <= PARAM_4) {
+    return ryser_square<T, I>(m, n, ptr);
+  } else if (n * PARAM_1 + PARAM_2 * m / n + PARAM_3 > 0) {
+    return combinatoric_square<T, I>(m, n, ptr);
+  } else {
+    return glynn_square<T, I>(m, n, ptr);
+  }
+}
+
+template <typename T, typename I = void>
+result_t<T, I> opt_rectangular(const size_t m, const size_t n, const T *ptr)
+{
+  if (n * PARAM_1 + PARAM_2 * m / n + PARAM_3 > 0) {
+    return combinatoric_rectangular<T, I>(m, n, ptr);
+  } else {
+    return glynn_rectangular<T, I>(m, n, ptr);
+  }
+}
+
+template <typename T, typename I = void>
 result_t<T, I> opt(const size_t m, const size_t n, const T *ptr)
 {
-  /* Use the fastest algorithm. */
+    return (m == n) ? opt_square<T, I>(m, n, ptr) : opt_rectangular<T, I>(m, n, ptr);
+}
 
-  if (m == n && n <= PARAM_4) {
-    return ryser(m, n, ptr);
-  } else if (n * PARAM_1 + PARAM_2 * m / n + PARAM_3 > 0) {
-    return (m == n) ? combinatoric(m, n, ptr) : combinatoric_rectangular(m, n, ptr);
-  } else {
-    return (m == n) ? glynn(m, n, ptr) : glynn_rectangular(m, n, ptr);
-  }
+template <typename T, typename I = void>
+result_t<T, I> combinatoric(const size_t m, const size_t n, const T *ptr)
+{
+    return (m == n) ? combinatoric_square<T, I>(m, n, ptr) : combinatoric_rectangular<T, I>(m, n, ptr);
+}
+
+template <typename T, typename I = void>
+result_t<T, I> ryser(const size_t m, const size_t n, const T *ptr)
+{
+    return (m == n) ? ryser_square<T, I>(m, n, ptr) : ryser_rectangular<T, I>(m, n, ptr);
+}
+
+template <typename T, typename I = void>
+result_t<T, I> glynn(const size_t m, const size_t n, const T *ptr)
+{
+    return (m == n) ? glynn_square<T, I>(m, n, ptr) : glynn_rectangular<T, I>(m, n, ptr);
 }
 
 }  // namespace permanent

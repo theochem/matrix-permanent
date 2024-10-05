@@ -121,7 +121,7 @@ Compute the permanent of a matrix via Ryser's algorithm [Ryser]_.
             }
         }
     }
-
+for
 .. [Ryser] Ryser, H. J. (1963). *Combinatorial Mathematics* (Vol. 14).
            American Mathematical Soc..
 
@@ -135,6 +135,66 @@ permanent : (np.double|np.complex)
     Permanent of matrix.
 
 )""";
+
+#define DISPATCH_ARRAY_TYPE(FN) \
+  switch (PyArray_TYPE(matrix)) { \
+    NPY_INT8: { \
+      const std::int8_t *ptr = reinterpret_cast<const std::int8_t *>(PyArray_GETPTR2(matrix, 0, 0)); \
+      return PyLong_FromSsize_t(FN<std::int8_t, Py_ssize_t>(m, n, ptr)); \
+    } \
+    NPY_INT16: { \
+      const std::int16_t *ptr = reinterpret_cast<const std::int16_t *>(PyArray_GETPTR2(matrix, 0, 0)); \
+      return PyLong_FromSsize_t(FN<std::int16_t, Py_ssize_t>(m, n, ptr)); \
+    } \
+    NPY_INT32: { \
+      const std::int32_t *ptr = reinterpret_cast<const std::int32_t *>(PyArray_GETPTR2(matrix, 0, 0)); \
+      return PyLong_FromSsize_t(FN<std::int32_t, Py_ssize_t>(m, n, ptr)); \
+    } \
+    NPY_INT64: { \
+      const std::int64_t *ptr = reinterpret_cast<const std::int64_t *>(PyArray_GETPTR2(matrix, 0, 0)); \
+      return PyLong_FromSsize_t(FN<std::int64_t, Py_ssize_t>(m, n, ptr)); \
+    } \
+    NPY_UINT8: { \
+      const std::uint8_t *ptr = reinterpret_cast<const std::uint8_t *>(PyArray_GETPTR2(matrix, 0, 0)); \
+      return PyLong_FromSsize_t(FN<std::uint8_t, Py_ssize_t>(m, n, ptr)); \
+    } \
+    NPY_UINT16: { \
+      const std::uint16_t *ptr = reinterpret_cast<const std::uint16_t *>(PyArray_GETPTR2(matrix, 0, 0)); \
+      return PyLong_FromSsize_t(FN<std::uint16_t, Py_ssize_t>(m, n, ptr)); \
+    } \
+    NPY_UINT32: { \
+      const std::uint32_t *ptr = reinterpret_cast<const std::uint32_t *>(PyArray_GETPTR2(matrix, 0, 0)); \
+      return PyLong_FromSsize_t(FN<std::uint32_t, Py_ssize_t>(m, n, ptr)); \
+    } \
+    NPY_UINT64: { \
+      const std::uint64_t *ptr = reinterpret_cast<const std::uint64_t *>(PyArray_GETPTR2(matrix, 0, 0)); \
+      return PyLong_FromSsize_t(FN<std::uint64_t, Py_ssize_t>(m, n, ptr)); \
+    } \
+    NPY_FLOAT: { \
+      const float *ptr = reinterpret_cast<const float *>(PyArray_GETPTR2(matrix, 0, 0)); \
+      return PyFloat_FromDouble(FN<float>(m, n, ptr)); \
+    } \
+    NPY_DOUBLE: { \
+      const double *ptr = reinterpret_cast<const double *>(PyArray_GETPTR2(matrix, 0, 0)); \
+      return PyFloat_FromDouble(FN<double>(m, n, ptr)); \
+    } \
+    NPY_COMPLEX64: { \
+      std::complex<float> *ptr = \
+          reinterpret_cast<std::complex<float> *>(PyArray_GETPTR2(matrix, 0, 0)); \
+      std::complex<double> out = FN<std::complex<float>>(m, n, ptr); \
+      return PyComplex_FromDoubles(out.real(), out.imag()); \
+    } \
+    NPY_COMPLEX128: { \
+      std::complex<double> *ptr = \
+          reinterpret_cast<std::complex<double> *>(PyArray_GETPTR2(matrix, 0, 0)); \
+      std::complex<double> out = FN<std::complex<double>>(m, n, ptr); \
+      return PyComplex_FromDoubles(out.real(), out.imag()); \
+    } \
+    default: { \
+      PyErr_SetString(PyExc_TypeError, "Array has unsupported dtype"); \
+      return nullptr; \
+    } \
+  } \
 
 static PyObject *py_opt(PyObject *module, PyObject *object)
 {
@@ -156,19 +216,7 @@ static PyObject *py_opt(PyObject *module, PyObject *object)
     return nullptr;
   }
 
-  int type = PyArray_TYPE(matrix);
-  if (type == NPY_DOUBLE) {
-    const double *ptr = reinterpret_cast<const double *>(PyArray_GETPTR2(matrix, 0, 0));
-    return PyFloat_FromDouble(permanent::opt<double>(m, n, ptr));
-  } else if (type == NPY_COMPLEX128) {
-    std::complex<double> *ptr =
-        reinterpret_cast<std::complex<double> *>(PyArray_GETPTR2(matrix, 0, 0));
-    std::complex<double> out = permanent::opt<std::complex<double>>(m, n, ptr);
-    return PyComplex_FromDoubles(out.real(), out.imag());
-  } else {
-    PyErr_SetString(PyExc_TypeError, "Array must have dtype (double|complex)");
-    return nullptr;
-  }
+  DISPATCH_ARRAY_TYPE(permanent::opt)
 }
 
 static PyObject *py_combinatoric(PyObject *module, PyObject *object)
@@ -188,22 +236,7 @@ static PyObject *py_combinatoric(PyObject *module, PyObject *object)
     return py_combinatoric(module, PyArray_Transpose(matrix, nullptr));
   }
 
-  int type = PyArray_TYPE(matrix);
-  if (type == NPY_DOUBLE) {
-    double *ptr = reinterpret_cast<double *>(PyArray_GETPTR2(matrix, 0, 0));
-    return PyFloat_FromDouble((m == n) ? permanent::combinatoric<double>(m, n, ptr)
-                                       : permanent::combinatoric_rectangular<double>(m, n, ptr));
-  } else if (type == NPY_COMPLEX128) {
-    std::complex<double> *ptr =
-        reinterpret_cast<std::complex<double> *>(PyArray_GETPTR2(matrix, 0, 0));
-    std::complex<double> out =
-        (m == n) ? permanent::combinatoric<std::complex<double>>(m, n, ptr)
-                 : permanent::combinatoric_rectangular<std::complex<double>>(m, n, ptr);
-    return PyComplex_FromDoubles(out.real(), out.imag());
-  } else {
-    PyErr_SetString(PyExc_TypeError, "Array must have dtype (double|complex)");
-    return nullptr;
-  }
+  DISPATCH_ARRAY_TYPE(permanent::combinatoric)
 }
 
 static PyObject *py_glynn(PyObject *module, PyObject *object)
@@ -223,22 +256,7 @@ static PyObject *py_glynn(PyObject *module, PyObject *object)
     return py_glynn(module, PyArray_Transpose(matrix, nullptr));
   }
 
-  int type = PyArray_TYPE(matrix);
-  if (type == NPY_DOUBLE) {
-    double *ptr = reinterpret_cast<double *>(PyArray_GETPTR2(matrix, 0, 0));
-    return PyFloat_FromDouble((m == n) ? permanent::glynn<double>(m, n, ptr)
-                                       : permanent::glynn_rectangular<double>(m, n, ptr));
-  } else if (type == NPY_COMPLEX128) {
-    std::complex<double> *ptr =
-        reinterpret_cast<std::complex<double> *>(PyArray_GETPTR2(matrix, 0, 0));
-    std::complex<double> out = (m == n)
-                                   ? permanent::glynn<std::complex<double>>(m, n, ptr)
-                                   : permanent::glynn_rectangular<std::complex<double>>(m, n, ptr);
-    return PyComplex_FromDoubles(out.real(), out.imag());
-  } else {
-    PyErr_SetString(PyExc_TypeError, "Array must have dtype (double|complex)");
-    return nullptr;
-  }
+  DISPATCH_ARRAY_TYPE(permanent::glynn)
 }
 
 static PyObject *py_ryser(PyObject *module, PyObject *object)
@@ -258,22 +276,7 @@ static PyObject *py_ryser(PyObject *module, PyObject *object)
     return py_ryser(module, PyArray_Transpose(matrix, nullptr));
   }
 
-  int type = PyArray_TYPE(matrix);
-  if (type == NPY_DOUBLE) {
-    double *ptr = reinterpret_cast<double *>(PyArray_GETPTR2(matrix, 0, 0));
-    return PyFloat_FromDouble((m == n) ? permanent::ryser<double>(m, n, ptr)
-                                       : permanent::ryser_rectangular<double>(m, n, ptr));
-  } else if (type == NPY_COMPLEX128) {
-    std::complex<double> *ptr =
-        reinterpret_cast<std::complex<double> *>(PyArray_GETPTR2(matrix, 0, 0));
-    std::complex<double> out = (m == n)
-                                   ? permanent::ryser<std::complex<double>>(m, n, ptr)
-                                   : permanent::ryser_rectangular<std::complex<double>>(m, n, ptr);
-    return PyComplex_FromDoubles(out.real(), out.imag());
-  } else {
-    PyErr_SetString(PyExc_TypeError, "Array must have dtype (double|complex)");
-    return nullptr;
-  }
+  DISPATCH_ARRAY_TYPE(permanent::ryser)
 }
 
 /* Define the Python methods that will go into the C extension module.       *
@@ -315,3 +318,5 @@ PyMODINIT_FUNC PyInit_permanent(void)
   import_array();                      /* Initialize NumPy NDArray API */
   return PyModule_Create(&definition); /* Create module. */
 }
+
+#undef DISPATCH_ARRAY_TYPE
