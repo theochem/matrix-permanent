@@ -19,9 +19,13 @@ if(ENV{PERMANENT_TUNE})
   set(PERMANENT_TUNE ON)
 endif()
 
+if(SKBUILD OR ENV{PERMANENT_PYTHON})
+  set(PERMANENT_PYTHON ON)
+endif()
+
 # Dependencies
 
-if(PROJECT_IS_TOP_LEVEL AND SKBUILD)
+if(PROJECT_IS_TOP_LEVEL AND PERMANENT_PYTHON)
   find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 elseif(PERMANENT_TUNE)
   find_package(Python REQUIRED COMPONENTS Interpreter)
@@ -44,7 +48,7 @@ if(PERMANENT_TUNE)
 
   add_custom_target(TuningHeader ALL
     COMMAND
-      Python::Interpreter
+    ${Python_EXECUTABLE}
         "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_tuning_header.py"
         "${PERMANENT_TUNING_DATA}"
         "${PERMANENT_TUNING_HEADER}"
@@ -120,16 +124,26 @@ endif()
 
 # Python library target
 
-if(PROJECT_IS_TOP_LEVEL AND SKBUILD)
+if(PROJECT_IS_TOP_LEVEL AND PERMANENT_PYTHON)
   execute_process(
     COMMAND
-      "${PYTHON_EXECUTABLE}" -c "import numpy; print(numpy.get_include())"
+    ${Python_EXECUTABLE} "-c" "import numpy; print(numpy.get_include())"
     OUTPUT_VARIABLE
       NumPy_INCLUDE_DIRS
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   python_add_library(permanent MODULE src/main.cc WITH_SOABI)
   target_include_directories(permanent PRIVATE include ${NumPy_INCLUDE_DIRS})
-
+  if (UNIX)
+    if (APPLE)
+      set_target_properties(permanent
+        PROPERTIES
+          LINK_FLAGS "-Wl,-dylib,-undefined,dynamic_lookup")
+    else()
+      set_target_properties(permanent
+        PROPERTIES
+          LINK_FLAGS "-Wl,--allow-shlib-undefined")
+    endif()
+  endif()
   install(TARGETS permanent DESTINATION .)
 endif()
