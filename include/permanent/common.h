@@ -51,14 +51,6 @@ struct _result_t<std::complex<Type>, std::complex<IntType>,
 template <typename Type, typename IntType = void>
 using result_t = _result_t<Type, IntType>::type;
 
-// Compute the parity of an integer
-
-template <typename T>
-inline auto parity(const T &x)
-{
-  return 1 - ((x & 1) << 1);
-};
-
 }  // namespace permanent
 
 #endif  // permanent_common_h_

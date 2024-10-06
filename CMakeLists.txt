@@ -127,13 +127,50 @@ endif()
 if(PROJECT_IS_TOP_LEVEL AND PERMANENT_PYTHON)
   execute_process(
     COMMAND
+      sh -c "${CMAKE_CXX_COMPILER} --version | head -n 1"
+    WORKING_DIRECTORY
+      ${PROJECT_SOURCE_DIR}
+    OUTPUT_VARIABLE
+      _PERMANENT_COMPILER_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  execute_process(
+    COMMAND
+      git rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY
+      ${PROJECT_SOURCE_DIR}
+    OUTPUT_VARIABLE
+      _PERMANENT_GIT_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  execute_process(
+    COMMAND
+      git log -1 --format=%h
+    WORKING_DIRECTORY
+      ${PROJECT_SOURCE_DIR}
+    OUTPUT_VARIABLE
+      _PERMANENT_GIT_COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  execute_process(
+    COMMAND
     ${Python_EXECUTABLE} "-c" "import numpy; print(numpy.get_include())"
     OUTPUT_VARIABLE
       NumPy_INCLUDE_DIRS
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   python_add_library(permanent MODULE src/main.cc WITH_SOABI)
-  target_include_directories(permanent PRIVATE include ${NumPy_INCLUDE_DIRS})
+  target_include_directories(permanent
+    PRIVATE
+      include
+      ${NumPy_INCLUDE_DIRS})
+  target_compile_definitions(permanent
+    PRIVATE
+      "_PERMANENT_VERSION=${PROJECT_VERSION}"
+      "_PERMANENT_COMPILER_VERSION=${_PERMANENT_COMPILER_VERSION}"
+      "_PERMANENT_GIT_BRANCH=${_PERMANENT_GIT_BRANCH}"
+      "_PERMANENT_GIT_COMMIT_HASH=${_PERMANENT_GIT_COMMIT_HASH}"
+  )
   if (UNIX)
     if (APPLE)
       set_target_properties(permanent

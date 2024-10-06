@@ -3,15 +3,14 @@
 #if !defined(permanent_tables_h_)
 #define permanent_tables_h_
 
+#include <permanent/common.h>
+
 #include <cstdint>
+#include <type_traits>
 
-#define BINOMIAL(N, K) binom_table[65 * N + K]
+namespace permanent {
 
-#define FACTORIAL(N) factorial_table[N]
-
-#define IFACTORIAL(N) int_factorial_table[N]
-
-static const std::size_t binom_table[] = {
+static constexpr size_t binom_table[] = {
     1,
     0,
     0,
@@ -4239,7 +4238,7 @@ static const std::size_t binom_table[] = {
     1,
 };
 
-static const double factorial_table[] = {
+static constexpr double double_factorial_table[] = {
     1.0000000000000000e+00, 1.0000000000000000e+00, 2.0000000000000000e+00, 6.0000000000000000e+00,
     2.4000000000000000e+01, 1.2000000000000000e+02, 7.2000000000000000e+02, 5.0400000000000000e+03,
     4.0320000000000000e+04, 3.6288000000000000e+05, 3.6288000000000000e+06, 3.9916800000000000e+07,
@@ -4259,7 +4258,7 @@ static const double factorial_table[] = {
     1.2688693218588415e+89,
 };
 
-static const std::uint64_t int_factorial_table[] = {
+static constexpr std::uint64_t int_factorial_table[] = {
     1,
     1,
     2,
@@ -4282,5 +4281,24 @@ static const std::uint64_t int_factorial_table[] = {
     121645100408832000,
     2432902008176640000,
 };
+
+inline size_t binomial(const size_t n, const size_t k)
+{
+  return permanent::binom_table[65 * n + k];
+}
+
+template <typename T>
+inline std::enable_if_t<std::is_integral_v<T>, std::uint64_t> factorial(const size_t n)
+{
+  return permanent::int_factorial_table[n];
+}
+
+template <typename T>
+inline std::enable_if_t<!std::is_integral_v<T>, double> factorial(const size_t n)
+{
+  return permanent::double_factorial_table[n];
+}
+
+}  // namespace permanent
 
 #endif  // permanent_tables_h_
