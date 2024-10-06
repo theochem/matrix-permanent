@@ -3,6 +3,11 @@
 #if !defined(permanent_h_)
 #define permanent_h_
 
-#include <permanent/permanent.h>
+#include <permanent/common.h>
+#include <permanent/complex.h>
+#include <permanent/combinatoric.h>
+#include <permanent/glynn.h>
+#include <permanent/ryser.h>
+#include <permanent/opt.h>
 
 #endif  // permanent_h_

@@ -81,15 +81,33 @@ param_4 = ryser_limit
 try:
     with open(HEADER_FILE, "w") as file_ptr:
         file_ptr.write(
-            f"""#if !defined(permanent_tuning_h_)
+            f"""/* Copyright 2024 QC-Devs (GPLv3) */
+
+#if !defined(permanent_tuning_h_)
 #define permanent_tuning_h_
 
 namespace permanent {{
 
- constexpr double PARAM_1 = {param_1:.9f};
- constexpr double PARAM_2 = {param_2:.9f};
- constexpr double PARAM_3 = {param_3:.9f};
- constexpr double PARAM_4 = {param_4:.9f};
+template<typename Type, typename IntType = void>
+struct _tuning_params_t
+{{
+  static constexpr double PARAM_1 = {param_1:+16.9e};
+  static constexpr double PARAM_2 = {param_2:+16.9e};
+  static constexpr double PARAM_3 = {param_3:+16.9e};
+  static constexpr double PARAM_4 = {param_4:+16.9e};
+}};
+
+template<typename Type, typename IntType = void>
+static constexpr double PARAM_1 = _tuning_params_t<Type, IntType>::PARAM_1;
+
+template<typename Type, typename IntType = void>
+static constexpr double PARAM_2 = _tuning_params_t<Type, IntType>::PARAM_2;
+
+template<typename Type, typename IntType = void>
+static constexpr double PARAM_3 = _tuning_params_t<Type, IntType>::PARAM_3;
+
+template<typename Type, typename IntType = void>
+static constexpr double PARAM_4 = _tuning_params_t<Type, IntType>::PARAM_4;
 
 }}  // namespace permanent
 
