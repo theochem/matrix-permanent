@@ -259,11 +259,11 @@ static PyObject *py_opt(PyObject *module, PyObject *object)
 
   size_t m = PyArray_DIMS(matrix)[0];
   size_t n = PyArray_DIMS(matrix)[1];
-  if (m > n) {
-    return py_opt(module, PyArray_Transpose(matrix, nullptr));
-  } else if (m > 64 || n > 64) {
+  if (m > 64 || n > 64) {
     PyErr_SetString(PyExc_ValueError, "Argument array must have <=64 rows and columns");
     return nullptr;
+  } else if (m > n) {
+    return py_opt(module, PyArray_Transpose(matrix, nullptr));
   }
 
   PERMANENT_DISPATCH_ARRAY_TYPE(permanent::opt, matrix)
@@ -282,7 +282,10 @@ static PyObject *py_combinatoric(PyObject *module, PyObject *object)
 
   size_t m = PyArray_DIMS(matrix)[0];
   size_t n = PyArray_DIMS(matrix)[1];
-  if (m > n) {
+  if (m > 64 || n > 64) {
+    PyErr_SetString(PyExc_ValueError, "Argument array must have <=64 rows and columns");
+    return nullptr;
+  } else if (m > n) {
     return py_combinatoric(module, PyArray_Transpose(matrix, nullptr));
   }
 
@@ -302,7 +305,10 @@ static PyObject *py_glynn(PyObject *module, PyObject *object)
 
   size_t m = PyArray_DIMS(matrix)[0];
   size_t n = PyArray_DIMS(matrix)[1];
-  if (m > n) {
+  if (m > 64 || n > 64) {
+    PyErr_SetString(PyExc_ValueError, "Argument array must have <=64 rows and columns");
+    return nullptr;
+  } else if (m > n) {
     return py_glynn(module, PyArray_Transpose(matrix, nullptr));
   }
 
@@ -320,7 +326,10 @@ static PyObject *py_ryser(PyObject *module, PyObject *object)
 
   size_t m = PyArray_DIMS(matrix)[0];
   size_t n = PyArray_DIMS(matrix)[1];
-  if (m > n) {
+  if (m > 64 || n > 64) {
+    PyErr_SetString(PyExc_ValueError, "Argument array must have <=64 rows and columns");
+    return nullptr;
+  } else if (m > n) {
     return py_ryser(module, PyArray_Transpose(matrix, nullptr));
   }
 

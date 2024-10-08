@@ -54,19 +54,19 @@ int generate_tuning_data(std::ofstream &csv_file, const size_t m, const size_t n
   if (m == n) {
     for (size_t i = 0; i != NUM_TRIALS; ++i) {
       begin = std::clock();
-      soln_combn = permanent::combinatoric<T, I>(m, n, array);
+      soln_combn = permanent::combinatoric_square<T, I>(m, n, array);
       ensure(soln_combn);
       end = std::clock();
       time_combn[i] = static_cast<double>(end - begin);
 
       begin = std::clock();
-      soln_glynn = permanent::glynn<T, I>(m, n, array);
+      soln_glynn = permanent::glynn_square<T, I>(m, n, array);
       ensure(soln_glynn);
       end = std::clock();
       time_glynn[i] = static_cast<double>(end - begin);
 
       begin = std::clock();
-      soln_ryser = permanent::ryser<T, I>(m, n, array);
+      soln_ryser = permanent::ryser_square<T, I>(m, n, array);
       ensure(soln_ryser);
       end = std::clock();
       time_ryser[i] = static_cast<double>(end - begin);
