@@ -10,35 +10,34 @@ jobs:
 
     steps:
 
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get install -y build-essential python-dev-is-python3 python3-numpy python3-pytest
+      - name: Install dependencies
+        run: sudo apt-get install -y build-essential cmake
 
-    - name: Build library
-      run: make PYTHON=python
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install .
 
-    - name: Run library tests
-      run: make test PYTHON=python
+      - name: PyTest
+        run: |
+          pip install pytest
+          pytest -v tests
 
-    - name: Copy library to docs/ directory
-      run: cp -r permanent/ docs/permanent/
+      - name: Build documentation
+        run: |
+          pip install sphinx sphinx_rtd_theme sphinx_copybutton
+          cd docs && make html
 
-    - name: Build documentation
-      uses: ammaraskar/sphinx-action@master
-      with:
-        build-command: "make html"
-        docs-folder: "docs/"
+      - name: Fix documentation permissions
+        run: |
+          chmod -c -R +rX "docs/build/html/" | while read line; do
+            echo "::warning title=Invalid file permissions automatically fixed::$line"
+          done
 
-    - name: Fix documentation permissions
-      run: |
-        chmod -c -R +rX "docs/build/html/" | while read line; do
-          echo "::warning title=Invalid file permissions automatically fixed::$line"
-        done
-
-    - name: Upload Pages artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: docs/build/html/
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/build/html/
