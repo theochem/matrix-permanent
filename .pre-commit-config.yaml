@@ -1,8 +1,8 @@
 exclude: |
   (?x)^(
-    src/perm-mv0\.h$ |
-    src/kperm-gray\.h$ |
-    src/swap\.h$
+    include/permanent/perm-mv0\.h$ |
+    include/permanent/kperm-gray\.h$ |
+    include/permanent/swap\.h$
   )
 
 ci:
@@ -52,7 +52,9 @@ repos:
     hooks:
       - id: cppcheck
         args: ["--inline-suppr", "--suppress=missingIncludeSystem",
-          "--suppress=*:include/permanent/swap.h", "--suppress=*:include/permanent/perm-mv0.h", "--suppress=*:include/permanent/kperm-gray.h"]
+               "--suppress=*:include/permanent/swap.h",
+               "--suppress=*:include/permanent/perm-mv0.h",
+               "--suppress=*:include/permanent/kperm-gray.h"]
       - id: cpplint
         args: ["--root=src", "--filter=-build/include_subdir"]
       - id: clang-format
