@@ -8,10 +8,10 @@ namespace permanent {
 template <typename Type, typename IntType = void>
 struct _tuning_params_t
 {
-  static constexpr double PARAM_1 = +0.000000000e+00;
-  static constexpr double PARAM_2 = +0.000000000e+00;
-  static constexpr double PARAM_3 = +0.000000000e+00;
-  static constexpr double PARAM_4 = +0.000000000e+00;
+  static constexpr double PARAM_1 = -5.72098e-01;
+  static constexpr double PARAM_2 = -2.20142e+01;
+  static constexpr double PARAM_3 = +1.52979e+01;
+  static constexpr double PARAM_4 = +3.00000e+00;
 };
 
 template <typename Type, typename IntType = void>

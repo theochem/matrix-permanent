@@ -21,15 +21,13 @@ template <typename Type, typename IntType = void, typename = void>
 struct _result_t;
 
 template <typename Type>
-struct _result_t<Type, void,
-                 std::enable_if_t<std::is_scalar_v<Type> && !std::is_integral_v<Type>, void>>
+struct _result_t<Type, void, std::enable_if_t<std::is_scalar_v<Type>, void>>
 {
   typedef double type;
 };
 
 template <typename Type>
-struct _result_t<std::complex<Type>, void,
-                 std::enable_if_t<std::is_scalar_v<Type> && !std::is_integral_v<Type>, void>>
+struct _result_t<std::complex<Type>, void, std::enable_if_t<std::is_scalar_v<Type>, void>>
 {
   typedef std::complex<double> type;
 };
