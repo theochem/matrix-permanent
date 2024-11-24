@@ -12,31 +12,24 @@
 
 namespace {
 
-/* Helper functions for rectangle ryser. */
-inline int gray_code (int n) {
-    return n ^ (n >> 1);
-}
+inline void all_combinations(int n, int k, std::vector<std::vector<int>> &k_perms)
+{
+  k_perms.clear();  // Clear k_perms to make sure it starts empty
+  k_perms.reserve(1 << n);
 
-inline int count_bits(int n) {
-    return std::popcount(static_cast<unsigned int>(n));
-}
-
-inline void all_combinations(int n, int k, std::vector<std::vector<int> >& k_perms) {
-    k_perms.clear(); // Clear k_perms to make sure it starts empty
-
-    for (int i = 0; i < (1 << n); i++) {
-        int cur = gray_code(i);
-        if (count_bits(cur) == k) {
-            std::vector<int> vec; // Initialize vector for new combination
-
-            for (int j = 0; j < n; j++) {
-                if (cur & (1 << j)) {
-                    vec.push_back(j); // Add element to vector
-                }
-            }
-            k_perms.push_back(vec); // Store the combination
+  for (int i = 0; i < (1 << n); i++) {
+    unsigned int cur = i ^ (i >> 1);
+    if (std::popcount(cur) == k) {
+      std::vector<int> vec;  // Initialize vector for new combination
+      vec.reserve(n);
+      for (int j = 0; j < n; j++) {
+        if (cur & (1 << j)) {
+          vec.push_back(j);  // Add element to vector
         }
+      }
+      k_perms.push_back(vec);  // Store the combination
     }
+  }
 }
 
 template <typename T>
@@ -121,69 +114,65 @@ bool gen_next_perm(T *const falling_fact, T *const perm, T *const inv_perm, cons
 namespace permanent {
 
 template <typename T, typename I = void>
-result_t<T, I> ryser_square(const size_t m, const size_t n, const T *ptr)
+result_t<T, I> ryser_square(const size_t m, const size_t, const T *ptr)
 {
-    (void)n;
+  T out = 0;
+  size_t c = 1UL << m;
 
-    T out = 0;
-    size_t c = 1UL << m;
-
-    for (size_t k = 0; k < c; ++k) {
-        T rowsumprod = 1.0;
-        for (size_t i = 0; i < m; ++i) {
-            T rowsum = 0.0;
-            for (size_t j = 0; j < m; ++j) {
-                if (k & (1UL << j)) {
-                    rowsum += ptr[m * i + j];
-                }
-            }
-            rowsumprod *= rowsum;
+  for (size_t k = 0; k < c; ++k) {
+    T rowsumprod = 1.0;
+    for (size_t i = 0; i < m; ++i) {
+      T rowsum = 0.0;
+      for (size_t j = 0; j < m; ++j) {
+        if (k & (1UL << j)) {
+          rowsum += ptr[m * i + j];
         }
-        out += rowsumprod * (1 - ((std::popcount(static_cast<unsigned long long>(k)) & 1) << 1));
+      }
+      rowsumprod *= rowsum;
     }
+    out += rowsumprod * (1 - ((std::popcount(k) & 1) << 1));
+  }
 
-    return static_cast<result_t<T, I>>(out * ((m % 2 == 1) ? -1 : 1));
+  return static_cast<result_t<T, I>>(out * ((m % 2 == 1) ? -1 : 1));
 }
 
 template <typename T, typename I = void>
 result_t<T, I> ryser_rectangular(const size_t m, const size_t n, const T *ptr)
 {
-    int sign = 1;
-    result_t<T, I> out = 0.0;
-    std::vector<std::vector<int> > k_perms;
+  int sign = 1;
+  result_t<T, I> out = 0.0;
+  std::vector<std::vector<int>> k_perms;
 
-    /* Iterate over subsets from size 0 to size m */
+  /* Iterate over subsets from size 0 to size m */
 
-    for (size_t k = 0; k < m; ++k) {
-        all_combinations(n, m - k, k_perms);
-        size_t bin = binomial((n - m + k), k); 
-        result_t<T, I> permsum = 0.0;
+  for (size_t k = 0; k < m; ++k) {
+    all_combinations(n, m - k, k_perms);
+    size_t bin = binomial((n - m + k), k);
+    result_t<T, I> permsum = 0.0;
 
-        /* Compute permanents of each submatrix */
-        result_t<T, I> vec[64];
-        for (const auto& combination : k_perms) {
-                result_t<T, I> colprod;
-                for (size_t i = 0; i < m; ++i) {
-                    result_t<T, I> matsum = 0.0;
-                    for (size_t j = 0; j < (m - k); ++j)
-                        matsum += ptr[i * n + combination[j]];
-                    vec[i] = matsum;
-                }
+    /* Compute permanents of each submatrix */
+    result_t<T, I> vec[64];
+    for (const auto &combination : k_perms) {
+      result_t<T, I> colprod;
+      for (size_t i = 0; i < m; ++i) {
+        result_t<T, I> matsum = 0.0;
+        for (size_t j = 0; j < (m - k); ++j) matsum += ptr[i * n + combination[j]];
+        vec[i] = matsum;
+      }
 
-                colprod = 1.0;
-                for (size_t i = 0; i < m; ++i)
-                    colprod *= vec[i];
-                permsum += colprod * sign * bin;
-        }
-
-        /* Add term to result */
-
-        out += permsum;
-
-        sign *= -1;
+      colprod = 1.0;
+      for (size_t i = 0; i < m; ++i) colprod *= vec[i];
+      permsum += colprod * sign * bin;
     }
 
-    return out;
+    /* Add term to result */
+
+    out += permsum;
+
+    sign *= -1;
+  }
+
+  return out;
 }
 
 template <typename T, typename I = void>

@@ -26,9 +26,9 @@ clean:
 install: _build
 	@cmake --install build
 
-build:
-	@cmake -B build $(CMAKE_FLAGS)
-
 _build: build
 	@cmake --build build --target all
 	@if test -e build/compile_commands.json; then ln -sf build/compile_commands.json .; fi
+
+build:
+	@cmake -B build $(CMAKE_FLAGS)
