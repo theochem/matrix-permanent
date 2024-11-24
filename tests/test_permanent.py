@@ -76,242 +76,42 @@ def test_int_dim_diff_gt_20_raises(fn, arg):
         np.array([[chr(x) for x in range(65, 69)] for _ in range(4)]),
     ],
 )
+
 @pytest.mark.parametrize("fn", FNS)
 def test_invalid_type_raises(fn, arg):
     r"""Ensure that matrices with an invalid dtype raise a ValueError."""
     with npt.assert_raises(TypeError):
         fn(arg)
 
+@pytest.mark.parametrize(
+    "args",
+    [
+        (np.arange(1, 5, dtype=float).reshape(2, 2), 10),
+        (np.arange(1, 10, dtype=float).reshape(3, 3), 450),
+        (np.arange(1, 17, dtype=float).reshape(4, 4), 55456),
+        (np.arange(1, 50, dtype=float).reshape(7, 7), 5373548250000),
+        # Rectangular matrices
+        (np.arange(1, 7, dtype=float).reshape(2, 3), 58),
+        (np.arange(1, 9, dtype=float).reshape(2, 4), 190),
+        (np.arange(1, 15, dtype=float).reshape(2, 7), 1820),
+        (np.arange(1, 36, dtype=float).reshape(5, 7), 1521238320),
+        (np.arange(1, 43, dtype=float).reshape(6, 7), 117681979920),
+        # Special matrices
+        (np.ones((10, 10), dtype=float), factorial(10)),
+        (np.ones((12, 12), dtype=float), factorial(12)),
+        (np.identity(10, dtype=float), 1),
+        (np.identity(5, dtype=float), 1),
+        (np.diag(np.diag(np.ones((3, 7), dtype=float))), 1),
+    ],
+)
 
-# # Test square matrices
-# def test_2by2_comb():
-#     matrix = np.arange(1, 5, dtype=np.double).reshape(2, 2)
-#     assert abs((permanent.combinatoric(matrix) - 10) / 10) <= REL_ERROR
-#     npt.assert_allclose(
-#
-#
-# def test_2by2_glynn():
-#     matrix = np.arange(1, 5, dtype=np.double).reshape(2, 2)
-#     assert abs((permanent.glynn(matrix) - 10) / 10) <= REL_ERROR
-#
-#
-# def test_2by2_ryser():
-#     matrix = np.arange(1, 5, dtype=np.double).reshape(2, 2)
-#     assert abs((permanent.ryser(matrix) - 10) / 10) <= REL_ERROR
-#
-#
-# def test_3by3_comb():
-#     matrix = np.arange(1, 10, dtype=np.double).reshape(3, 3)
-#     assert abs((permanent.combinatoric(matrix) - 450) / 450) <= REL_ERROR
-#
-#
-# def test_3by3_glynn():
-#     matrix = np.arange(1, 10, dtype=np.double).reshape(3, 3)
-#     assert abs((permanent.glynn(matrix) - 450) / 450) <= REL_ERROR
-#
-#
-# def test_3by3_ryser():
-#     matrix = np.arange(1, 10, dtype=np.double).reshape(3, 3)
-#     assert abs((permanent.ryser(matrix) - 450) / 450) <= REL_ERROR
-#
-#
-# def test_4by4_comb():
-#     matrix = np.arange(1, 17, dtype=np.double).reshape(4, 4)
-#     assert abs((permanent.combinatoric(matrix) - 55456) / 55456) <= REL_ERROR
-#
-#
-# def test_4by4_glynn():
-#     matrix = np.arange(1, 17, dtype=np.double).reshape(4, 4)
-#     assert abs((permanent.glynn(matrix) - 55456) / 55456) <= REL_ERROR
-#
-#
-# def test_4by4_ryser():
-#     matrix = np.arange(1, 17, dtype=np.double).reshape(4, 4)
-#     assert abs((permanent.ryser(matrix) - 55456) / 55456) <= REL_ERROR
-#
-#
-# def test_7by7_comb():
-#     matrix = np.arange(1, 50, dtype=np.double).reshape(7, 7)
-#     assert (
-#         abs((permanent.combinatoric(matrix) - 5373548250000) / 5373548250000)
-#         <= REL_ERROR
-#     )
-#
-#
-# def test_7by7_glynn():
-#     matrix = np.arange(1, 50, dtype=np.double).reshape(7, 7)
-#     assert abs((permanent.glynn(matrix) - 5373548250000) / 5373548250000) <= REL_ERROR
-#
-#
-# def test_7by7_ryser():
-#     matrix = np.arange(1, 50, dtype=np.double).reshape(7, 7)
-#     assert abs((permanent.ryser(matrix) - 5373548250000) / 5373548250000) <= REL_ERROR
-#
-#
-# ## Test rectangular matrices
-# def test_2by3_comb():
-#     matrix = np.arange(1, 7, dtype=np.double).reshape(2, 3)
-#     assert abs((permanent.combinatoric(matrix) - 58) / 58) <= REL_ERROR
-#
-#
-# def test_2by3_glynn():
-#     matrix = np.arange(1, 7, dtype=np.double).reshape(2, 3)
-#     assert abs((permanent.glynn(matrix) - 58) / 58) <= REL_ERROR
-#
-#
-# def test_2by3_ryser():
-#     matrix = np.arange(1, 7, dtype=np.double).reshape(2, 3)
-#     assert abs((permanent.ryser(matrix) - 58) / 58) <= REL_ERROR
-#
-#
-# def test_2by4_comb():
-#     matrix = np.arange(1, 9, dtype=np.double).reshape(2, 4)
-#     assert abs((permanent.combinatoric(matrix) - 190) / 190) <= REL_ERROR
-#
-#
-# def test_2by4_glynn():
-#     matrix = np.arange(1, 9, dtype=np.double).reshape(2, 4)
-#     assert abs((permanent.glynn(matrix) - 190) / 190) <= REL_ERROR
-#
-#
-# def test_2by4_ryser():
-#     matrix = np.arange(1, 9, dtype=np.double).reshape(2, 4)
-#     assert abs((permanent.ryser(matrix) - 190) / 190) <= REL_ERROR
-#
-#
-# def test_2by7_comb():
-#     matrix = np.arange(1, 15, dtype=np.double).reshape(2, 7)
-#     assert abs((permanent.combinatoric(matrix) - 1820) / 1820) <= REL_ERROR
-#
-#
-# def test_2by7_glynn():
-#     matrix = np.arange(1, 15, dtype=np.double).reshape(2, 7)
-#     assert abs((permanent.glynn(matrix) - 1820) / 1820) <= REL_ERROR
-#
-#
-# def test_2by7_ryser():
-#     matrix = np.arange(1, 15, dtype=np.double).reshape(2, 7)
-#     assert abs((permanent.ryser(matrix) - 1820) / 1820) <= REL_ERROR
-#
-#
-# def test_5by7_comb():
-#     matrix = np.arange(1, 36, dtype=np.double).reshape(5, 7)
-#     assert abs((permanent.combinatoric(matrix) - 1521238320) / 1521238320) <= REL_ERROR
-#
-#
-# def test_5by7_glynn():
-#     matrix = np.arange(1, 36, dtype=np.double).reshape(5, 7)
-#     assert abs((permanent.glynn(matrix) - 1521238320) / 1521238320) <= REL_ERROR
-#
-#
-# def test_5by7_ryser():
-#     matrix = np.arange(1, 36, dtype=np.double).reshape(5, 7)
-#     assert abs((permanent.ryser(matrix) - 1521238320) / 1521238320) <= REL_ERROR
-#
-#
-# def test_6by7_comb():
-#     matrix = np.arange(1, 43, dtype=np.double).reshape(6, 7)
-#     assert (
-#         abs((permanent.combinatoric(matrix) - 117681979920) / 117681979920) <= REL_ERROR
-#     )
-#
-#
-# def test_6by7_glynn():
-#     matrix = np.arange(1, 43, dtype=np.double).reshape(6, 7)
-#     assert abs((permanent.glynn(matrix) - 117681979920) / 117681979920) <= REL_ERROR
-#
-#
-# def test_6by7_ryser():
-#     matrix = np.arange(1, 43, dtype=np.double).reshape(6, 7)
-#     assert abs((permanent.ryser(matrix) - 117681979920) / 117681979920) <= REL_ERROR
-#
-#
-# def test_ones_comb():
-#     matrix = np.ones((10, 10), dtype=np.double)
-#     assert (
-#         abs((permanent.combinatoric(matrix) - factorial(10)) / factorial(10))
-#         <= REL_ERROR
-#     )
-#
-#
-# def test_ones_ryser():
-#     matrix = np.ones((10, 10), dtype=np.double)
-#     assert (
-#         abs((permanent.ryser(matrix) - factorial(10)) / factorial(10))
-#         <= REL_ERROR
-#     )
-#
-#
-# def test_ones_glynn():
-#     matrix = np.ones((10, 10), dtype=np.double)
-#     assert (
-#         abs((permanent.glynn(matrix) - factorial(10)) / factorial(10))
-#         <= REL_ERROR
-#     )
-#
-#
-# def test_ones_comb_big():
-#     matrix = np.ones((12, 12), dtype=np.double)
-#     assert (
-#         abs((permanent.combinatoric(matrix) - factorial(12)) / factorial(12))
-#         <= REL_ERROR
-#     )
-#
-#
-# def test_ones_ryser_big():
-#     matrix = np.ones((12, 12), dtype=np.double)
-#     assert (
-#         abs((permanent.ryser(matrix) - factorial(12)) / factorial(12))
-#         <= REL_ERROR
-#     )
-#
-#
-# def test_ones_glynn_big():
-#     matrix = np.ones((12, 12), dtype=np.double)
-#     assert (
-#         abs((permanent.glynn(matrix) - factorial(12)) / factorial(12))
-#         <= REL_ERROR
-#     )
-#
-#
-# def test_identity_comb():
-#     matrix = np.identity(10, dtype=np.double)
-#     assert abs((permanent.combinatoric(matrix) - 1) / 1) <= REL_ERROR
-#
-#
-# def test_identity_ryser():
-#     matrix = np.identity(10, dtype=np.double)
-#     assert abs((permanent.ryser(matrix) - 1) / 1) <= REL_ERROR
-#
-#
-# def test_identity_glynn():
-#     matrix = np.identity(10, dtype=np.double)
-#     assert abs((permanent.glynn(matrix) - 1) / 1) <= REL_ERROR
-#
-#
-# def test_identity_ryser_odd():
-#     matrix = np.identity(5, dtype=np.double)
-#     assert abs((permanent.ryser(matrix) - 1) / 1) <= REL_ERROR
-#
-#
-# def test_identity_glynn_odd():
-#     matrix = np.identity(5, dtype=np.double)
-#     assert abs((permanent.glynn(matrix) - 1) / 1) <= REL_ERROR
-#
-#
-# def test_identity_comb_diag():
-#     matrix = np.ones((3, 7), dtype=np.double)
-#     diag_matrix = np.diag(np.diag(matrix))
-#     assert abs((permanent.combinatoric(diag_matrix) - 1) / 1) <= REL_ERROR
-#
-#
-# def test_identity_ryser_diag():
-#     matrix = np.ones((3, 7), dtype=np.double)
-#     diag_matrix = np.diag(np.diag(matrix))
-#     assert abs((permanent.ryser(diag_matrix) - 1) / 1) <= REL_ERROR
-#
-#
-# def test_identity_glynn_diag():
-#     matrix = np.ones((3, 7), dtype=np.double)
-#     diag_matrix = np.diag(np.diag(matrix))
-#     assert abs((permanent.glynn(diag_matrix) - 1) / 1) <= REL_ERROR
+@pytest.mark.parametrize("fn", FNS)
+def test_compute_permanent_extended(fn, args):
+    """Test permanent computation for various matrix sizes and types."""
+    npt.assert_allclose(
+        fn(args[0]), 
+        args[1], 
+        atol=ATOL, 
+        rtol=RTOL,
+        err_msg=f"Failed for matrix shape {args[0].shape}, expected {args[1]}"
+    )

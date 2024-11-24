@@ -8,8 +8,39 @@
 #include <permanent/tables.h>
 
 #include <bit>
+#include <vector>
 
 namespace {
+
+/* Helper functions for rectangle ryser. */
+inline int gray_code (int n) {
+    return n ^ (n >> 1);
+}
+
+inline int count_bits (int n) {
+    int res = 0;
+    for (; n; n >>= 1)
+        res += n & 1;
+    return res;
+}
+
+inline void all_combinations(int n, int k, std::vector<std::vector<int> >& k_perms) {
+    k_perms.clear(); // Clear k_perms to make sure it starts empty
+
+    for (int i = 0; i < (1 << n); i++) {
+        int cur = gray_code(i);
+        if (count_bits(cur) == k) {
+            std::vector<int> vec; // Initialize vector for new combination
+
+            for (int j = 0; j < n; j++) {
+                if (cur & (1 << j)) {
+                    vec.push_back(j); // Add element to vector
+                }
+            }
+            k_perms.push_back(vec); // Store the combination
+        }
+    }
+}
 
 template <typename T>
 auto parity(const T &x)
@@ -95,120 +126,72 @@ namespace permanent {
 template <typename T, typename I = void>
 result_t<T, I> ryser_square(const size_t m, const size_t n, const T *ptr)
 {
-  (void)n;
+    (void)n;
 
-  size_t i, j;
-  size_t k;
-  result_t<T, I> rowsum;
-  result_t<T, I> out = 0;
+    size_t i, j, k;
+    T rowsum;  // Use T instead of result_t for intermediate calculations
+    T out = 0;
+    size_t c = 1UL << m;
 
-  /* Iterate over c = pow(2, m) submatrices (equal to (1 << m)) submatrices.
-   */
-
-  size_t c = 1UL << m;
-
-  /* Loop over columns of submatrix; compute product of row sums. */
-
-  for (k = 0; k < c; ++k) {
-    result_t<T, I> rowsumprod = 1.0;
-    for (i = 0; i < m; ++i) {
-      /* Loop over rows of submatrix; compute row sum. */
-
-      rowsum = 0.0;
-      for (j = 0; j < m; ++j) {
-        /* Add element to row sum if the row index is in the
-         * characteristic * vector of the submatrix, which is the binary
-         * vector given by k.  */
-
-        if (k & (1UL << j)) {
-          rowsum += ptr[m * i + j];
+    for (k = 0; k < c; ++k) {
+        T rowsumprod = 1.0;
+        for (i = 0; i < m; ++i) {
+            rowsum = 0.0;
+            for (j = 0; j < m; ++j) {
+                if (k & (1UL << j)) {
+                    rowsum += ptr[m * i + j];
+                }
+            }
+            rowsumprod *= rowsum;
         }
-      }
-
-      /* Update product of row sums. */
-
-      rowsumprod *= rowsum;
+        out += rowsumprod * (1 - ((__builtin_popcountll(k) & 1) << 1));
     }
 
-    /* Add term multiplied by the parity of the characteristic vector. */
-
-    out += rowsumprod * parity(std::popcount(k));
-  }
-
-  /* Return answer with the correct sign (times -1 for odd m). */
-
-  return out * parity(m);
+    return static_cast<result_t<T, I>>(out * ((m % 2 == 1) ? -1 : 1));
 }
 
 template <typename T, typename I = void>
 result_t<T, I> ryser_rectangular(const size_t m, const size_t n, const T *ptr)
 {
-  size_t falling_fact[128];
-  size_t perm[128];
-  size_t inv_perm[128];
-  falling_fact[0] = 0;
+    size_t i, j, k, bin;
+    int sign = 1;
 
-  size_t i, j, k;
+    result_t<T, I> colprod, matsum, permsum;
+    result_t<T, I> out = 0.0;
+    result_t<T, I> vec[64];
+    std::vector<std::vector<int> > k_perms;
 
-  int value_sign = 1;
+    /* Iterate over subsets from size 0 to size m */
 
-  result_t<T, I> sum_of_matrix_vals;
-  result_t<T, I> sum_over_k_vals = 0.0;
-  result_t<T, I> vec[64];
+    for (k = 0; k < m; ++k) {
+        all_combinations(n, m - k, k_perms);
 
-  /* Dealing with a rectangle. Can't use bit hacking trick here. */
-  for (k = 0; k < m; ++k) {
-    /* Store the binomial coefficient for this k value bin_c. */
-    size_t counter = 0;  // Count how many permutations you have generated
-    size_t bin_c = binomial((n - m + k), k);
-    result_t<T, I> prod_of_cols = 1;
-    result_t<T, I> result = 0;
+        bin = binomial((n - m + k), k); 
+        permsum = 0.0;
 
-    /* (Re)initialize the set to permute for this k value. */
-    init_perm(n, falling_fact, perm, inv_perm);
+        /* Compute permanents of each submatrix */
+        for (const auto& combination : k_perms) {
+                for (i = 0; i < m; ++i) {
+                    matsum = 0.0;
+                    for (j = 0; j < (m - k); ++j)
+                        matsum += ptr[i * n + combination[j]];
+                    vec[i] = matsum;
+                }
 
-    /* sort up to position u + 1 where u = min(m - k, n - 1). */
-    size_t sort_up_to = n - 1;
-
-    if ((m - k) < sort_up_to) {
-      sort_up_to = (m - k);
-    }
-
-    for (i = 0; i < m; ++i) {
-      sum_of_matrix_vals = 0.0;
-      for (j = 0; j < sort_up_to; ++j) {
-        sum_of_matrix_vals += ptr[i * n + perm[j]];
-      }
-      vec[i] = sum_of_matrix_vals;
-    }
-    for (i = 0; i < m; ++i) {
-      prod_of_cols *= vec[i];
-    }
-
-    result += value_sign * bin_c * prod_of_cols;
-    counter += 1;
-
-    /* Iterate over second to last permutations of the set. */
-    while (gen_next_perm(falling_fact, perm, inv_perm, n, sort_up_to)) {
-      for (i = 0; i < m; ++i) {
-        sum_of_matrix_vals = 0.0;
-        for (j = 0; j < m - k; ++j) {
-          sum_of_matrix_vals += ptr[i * n + perm[j]];
+                colprod = 1.0;
+                for (i = 0; i < m; ++i)
+                    colprod *= vec[i];
+                permsum += colprod * sign * bin;
         }
-        vec[i] = sum_of_matrix_vals;
-      }
-      prod_of_cols = 1.0;
-      for (i = 0; i < m; ++i) {
-        prod_of_cols *= vec[i];
-      }
 
-      result += value_sign * bin_c * prod_of_cols;
-      counter += 1;
+        /* Add term to result */
+
+        out += permsum;
+
+        sign *= -1;
     }
-    sum_over_k_vals += (result / counter) * binomial(n, (m - k));
-    value_sign *= -1;
-  }
-  return sum_over_k_vals;
+
+    return out;
 }
 
 template <typename T, typename I = void>
