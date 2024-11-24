@@ -37,9 +37,7 @@ test = ["pytest"]
 
 [tool.scikit-build]
 wheel.expand-macos-universal-tags = true
-
-[tool.scikit-build]
-cmake.args = ["-DPERMANENT_TUNE=ON"]
+cmake.args = ["-DPERMANENT_TUNE=OFF"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

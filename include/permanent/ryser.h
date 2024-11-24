@@ -17,11 +17,8 @@ inline int gray_code (int n) {
     return n ^ (n >> 1);
 }
 
-inline int count_bits (int n) {
-    int res = 0;
-    for (; n; n >>= 1)
-        res += n & 1;
-    return res;
+inline int count_bits(int n) {
+    return std::popcount(static_cast<unsigned int>(n));
 }
 
 inline void all_combinations(int n, int k, std::vector<std::vector<int> >& k_perms) {
@@ -128,23 +125,21 @@ result_t<T, I> ryser_square(const size_t m, const size_t n, const T *ptr)
 {
     (void)n;
 
-    size_t i, j, k;
-    T rowsum;  // Use T instead of result_t for intermediate calculations
     T out = 0;
     size_t c = 1UL << m;
 
-    for (k = 0; k < c; ++k) {
+    for (size_t k = 0; k < c; ++k) {
         T rowsumprod = 1.0;
-        for (i = 0; i < m; ++i) {
-            rowsum = 0.0;
-            for (j = 0; j < m; ++j) {
+        for (size_t i = 0; i < m; ++i) {
+            T rowsum = 0.0;
+            for (size_t j = 0; j < m; ++j) {
                 if (k & (1UL << j)) {
                     rowsum += ptr[m * i + j];
                 }
             }
             rowsumprod *= rowsum;
         }
-        out += rowsumprod * (1 - ((__builtin_popcountll(k) & 1) << 1));
+        out += rowsumprod * (1 - ((std::popcount(static_cast<unsigned long long>(k)) & 1) << 1));
     }
 
     return static_cast<result_t<T, I>>(out * ((m % 2 == 1) ? -1 : 1));
@@ -153,33 +148,30 @@ result_t<T, I> ryser_square(const size_t m, const size_t n, const T *ptr)
 template <typename T, typename I = void>
 result_t<T, I> ryser_rectangular(const size_t m, const size_t n, const T *ptr)
 {
-    size_t i, j, k, bin;
     int sign = 1;
-
-    result_t<T, I> colprod, matsum, permsum;
     result_t<T, I> out = 0.0;
-    result_t<T, I> vec[64];
     std::vector<std::vector<int> > k_perms;
 
     /* Iterate over subsets from size 0 to size m */
 
-    for (k = 0; k < m; ++k) {
+    for (size_t k = 0; k < m; ++k) {
         all_combinations(n, m - k, k_perms);
-
-        bin = binomial((n - m + k), k); 
-        permsum = 0.0;
+        size_t bin = binomial((n - m + k), k); 
+        result_t<T, I> permsum = 0.0;
 
         /* Compute permanents of each submatrix */
+        result_t<T, I> vec[64];
         for (const auto& combination : k_perms) {
-                for (i = 0; i < m; ++i) {
-                    matsum = 0.0;
-                    for (j = 0; j < (m - k); ++j)
+                result_t<T, I> colprod;
+                for (size_t i = 0; i < m; ++i) {
+                    result_t<T, I> matsum = 0.0;
+                    for (size_t j = 0; j < (m - k); ++j)
                         matsum += ptr[i * n + combination[j]];
                     vec[i] = matsum;
                 }
 
                 colprod = 1.0;
-                for (i = 0; i < m; ++i)
+                for (size_t i = 0; i < m; ++i)
                     colprod *= vec[i];
                 permsum += colprod * sign * bin;
         }
