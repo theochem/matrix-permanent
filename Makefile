@@ -28,7 +28,7 @@ install: _build
 
 _build: build
 	@cmake --build build --target all
-	@test -e build/compile_commands.json && ln -sf build/compile_commands.json .
+	@if test -e build/compile_commands.json; then ln -sf build/compile_commands.json .; fi
 
 build:
-	@cmake -B build $(CMAKE_FLAGS) .
+	@cmake -B build $(CMAKE_FLAGS)
