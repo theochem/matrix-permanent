@@ -3,7 +3,7 @@ requires = ["numpy>=2.0", "pandas", "scikit-learn", "scikit-build-core>=0.3.3"]
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "permanent"
+name = "qc-permanent"
 version = "0.0.1"
 description = "Extension module for computing permanents of square and rectangular matrices."
 readme = "README.md"
@@ -31,6 +31,8 @@ classifiers = [
 license = {file = "LICENSE"}
 urls = {home = "https://permanent.qcdevs.org/"}
 dependencies = ["numpy>=2.0"]
+
+
 
 [project.optional-dependencies]
 test = ["pytest"]
