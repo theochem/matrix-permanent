@@ -47,7 +47,8 @@ jobs:
           CIBW_BUILD_VERBOSITY: 2
           CIBW_PRERELEASE_PYTHONS: True
           CIBW_TEST_REQUIRES: pytest
-          CIBW_TEST_COMMAND: "pytest {package}/tests"
+          CIBW_TEST_COMMAND: "pytest /project/tests"
+
         run: |
           python -m cibuildwheel --output-dir wheelhouse
 
