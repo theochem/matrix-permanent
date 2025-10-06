@@ -1,5 +1,5 @@
 [build-system]
-requires = ["numpy>=2.0", "pandas", "scikit-learn", "scikit-build-core>=0.3.3"]
+requires = ["numpy>=2.0", "scikit-build-core>=0.3.3"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -36,6 +36,7 @@ dependencies = ["numpy>=2.0"]
 
 [project.optional-dependencies]
 test = ["pytest"]
+
 
 [tool.scikit-build]
 wheel.expand-macos-universal-tags = true
