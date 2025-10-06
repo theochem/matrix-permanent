@@ -53,8 +53,9 @@ filterwarnings = [
 testpaths = ["tests"]
 
 [tool.cibuildwheel]
+skip = ["cp*-win32"]
 build-frontend = "build[uv]"
-test-command = "pytest tests"
+test-command = "pytest {project}/tests"
 test-extras = ["test"]
 
 [tool.cibuildwheel.pyodide]
