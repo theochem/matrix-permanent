@@ -80,6 +80,7 @@ jobs:
           python -m cibuildwheel --output-dir "wheelhouse"
 
       - name: Show built wheels
+        shell: bash
         run: ls -lh wheelhouse/
 
       - name: Upload built wheels
