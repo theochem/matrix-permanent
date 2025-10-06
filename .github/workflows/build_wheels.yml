@@ -37,17 +37,19 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install uv
-        shell: bash
-        run: pip install uv
-
       - name: Install cibuildwheel
         run: |
           python -m pip install --upgrade pip
-          pip install cibuildwheel pytest
+          pip install cibuildwheel pytest uv
+
+      - name: Set 64-bit architecture for cibuildwheel
+        run: |
+          echo "CIBW_ARCHS_LINUX=x86_64" >> $GITHUB_ENV
+          echo "CIBW_ARCHS_MACOS=universal2" >> $GITHUB_ENV
+          echo "CIBW_ARCHS_WINDOWS=64" >> $GITHUB_ENV
 
       - name: Set CIBW_BUILD Python version
-        shell: bash  # Ensures Bash is used even on Windows
+        shell: bash
         run: echo "CIBW_BUILD=cp${PYTHON_VERSION//./}-*" >> $GITHUB_ENV
         env:
           PYTHON_VERSION: ${{ matrix.python-version }}
