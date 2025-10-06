@@ -54,14 +54,30 @@ jobs:
         env:
           PYTHON_VERSION: ${{ matrix.python-version }}
 
-      - name: Build and test wheels
+      # ------------------------------
+      # Linux/macOS build step
+      - name: Build and test wheels (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
         env:
           CIBW_BUILD_VERBOSITY: 2
           CIBW_PRERELEASE_PYTHONS: "false"
           CIBW_TEST_REQUIRES: pytest
-
         run: |
-          python -m cibuildwheel --output-dir wheelhouse
+          python -m cibuildwheel --output-dir "wheelhouse"
+
+      # ------------------------------
+      # Windows build step
+      - name: Build and test wheels (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          CIBW_BUILD_VERBOSITY: 2
+          CIBW_PRERELEASE_PYTHONS: "false"
+          CIBW_TEST_REQUIRES: pytest
+          CIBW_USE_CMAKE: 1           # Force CMake backend on Windows
+        run: |
+          python -m cibuildwheel --output-dir "wheelhouse"
 
       - name: Show built wheels
         run: ls -lh wheelhouse/
