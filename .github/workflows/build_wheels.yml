@@ -37,13 +37,20 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install UV
-        run: pip install uv # needed on Windows
+      - name: Install UV (Windows only)
+        if: runner.os == 'Windows'
+        run: pip install uv
 
       - name: Install cibuildwheel
         run: |
           python -m pip install --upgrade pip
           pip install cibuildwheel pytest
+
+      - name: Set CIBW_BUILD Python version
+        shell: bash  # Ensures Bash is used even on Windows
+        run: echo "CIBW_BUILD=cp${PYTHON_VERSION//./}-*" >> $GITHUB_ENV
+        env:
+          PYTHON_VERSION: ${{ matrix.python-version }}
 
       - name: Build and test wheels
         env:
