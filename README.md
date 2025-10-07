@@ -126,7 +126,7 @@ The easiest way to install the `permanent` package is via PyPI:
    pip install qc-permanent
 ```
 
-This will install the package with pre-set paremeters with a good performance for most cases.
+This will install the package with pre-set parameters with a good performance for most cases.
 Advanced users can also **compile the code locally** and fine tune it for their specific
 architecture. They can either use the pre-defined parameters or fine tune them to their machine.
 
