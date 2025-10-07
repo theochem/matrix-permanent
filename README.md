@@ -6,11 +6,17 @@
 
 # Permanent
 
-The permanent of a (square) matrix, like the determinant is a polynomial in the entries of the matrix. Unlike the determinant, the signatures of the permutations are not taken into account making the permanent much more difficult to compute because decomposition methods cannot be used.
+The permanent of a (square) matrix, like the determinant is a polynomial in the entries of the
+matrix. Unlike the determinant, the signatures of the permutations are not taken into account making
+the permanent much more difficult to compute because decomposition methods cannot be used.
 
-The permanent commonly appears in problems related to quantum mechanics, and the most common brute-force combinatorial method has time complexity $\mathcal{O}(N!N)$, thus it is useful to look for more efficient algorithms. The two algorithms considered to be the fastest are one by Ryser (based on the inclusion-exclusion principle), and one by Glynn (based on invariant theory).
+The permanent commonly appears in problems related to quantum mechanics, and the most common
+brute-force combinatorial method has time complexity $\mathcal{O}(N!N)$, thus it is useful to look
+for more efficient algorithms. The two algorithms considered to be the fastest are one by Ryser
+(based on the inclusion-exclusion principle), and one by Glynn (based on invariant theory).
 
-This library aims to solve the need for an efficient library that solves the permenent of a given matrix.
+This library aims to solve the need for an efficient library that solves the permenent of a given
+matrix.
 
 # Algorithms
 
@@ -57,7 +63,8 @@ Compute the permanent of a matrix combinatorically.
 ```
 
 **Additional Information:**
-The original formula has been generalized here to work with $M$-by-$N$ rectangular permanents with $M \leq N$ by use of the following identity (shown here for $M \geq N$):
+The original formula has been generalized here to work with $M$-by-$N$ rectangular permanents with
+$M \leq N$ by use of the following identity (shown here for $M \geq N$):
 
 ```math
 \text{per}\left(\begin{matrix}a_{1,1} & \cdots & a_{1,N} \\ \vdots & \ddots & \vdots \\ a_{M,1} & \cdots & a_{M,N}\end{matrix}\right) = \frac{1}{(M - N + 1)!} \cdot \text{per}\left(\begin{matrix}a_{1,1} & \cdots & a_{1,N} & 1_{1,N+1} & \cdots & 1_{1,M} \\ \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\ a_{M,1} & \cdots & a_{M,N} & 1_{M,N+1} & \cdots & 1_{M,M}\end{matrix}\right)
@@ -110,7 +117,19 @@ This can be neatly fit into the original formula by extending the inner sums ove
 
 # Installation
 
-The permanent package allows you to solve the permanent of a given matrix using the optimal algorithm for your matrix dimensions. You can either use the pre-defined parameters or fine tune them to your machine.
+The `permanent`  package allows you to solve the permanent of a given matrix using the
+**optimal algorithm** for your matrix dimensions.
+
+The easiest way to install the `permanent` package is via PyPI:
+
+```bash
+   pip install qc-permanent
+```
+
+This will install the package with pre-set paremeters with a good performance for most cases.
+Advanced users can also **compile the code locally** and fine tune it for their specific
+architecture. They can either use the pre-defined parameters or fine tune them to their machine.
+
 
 ## Setting up your environment
 
@@ -118,7 +137,8 @@ The permanent package allows you to solve the permanent of a given matrix using 
 
 2. Install gcc on your machine. Depending on your operating system, the instructions may vary.
 
-3. Create and activate a virtual environment for this project named `permanents`. One way to do this is with pip.
+3. Create and activate a virtual environment for this project named `permanents`. One way to do this
+is with pip.
 
    ```bash
    pip install virtualenv
@@ -149,7 +169,11 @@ The permanent package allows you to solve the permanent of a given matrix using 
    pip install pytest
    ```
 
-Now that you have your environment set up and activated you are ready to compile the source code into an executable. Here you have two options - compile the code as is with the pre-defined parameters for algorithm swapping, **or** compile the code with machine specific tuning for algorithm swapping. _Note that machine specific tuning will run a series of tests. This will take anywhere from 10 minutes to 1 hour depending on your system._
+Now that you have your environment set up and activated you are ready to compile the source code
+into an executable. Here you have two options - compile the code as is with the pre-defined
+parameters for algorithm swapping, **or** compile the code with machine specific tuning for
+algorithm swapping. _Note that machine specific tuning will run a series of tests. This will take
+anywhere from 10 minutes to 1 hour depending on your system._
 
 ## Option 1: Use given parameters
 
@@ -213,12 +237,14 @@ Now that you have your environment set up and activated you are ready to compile
 
 ## Notes about the `Makefile`
 
-The Makefile in this project is used to compile C and Python libraries and includes rules for installation, testing, and cleaning. Here's a breakdown of its sections:
+The Makefile in this project is used to compile C and Python libraries and includes rules for
+installation, testing, and cleaning. Here's a breakdown of its sections:
 
 1. Variables:
 
 - `CXX`, `AR`, `PYTHON`: Define compiler, archiver, and Python executable.
-- `CXXFLAGS`: Compiler flags including C++ version, warnings, debugging, optimization, and platform-specific options.
+- `CXXFLAGS`: Compiler flags including C++ version, warnings, debugging, optimization, and
+platform-specific options.
 
 2. Conditional Compilation:
 
