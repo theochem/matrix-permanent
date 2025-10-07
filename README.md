@@ -15,7 +15,7 @@ brute-force combinatorial method has time complexity $\mathcal{O}(N!N)$, thus it
 for more efficient algorithms. The two algorithms considered to be the fastest are one by Ryser
 (based on the inclusion-exclusion principle), and one by Glynn (based on invariant theory).
 
-This library aims to solve the need for an efficient library that solves the permenent of a given
+This library aims to solve the need for an efficient library that solves the permanent of a given
 matrix.
 
 # Algorithms
