@@ -85,6 +85,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: wheelhouse
+          # optional, explicitly specify which artifacts to download
+          pattern: qc-permanent-*
+          # prevents per-artifact subfolders
+          merge-multiple: true
 
       - name: Flatten wheelhouse directory
         run: mv wheelhouse/*/*.whl wheelhouse/
