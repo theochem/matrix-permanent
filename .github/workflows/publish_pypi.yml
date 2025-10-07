@@ -7,7 +7,7 @@ on:
       - "v*.*.*-*"    # pre-release tags
 env:
   # The name of the package to be published to PyPI and TestPyPI.
-  PYPI_NAME: qc-PyCI
+  PYPI_NAME: qc-permanent
 
 permissions:
   contents: read
