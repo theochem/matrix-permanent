@@ -72,24 +72,32 @@ jobs:
 
 
 
-  publish:
-    name: Publish to PyPI
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build_wheels]
+  publish-to-pypi:
+    name: Publish Python distribution to PyPI
+    # only publish to PyPI on tag pushes
+    if: startsWith(github.ref, 'refs/tags/')
+    needs:
+      - build_wheels
     runs-on: ubuntu-latest
+    environment:
+      name: pypi-release
+      url: https://pypi.org/project/${{ env.PYPI_NAME }}
     permissions:
       id-token: write
 
     steps:
-      - name: Download all built wheels
+      - name: Download all the dists
         uses: actions/download-artifact@v4
         with:
-          path: dist
+          path: dist/
+          merge-multiple: true  # Merge all artifacts into the dist/ directory
 
-      - name: Publish to PyPI
+      - name: Check dist contents
+        run: |
+          echo "Contents of dist:"
+          ls -l dist/
+
+      - name: Publish distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: dist
-        env:
-          TWINE_USERNAME: "__token__"
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+          verbose: true
