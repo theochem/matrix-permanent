@@ -1,10 +1,9 @@
 [build-system]
-requires = ["numpy>=2.0", "pandas", "scikit-learn", "scikit-build-core>=0.3.3"]
+requires = ["numpy>=2.0", "scikit-build-core>=0.3.3", "setuptools-scm>=8"]
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "permanent"
-version = "0.0.1"
+name = "qc-permanent"
 description = "Extension module for computing permanents of square and rectangular matrices."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -31,9 +30,14 @@ classifiers = [
 license = {file = "LICENSE"}
 urls = {home = "https://permanent.qcdevs.org/"}
 dependencies = ["numpy>=2.0"]
+dynamic = ["version"]
+
+[tool.setuptools_scm]
+
 
 [project.optional-dependencies]
 test = ["pytest"]
+
 
 [tool.scikit-build]
 wheel.expand-macos-universal-tags = true
@@ -51,8 +55,9 @@ filterwarnings = [
 testpaths = ["tests"]
 
 [tool.cibuildwheel]
+skip = ["cp*-win32"]
 build-frontend = "build[uv]"
-test-command = "pytest tests"
+test-command = "pytest {project}/tests"
 test-extras = ["test"]
 
 [tool.cibuildwheel.pyodide]
