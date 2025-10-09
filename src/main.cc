@@ -1,4 +1,4 @@
-/* Copyright 2024 QC-Devs (GPLv3) */
+/* Copyright 2024-2025 QC-Devs (GPLv3) */
 
 #include <Python.h>
 
