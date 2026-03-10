@@ -3,10 +3,11 @@
 #if !defined(permanent_tables_h_)
 #define permanent_tables_h_
 
-#include <permanent/common.h>
-
 #include <cstdint>
+
 #include <type_traits>
+
+#include <permanent/common.h>
 
 namespace permanent {
 
