@@ -3,6 +3,7 @@ from math import factorial
 import numpy as np
 import numpy.testing as npt
 import permanent
+import permanent
 import pytest
 
 ATOL = 0e0
