@@ -3,8 +3,9 @@
 #if !defined(permanent_common_h_)
 #define permanent_common_h_
 
-#include <complex>
 #include <cstdint>
+
+#include <complex>
 #include <type_traits>
 
 namespace permanent {
@@ -12,6 +13,7 @@ namespace permanent {
 // Numerical types
 
 using size_t = std::size_t;
+using ptrdiff_t = std::ptrdiff_t;
 
 using sgn_t = std::int_fast8_t;
 

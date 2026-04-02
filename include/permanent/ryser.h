@@ -7,170 +7,127 @@
 #include <permanent/complex.h>
 #include <permanent/tables.h>
 
-#include <bit>
-#include <vector>
-
-namespace {
-
-inline void all_combinations(int n, int k, std::vector<std::vector<int>> &k_perms)
-{
-  k_perms.clear();  // Clear k_perms to make sure it starts empty
-  k_perms.reserve(1 << n);
-
-  for (int i = 0; i < (1 << n); i++) {
-    unsigned int cur = i ^ (i >> 1);
-    if (std::popcount(cur) == k) {
-      std::vector<int> vec;  // Initialize vector for new combination
-      vec.reserve(n);
-      for (int j = 0; j < n; j++) {
-        if (cur & (1 << j)) {
-          vec.push_back(j);  // Add element to vector
-        }
-      }
-      k_perms.push_back(vec);  // Store the combination
-    }
-  }
-}
-
-template <typename T>
-auto parity(const T &x)
-{
-  return 1 - ((x & 1) << 1);
-};
-
-template <typename T>
-void swap2(T *perm, T i, T j)
-{
-  const T temp = perm[i];
-  perm[i] = perm[j];
-  perm[j] = temp;
-}
-
-template <typename T>
-void init_perm(const T N, T *const the_fact_set, T *const the_perm_set, T *const the_inv_set)
-{
-  for (T i = 0; i < N; i++) {
-    the_fact_set[i + 1] = 0;
-    the_perm_set[i] = i;
-    the_inv_set[i] = i;
-  }
-}
-
-template <typename T>
-bool gen_next_perm(T *const falling_fact, T *const perm, T *const inv_perm, const T cols,
-                   const T u_)
-{
-  /* Use the current permutation to check for next permutation
-   * lexicographically, if it exists update the curr_array by swapping the
-   * leftmost changed element (at position i < k). Replace the elements up to
-   * position k by the smallest element lying to the right of i. Do not put
-   * remaining k, .., n - 1 positions in ascending order to improve efficiency
-   * has time complexity O(n) in the worst case. */
-  T i = u_ - 1;
-  T m1 = cols - i - 1;
-
-  /* Begin update of falling_fact - recall falling_fact[0] = 0, so increment
-   * index accordingly. If i becomes negative during the check, you are
-   * pointing to the sentinel value, so you are done generating
-   * permutations. */
-  while (falling_fact[i + 1] == m1) {
-    falling_fact[i + 1] = 0;
-    ++m1;
-    --i;
-  }
-  if (i == 0UL - 1) {
-    return false;
-  }
-  ++falling_fact[i + 1];
-
-  /* Find smallest element perm[i] < perm[j] that lies to the right of
-   * pos i, and then update the state of the permutation using its inverse
-   * to generate next. */
-  T z = perm[i];
-  do {
-    ++z;
-  } while (inv_perm[z] <= i);
-  const T j = inv_perm[z];
-  swap2(perm, i, j);
-  swap2(inv_perm, perm[i], perm[j]);
-  ++i;
-  T y = 0;
-
-  /* Find the smallest elements to the right of position i. */
-  while (i < u_) {
-    while (inv_perm[y] < i) {
-      ++y;
-    }
-    const T k = inv_perm[y];
-    swap2(perm, i, k);
-    swap2(inv_perm, perm[i], perm[k]);
-    ++i;
-  }
-  return true;
-}
-
-}  // namespace
-
 namespace permanent {
 
 template <typename T, typename I = void>
 result_t<T, I> ryser_square(const size_t m, const size_t, const T *ptr)
 {
-  T out = 0;
-  size_t c = 1UL << m;
+  using namespace complex_ops;
 
-  for (size_t k = 0; k < c; ++k) {
-    T rowsumprod = 1.0;
-    for (size_t i = 0; i < m; ++i) {
-      T rowsum = 0.0;
-      for (size_t j = 0; j < m; ++j) {
-        if (k & (1UL << j)) {
-          rowsum += ptr[m * i + j];
+  size_t subset[65] = {};          // k-subset with {1,..,n}
+  result_t<T, I> rowsums[64] = {}; // intermediate row sums
+  result_t<T, I> prods[64] = {};   // intermediate products of row sums
+
+  size_t k = 0;
+  do {
+    result_t<T, I> prod = 1;
+    // update subset
+    if (k & 1) { // odd
+      if (subset[k] - 1 == subset[k - 1]) { // remove subset[k] - 1 from position k - 1
+        for (size_t row = 0; row != m; ++row) {
+          prod *= (rowsums[row] -= ptr[m * row + subset[k] - 1 - 1]);
         }
+        subset[k - 1] = subset[k];
+        --k;
+      } else { // insert subset[k] - 1 as second last element
+        for (size_t row = 0; row != m; ++row) {
+          prod *= (rowsums[row] += ptr[m * row + subset[k] - 1 - 1]);
+        }
+        subset[k + 1] = subset[k];
+        --subset[k];
+        ++k;
       }
-      rowsumprod *= rowsum;
+    } else { // even
+      if (subset[k] == m) { // remove m from end
+        for (size_t row = 0; row != m; ++row) {
+          prod *= (rowsums[row] -= ptr[m * row + m - 1]);
+        }
+        --k;
+      } else { // append m
+        for (size_t row = 0; row != m; ++row) {
+          prod *= (rowsums[row] += ptr[m * row + m - 1]);
+        }
+        ++k;
+        subset[k] = m;
+      }
     }
-    out += rowsumprod * (1 - ((std::popcount(k) & 1) << 1));
+    prods[k - 1] += prod;
+  } while (k);
+
+  result_t<T, I> out = 0;
+  for (size_t i = 0; i != m; ++i) {
+    out += prods[i] * (1 - (((ptrdiff_t)(i + 1) & 1) << 1));
   }
 
-  return static_cast<result_t<T, I>>(out * ((m % 2 == 1) ? -1 : 1));
+  return out * (1 - (((ptrdiff_t)m & 1) << 1));//(m & 1 ? -1 : 1);
 }
 
 template <typename T, typename I = void>
 result_t<T, I> ryser_rectangular(const size_t m, const size_t n, const T *ptr)
 {
-  int sign = 1;
-  result_t<T, I> out = 0.0;
-  std::vector<std::vector<int>> k_perms;
+  using namespace complex_ops;
 
-  /* Iterate over subsets from size 0 to size m */
+  size_t subset[65] = { 0, 1 }; // k-subset with {1,...,n}
+  result_t<T, I> rowsums[64];           // intermediate row sums
+  result_t<T, I> prods[64] = { 1 };     // intermediate products of row sums
 
-  for (size_t k = 0; k < m; ++k) {
-    all_combinations(n, m - k, k_perms);
-    size_t bin = binomial((n - m + k), k);
-    result_t<T, I> permsum = 0.0;
-
-    /* Compute permanents of each submatrix */
-    result_t<T, I> vec[64];
-    for (const auto &combination : k_perms) {
-      result_t<T, I> colprod;
-      for (size_t i = 0; i < m; ++i) {
-        result_t<T, I> matsum = 0.0;
-        for (size_t j = 0; j < (m - k); ++j) matsum += ptr[i * n + combination[j]];
-        vec[i] = matsum;
-      }
-
-      colprod = 1.0;
-      for (size_t i = 0; i < m; ++i) colprod *= vec[i];
-      permsum += colprod * sign * bin;
-    }
-
-    /* Add term to result */
-
-    out += permsum;
-
-    sign *= -1;
+  for (size_t row = 0; row != m; ++row) {
+    prods[0] *= (rowsums[row] = ptr[n * row]);
   }
+
+  for (size_t k = 1; subset[1] != n;) {
+    result_t<T, I> prod = 1;
+    if (k & 1) { // odd
+      if (subset[k] == n) { // remove n from end
+        for (size_t row = 0; row != m; ++row) {
+          prod *= (rowsums[row] -= ptr[n * row + n - 1]);
+        }
+        --k;
+      } else {
+        if (k < m) { // append n
+          for (size_t row = 0; row != m; ++row) {
+            prod *= (rowsums[row] += ptr[n * row + n - 1]);
+          }
+          ++k;
+          subset[k] = n;
+        } else { // increment subset[j] -> subset[j] + 1
+          for (size_t row = 0; row != m; ++row) {
+            prod *= (rowsums[row] += ptr[n * row + subset[k] + 1 - 1] - ptr[n * row + subset[k] - 1]);
+          }
+          ++subset[k];
+        }
+      }
+    } else { // even
+      if (subset[k - 1] == subset[k] - 1) { // remove subset[j] - 1 from position j - 1
+        for (size_t row = 0; row != m; ++row) {
+          prod *= (rowsums[row] -= ptr[n * row + subset[k] - 1 - 1]);
+        }
+        subset[k - 1] = subset[k];
+        --k;
+      } else {
+        --subset[k];
+        if (k < m) { // insert subset[j] - 1 as second last element
+          for (size_t row = 0; row != m; ++row) {
+            prod *= (rowsums[row] += ptr[n * row + subset[k] - 1 - 0]);
+          }
+          subset[k + 1] = subset[k] + 1;
+          ++k;
+        } else { // decrement subset[j] -> sunset[j] - 1
+          for (size_t row = 0; row != m; ++row) {
+            prod *= (rowsums[row] += ptr[n * row + subset[k] - 1 - 0] - ptr[n * row + subset[k] - 0]);
+          }
+        }
+      }
+    }
+    prods[k - 1] += prod;
+  }
+
+  result_t<T, I> out = 0;
+  for (size_t i = 0; i != m; ++i) {
+    out += (prods[i] * binomial(n - i - 1, m - i - 1)) * (1 - (((ptrdiff_t)(m - i - 1) & 1) << 1));
+  }
+
+  return out;
 
   return out;
 }

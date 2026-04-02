@@ -5,17 +5,19 @@
 
 #include <permanent/common.h>
 #include <permanent/complex.h>
-#include <permanent/kperm-gray.h>
-#include <permanent/perm-mv0.h>
+#include <permanent/fxt/kperm-gray.h>
+#include <permanent/fxt/perm-mv0.h>
 
 namespace permanent {
 
 template <typename T, typename I = void>
-result_t<T, I> combinatoric_square(const size_t m, const size_t n, const T *ptr)
+result_t<T, I> combinatoric_square(const size_t m, const size_t, const T *ptr)
 {
-  (void)n;
-
   perm_mv0 permutations(m);
+
+  if (m == 1) {
+    return ptr[0];
+  }
 
   result_t<T, I> out = 0;
   const size_t *perm = permutations.data();

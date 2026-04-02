@@ -3,6 +3,7 @@ from math import factorial
 import numpy as np
 import numpy.testing as npt
 import permanent
+import permanent
 import pytest
 
 ATOL = 0e0
@@ -22,6 +23,7 @@ FNS = [
 @pytest.mark.parametrize(
     "args",
     [
+        (np.arange(1, 2, dtype=float).reshape(1, 1), 1),
         (np.arange(1, 5, dtype=float).reshape(2, 2), 10),
         (np.arange(1, 5, dtype=int).reshape(2, 2), 10),
         (np.arange(1, 5, dtype=complex).reshape(2, 2), 10),
@@ -29,6 +31,8 @@ FNS = [
         (np.arange(1, 17, dtype=float).reshape(4, 4), 55456),
         (np.arange(1, 50, dtype=float).reshape(7, 7), 5373548250000),
         # Rectangular matrices
+        (np.arange(1, 3, dtype=float).reshape(1, 2), 3),
+        (np.arange(1, 4, dtype=float).reshape(1, 3), 6),
         (np.arange(1, 7, dtype=float).reshape(2, 3), 58),
         (np.arange(1, 9, dtype=float).reshape(2, 4), 190),
         (np.arange(1, 15, dtype=float).reshape(2, 7), 1820),

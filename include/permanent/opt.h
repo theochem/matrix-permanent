@@ -3,9 +3,10 @@
 #if !defined(permanent_opt_h_)
 #define permanent_opt_h_
 
-#include <permanent/combinatoric.h>
 #include <permanent/common.h>
 #include <permanent/complex.h>
+
+#include <permanent/combinatoric.h>
 #include <permanent/glynn.h>
 #include <permanent/ryser.h>
 

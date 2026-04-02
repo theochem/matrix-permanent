@@ -18,21 +18,21 @@ struct _identity_t
 template <typename T>
 using identity_t = _identity_t<T>::type;
 
-}  // namespace permanent
+namespace complex_ops {
 
-#define DEF_COMPLEX_OPS(OP)                                                                \
-                                                                                           \
-  template <typename T>                                                                    \
-  std::complex<T> operator OP(const std::complex<T> &x, const permanent::identity_t<T> &y) \
-  {                                                                                        \
-    return x OP y;                                                                         \
-  }                                                                                        \
-                                                                                           \
-  template <typename T>                                                                    \
-  std::complex<T> operator OP(const permanent::identity_t<T> &x, const std::complex<T> &y) \
-  {                                                                                        \
-    return x OP y;                                                                         \
-  }
+#define DEF_COMPLEX_OPS(OP)                                                                     \
+                                                                                                \
+template <typename T>                                                                           \
+inline std::complex<T> operator OP(const std::complex<T> &x, const permanent::identity_t<T> &y) \
+{                                                                                               \
+  return operator OP(x, y);                                                                     \
+}                                                                                               \
+                                                                                                \
+template <typename T>                                                                           \
+inline std::complex<T> operator OP(const permanent::identity_t<T> &x, const std::complex<T> &y) \
+{                                                                                               \
+  return operator OP(x, y);                                                                     \
+}
 
 DEF_COMPLEX_OPS(+)
 DEF_COMPLEX_OPS(-)
@@ -40,5 +40,9 @@ DEF_COMPLEX_OPS(*)
 DEF_COMPLEX_OPS(/)
 
 #undef DEF_COMPLEX_OPS
+
+} // namespace complex_ops
+
+}  // namespace permanent
 
 #endif  // PERMANENT_COMPLEX_H_
