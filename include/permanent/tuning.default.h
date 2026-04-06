@@ -1,49 +1,33 @@
 /* Copyright 2024 QC-Devs (GPLv3) */
+/* Auto-generated tuning parameters for polynomial logistic regression
+ *
+ * Model: Polynomial Logistic Regression (degree 4)
+ * Train accuracy: 0.9847
+ * Test accuracy: 1.0000
+ *
+ * To regenerate: python tools/generate_tuning_header.py <benchmark.csv> <output.h>
+ */
 
 #if !defined(permanent_tuning_h_)
 #define permanent_tuning_h_
 
 namespace permanent {
 
-template <typename Type, typename IntType = void>
-struct _tuning_params_t
-{
-  // First hyperplane parameters (N ≤ 13): -6.67(m/n) + (-0.35)(n) + 6.49 = 0
-  static constexpr double PARAM_1 = -6.67000e+00;  // coefficient of m/n
-  static constexpr double PARAM_2 = -3.50000e-01;  // coefficient of n
-  static constexpr double PARAM_3 = +6.49000e+00;  // constant term
-  static constexpr double PARAM_4 = +4.00000e+00;  // Combinatorial crossover limit
+// Model hyperparameters
+constexpr int POLY_DEGREE = 4;
+constexpr int N_FEATURES = 15;
+constexpr int N_CLASSES = 2;
 
-  // Second hyperplane parameters (N > 13): -10.76(m/n) + 0.09(n) + 1.96 = 0
-  static constexpr double PARAM_5 = -1.07600e+01;  // coefficient of m/n
-  static constexpr double PARAM_6 = +9.00000e-02;  // coefficient of n
-  static constexpr double PARAM_7 = +1.96000e+00;  // constant term
-  static constexpr double PARAM_8 = +1.30000e+01;  // Combinatorial limit (N=13)
-};
+// Feature scaling parameters (StandardScaler)
+constexpr double SCALER_MEAN[N_FEATURES] = { 1.000000000000000e+00, 1.824361158432709e+01, 1.129990362851972e+00, 4.103151618398637e+02, 1.747018739352641e+01, 1.797670059373797e+00, 1.040173935264054e+04, 3.553134582623509e+02, 2.225283115820182e+01, 3.764157056856755e+00, 2.838747649063033e+05, 8.462959114139694e+03, 3.871226575809199e+02, 3.686420301846051e+01, 9.651467559254822e+00 };
+constexpr double SCALER_SCALE[N_FEATURES] = { 1.000000000000000e+00, 8.802601785839817e+00, 7.216590879601438e-01, 3.398767907207399e+02, 9.050702183587225e+00, 2.533742275150697e+00, 1.153458993518837e+04, 2.798498146858290e+02, 1.975975498128697e+01, 8.783581441596224e+00, 3.831817371278007e+05, 9.045567492744174e+03, 3.386025927099062e+02, 5.730099957760284e+01, 3.182500900147520e+01 };
 
-template <typename Type, typename IntType = void>
-static constexpr double PARAM_1 = _tuning_params_t<Type, IntType>::PARAM_1;
+// Logistic regression coefficients [N_CLASSES * N_FEATURES]
+// Ordered as: [class0_feature0, class0_feature1, ..., class1_feature0, ...]
+constexpr double COEFFICIENTS[N_CLASSES * N_FEATURES] = { -0.000000000000000e+00, 4.589675095776374e+00, -6.012594985495101e+00, 9.588545838949250e+00, -2.077955485469633e+01, 5.824485713660757e+00, 3.272173581264640e+00, -4.277440104070251e+00, 4.070883997590151e+00, 7.030952123247757e+00, -3.376033076736038e+00, -5.116407997170819e+00, 6.921103120663089e+00, 1.606233546979973e+01, 5.695112278898278e+00, 0.000000000000000e+00, -4.589675095776374e+00, 6.012594985495101e+00, -9.588545838949250e+00, 2.077955485469633e+01, -5.824485713660757e+00, -3.272173581264640e+00, 4.277440104070251e+00, -4.070883997590151e+00, -7.030952123247757e+00, 3.376033076736038e+00, 5.116407997170819e+00, -6.921103120663089e+00, -1.606233546979973e+01, -5.695112278898278e+00 };
 
-template <typename Type, typename IntType = void>
-static constexpr double PARAM_2 = _tuning_params_t<Type, IntType>::PARAM_2;
-
-template <typename Type, typename IntType = void>
-static constexpr double PARAM_3 = _tuning_params_t<Type, IntType>::PARAM_3;
-
-template <typename Type, typename IntType = void>
-static constexpr double PARAM_4 = _tuning_params_t<Type, IntType>::PARAM_4;
-
-template <typename Type, typename IntType = void>
-static constexpr double PARAM_5 = _tuning_params_t<Type, IntType>::PARAM_5;
-
-template <typename Type, typename IntType = void>
-static constexpr double PARAM_6 = _tuning_params_t<Type, IntType>::PARAM_6;
-
-template <typename Type, typename IntType = void>
-static constexpr double PARAM_7 = _tuning_params_t<Type, IntType>::PARAM_7;
-
-template <typename Type, typename IntType = void>
-static constexpr double PARAM_8 = _tuning_params_t<Type, IntType>::PARAM_8;
+// Logistic regression intercepts [N_CLASSES]
+constexpr double INTERCEPTS[N_CLASSES] = { 4.947950494439473e-01, -4.947950494439473e-01 };
 
 }  // namespace permanent
 

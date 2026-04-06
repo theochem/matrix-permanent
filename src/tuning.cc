@@ -28,15 +28,15 @@ constexpr char CSV_HEADER[] = "M/N,N,Combn,Glynn,Ryser,Fastest";
 
 constexpr size_t NUM_TRIALS = 5;
 
-constexpr size_t MAX_ROWS = 26;
+constexpr size_t MAX_ROWS = 35;
 
-constexpr size_t MAX_COLS = 26;
+constexpr size_t MAX_COLS = 35;
 
 constexpr size_t DATA_POINTS = MAX_ROWS * MAX_COLS;
 
 constexpr double TOLERANCE = 0.0001;
 
-constexpr size_t RUN_COMBINATORIAL_UNTIL = 13;
+constexpr size_t RUN_COMBINATORIAL_UNTIL = 10;
 
 namespace {
 

@@ -18,52 +18,105 @@
 
 namespace permanent {
 
+// Polynomial feature computation helper
+// Generates features in sklearn PolynomialFeatures order:
+// For degree d: N^d, N^(d-1)*(M/N), N^(d-2)*(M/N)^2, ..., (M/N)^d
+template <typename Type>
+inline void compute_poly_features(const size_t n, const double ratio, double* features)
+{
+  int idx = 0;
+
+  // Generate all combinations: N^i * (M/N)^j where i+j <= POLY_DEGREE
+  // sklearn uses lexicographic order: higher powers of first feature come first
+  for (int total_degree = 0; total_degree <= POLY_DEGREE; ++total_degree) {
+    for (int n_power = total_degree; n_power >= 0; --n_power) {
+      int mn_power = total_degree - n_power;
+
+      double term = 1.0;
+
+      // Compute N^n_power
+      for (int i = 0; i < n_power; ++i) {
+        term *= static_cast<double>(n);
+      }
+
+      // Compute (M/N)^mn_power
+      for (int i = 0; i < mn_power; ++i) {
+        term *= ratio;
+      }
+
+      features[idx++] = term;
+    }
+  }
+}
+
+// Predict optimal algorithm using polynomial logistic regression
+// Returns: 0 = Ryser, 1 = Glynn
+template <typename Type>
+inline int predict_algorithm(const size_t m, const size_t n)
+{
+  const double ratio = static_cast<double>(m) / static_cast<double>(n);
+
+  // 1. Compute polynomial features
+  double features[N_FEATURES];
+  compute_poly_features<Type>(n, ratio, features);
+
+  // 2. Scale features
+  double scaled_features[N_FEATURES];
+  for (int i = 0; i < N_FEATURES; ++i) {
+    scaled_features[i] = (features[i] - SCALER_MEAN[i]) / SCALER_SCALE[i];
+  }
+
+  // 3. Compute decision values for each class
+  double decision_values[N_CLASSES];
+  for (int c = 0; c < N_CLASSES; ++c) {
+    decision_values[c] = INTERCEPTS[c];
+    for (int f = 0; f < N_FEATURES; ++f) {
+      decision_values[c] += COEFFICIENTS[c * N_FEATURES + f] * scaled_features[f];
+    }
+  }
+
+  // 4. Return class with maximum decision value
+  int max_idx = 0;
+  double max_val = decision_values[0];
+  for (int i = 1; i < N_CLASSES; ++i) {
+    if (decision_values[i] > max_val) {
+      max_val = decision_values[i];
+      max_idx = i;
+    }
+  }
+
+  return max_idx;
+}
+
 template <typename T, typename I = void>
 result_t<T, I> opt_square(const size_t m, const size_t n, const T *ptr)
 {
-  if (n <= PARAM_8<T, I>) {  // N ≤ 13
-    if (n <= PARAM_4<T, I>) {
-      return combinatoric_square<T, I>(m, n, ptr);
-    } else {
-      // Check first hyperplane: -6.67(m/n) + (-0.35)(n) + 6.49 = 0
-      // Using stored parameters for flexibility
-      const double ratio = static_cast<double>(m) / n;
-      if (PARAM_1<T, I> * ratio + PARAM_2<T, I> * n + PARAM_3<T, I> > 0) {
-        return combinatoric_square<T, I>(m, n, ptr);
-      } else {
-        return glynn_square<T, I>(m, n, ptr);
-      }
-    }
-  } else {  // N > 13
-    // Check second hyperplane: -10.76(m/n) + 0.09(n) + 1.96 = 0
-    const double ratio = static_cast<double>(m) / n;
-    if (PARAM_5<T, I> * ratio + PARAM_6<T, I> * n + PARAM_7<T, I> > 0) {
-      return glynn_square<T, I>(m, n, ptr);
-    } else {
+  const int algo = predict_algorithm<T>(m, n);
+
+  switch (algo) {
+    case 0:  // Ryser
       return ryser_square<T, I>(m, n, ptr);
-    }
+    case 1:  // Glynn
+      return glynn_square<T, I>(m, n, ptr);
+    default:
+      // Fallback to Glynn for safety
+      return glynn_square<T, I>(m, n, ptr);
   }
 }
 
 template <typename T, typename I = void>
 result_t<T, I> opt_rectangular(const size_t m, const size_t n, const T *ptr)
 {
-  if (n <= PARAM_8<T, I>) {  // N ≤ 13
-    // First hyperplane for small matrices
-    const double ratio = static_cast<double>(m) / n;
-    if (PARAM_1<T, I> * ratio + PARAM_2<T, I> * n + PARAM_3<T, I> > 0) {
-      return combinatoric_rectangular<T, I>(m, n, ptr);
-    } else {
-      return glynn_rectangular<T, I>(m, n, ptr);
-    }
-  } else {  // N > 13
-    // Second hyperplane for large matrices
-    const double ratio = static_cast<double>(m) / n;
-    if (PARAM_5<T, I> * ratio + PARAM_6<T, I> * n + PARAM_7<T, I> > 0) {
-      return glynn_rectangular<T, I>(m, n, ptr);
-    } else {
+  const int algo = predict_algorithm<T>(m, n);
+
+  switch (algo) {
+    case 0:  // Ryser
       return ryser_rectangular<T, I>(m, n, ptr);
-    }
+    case 1:  // Glynn
+      return glynn_rectangular<T, I>(m, n, ptr);
+    default:
+      // Fallback to Glynn for safety
+      return glynn_rectangular<T, I>(m, n, ptr);
   }
 }
 

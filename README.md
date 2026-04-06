@@ -22,7 +22,7 @@ matrix.
 
 `permanent.opt()`
 
-Compute the permanent of a matrix using the best algorithm for the shape of the given matrix.
+Compute the permanent of a matrix using an automatically selected algorithm. The library uses a polynomial logistic regression model (degree 4) trained on benchmarks to predict whether Ryser's or Glynn's algorithm will be faster for the given matrix dimensions.
 
 **Parameters:**
 
@@ -120,120 +120,193 @@ This can be neatly fit into the original formula by extending the inner sums ove
 The `permanent`  package allows you to solve the permanent of a given matrix using the
 **optimal algorithm** for your matrix dimensions.
 
-The easiest way to install the `permanent` package is via PyPI:
+## Quick Start (Recommended)
 
+The easiest way to install and use the `permanent` package:
+
+### From PyPI
 ```bash
-   pip install qc-permanent
+pip install qc-permanent
 ```
 
-This will install the package with pre-set parameters with a good performance for most cases.
-Advanced users can also **compile the code locally** and fine tune it for their specific
-architecture. They can either use the pre-defined parameters or fine tune them to their machine.
+### For Development
+```bash
+# Clone the repository and install with test dependencies
+# Note: This project uses pyproject.toml, editable mode requires pip >= 21.3
+pip install ".[test]"
 
+# For editable mode (requires pip >= 21.3 with PEP 660 support):
+# pip install --editable ".[test]"
 
-## Setting up your environment
+# Run tests
+pytest tests/
+```
 
-1. Install Python on your machine. Depending on your operating system, the instructions may vary.
+This will install the package with pre-set parameters that work well for most cases.
 
-2. Install gcc on your machine. Depending on your operating system, the instructions may vary.
+## Advanced Installation
 
-3. Create and activate a virtual environment for this project named `permanents`. One way to do this
-is with pip.
+For users who want to compile from source with custom optimizations or machine-specific tuning.
+
+### Prerequisites
+
+- **Python** ≥ 3.9
+- **CMake** ≥ 3.23 (required for building from source)
+- **C++ Compiler**: gcc ≥ 11.4 or equivalent
+- **make**: System build tool (not a Python package)
+
+### Installing Prerequisites
+
+#### Ubuntu/Debian
+```bash
+# Install build tools and newer CMake
+sudo apt-get update
+sudo apt-get install build-essential
+
+# Install CMake 3.23+ (Ubuntu's default may be older)
+# Option 1: Via Kitware's APT repository
+sudo apt install ca-certificates gpg wget
+
+# If the kitware-archive-keyring package has not been installed previously, manually obtain a copy of our signing key:
+test -f /usr/share/doc/kitware-archive-keyring/copyright ||
+wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
+
+# Add kitware's repository to your sources list and update.
+# For Ubuntu Focal Fossa (20.04):
+echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ focal main' | sudo tee /etc/apt/sources.list.d/kitware.list >/dev/null
+
+# If the kitware-archive-keyring package has not been installed previously, remove the manually obtained signed key to make room for the package:
+test -f /usr/share/doc/kitware-archive-keyring/copyright ||
+sudo rm /usr/share/keyrings/kitware-archive-keyring.gpg
+
+# Install the kitware-archive-keyring package to ensure that your keyring stays up to date as we rotate our keys:
+sudo apt install kitware-archive-keyring
+
+# Finally we can install the cmake package
+sudo apt install cmake
+```
+
+# Option 2: Via official CMake website
+```bash
+# Navigate to https://cmake.org/download/ and download version 3.23+ for Linux x86_64
+# For example, for CMake 3.29.0:
+wget https://cmake.org/files/v3.29/cmake-3.29.0-linux-x86_64.tar.gz
+
+# Extract the archive
+tar -xzf cmake-3.29.0-linux-x86_64.tar.gz
+
+# Move to /opt or preferred location
+sudo mv cmake-3.29.0-linux-x86_64 /opt/cmake
+
+# Add to PATH
+export PATH=/opt/cmake/bin:$PATH
+# To make permanent, add the above line to ~/.bashrc
+```
+
+#### macOS
+```bash
+# Install Xcode Command Line Tools (includes make)
+xcode-select --install
+
+# Install CMake via Homebrew
+brew install cmake
+```
+
+#### Conda (All Platforms)
+```bash
+# Install within your conda environment
+conda install -c conda-forge make cmake compilers
+```
+
+### Setting up your environment
+
+1. Create and activate a virtual environment:
 
    ```bash
-   pip install virtualenv
-   virtualenv permanents
+   python -m venv permanents
+   source permanents/bin/activate  
    ```
 
-4. Activate the virtual environment.
+2. Install Python dependencies:
 
    ```bash
-   source permanents/bin/activate
+   pip install numpy pandas scikit-learn pytest
    ```
 
-5. Install Sphinx and other dependencies.
+3. (Optional) For documentation:
 
    ```bash
    pip install sphinx sphinx-rtd-theme sphinx-copybutton
    ```
 
-6. Install Python dependencies.
+### Build Options
 
-   ```bash
-   pip install numpy pandas scikit-learn
-   ```
+#### Option 1: Standard Build
+```bash
+# Basic build with default optimizations
+make
+```
 
-7. (Optional) Install Pytest if you wish to run tests.
+#### Option 2: Native CPU Optimizations
+```bash
+# Optimize for your specific CPU architecture
+make BUILD_NATIVE=1
+```
 
-   ```bash
-   pip install pytest
-   ```
+**Note:** Use standard build for M1 Macs or if you need a portable build.
 
-Now that you have your environment set up and activated you are ready to compile the source code
-into an executable. Here you have two options - compile the code as is with the pre-defined
-parameters for algorithm swapping, **or** compile the code with machine specific tuning for
-algorithm swapping. _Note that machine specific tuning will run a series of tests. This will take
-anywhere from 10 minutes to 1 hour depending on your system._
+#### Option 3: Machine-Specific Tuning
+```bash
+# Run extensive benchmarks to find optimal algorithm thresholds for your machine
+make PERMANENT_TUNE=1
+```
 
-## Option 1: Use given parameters
+**Important Notes:**
+- Tuning will take 10-60 minutes depending on your system
+- Creates `include/permanent/tuning.h` with custom parameters
+- Creates `build/tuning.csv` with benchmark data
 
-1. Compile the permanent code (natively for your CPU architecture).
+#### Verify Tuning Success
+```bash
+# Check if tuning generated custom parameters
+diff include/permanent/tuning.h include/permanent/tuning.default.h
 
-   ```bash
-   make BUILD_NATIVE=1
-   ```
+# If files differ, tuning succeeded!
+# View generated parameters
+cat include/permanent/tuning.h
+```
 
-   **Note: if using M1 architecture, or want a portable build, simply run the following.**
+### Running Tests
+```bash
+# After building
+pytest tests/
 
-   ```bash
-   make
-   ```
+# Or using make
+make test
+```
 
-2. (Optional) Run tests on the algorithms.
+### Building Documentation
+```bash
+cd docs && make html
+# Open build/html/index.html in your browser
+```
 
-   ```bash
-   make test
-   ```
+### Troubleshooting
 
-3. Compile the website.
+#### CMake version too old
+If you get "CMake 3.23 or higher is required", see the Prerequisites section above for installation instructions.
 
-   ```bash
-   cd docs && make html
-   ```
+#### make: command not found
+`make` is a system tool, not a Python package. Install it using your system's package manager (see Prerequisites).
 
-4. Load the website.
-
-   ```bash
-   open build/html/index.html
-   ```
-
-## Option 2: Tune parameters
-
-1. Compile the permanent code with the `tuning` flag.
-
-   ```bash
-   make RUN_TUNING=1
-   ```
-
-   **Note: it will take some time to run the tuning tests on your machine.**
-
-2. (Optional) Run tests on the algorithms.
-
-   ```bash
-   make test
-   ```
-
-3. Compile the website.
-
-   ```bash
-   cd docs && make html
-   ```
-
-4. Load the website using your web browser.
-
-   ```bash
-   <browser> build/html/index.html
-   ```
+#### Build cache issues
+```bash
+# Clean and rebuild
+make clean
+# or
+rm -rf build/
+make
+```
 
 ## Notes about the `Makefile`
 
