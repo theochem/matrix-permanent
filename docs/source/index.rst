@@ -70,7 +70,7 @@ Compute the permanent of a matrix combinatorically.
 
 .. math::
 
-   \text{per}(A) = \frac{1}{2^{N-1}} \cdot \sum_{\delta}{
+   \text{per}(A) = \frac{1}{2^{N-1}} \cdot \sum_{\delta \in \left[\delta_1 = 1,~ \delta_2 \dots \delta_n=\pm1\right]}{
        \left(\sum_{k=1}^N{\delta_k}\right){\prod_{j=1}^N{\sum_{i=1}^N{\delta_i a_{i,j}}}}}
 
 **Additional Information:** The original formula has been generalized
@@ -87,7 +87,7 @@ sums over :math:`\delta` from :math:`[1,M]` to :math:`[1,N]`:
 
 .. math::
 
-   \text{per}(A) = \frac{1}{2^{N-1}} \cdot \frac{1}{(N - M + 1)!}\cdot \sum_{\delta}{
+   \text{per}(A) = \frac{1}{2^{N-1}} \cdot \frac{1}{(N - M + 1)!}\cdot \sum_{\delta \in \left[\delta_1 = 1,~ \delta_2 \dots \delta_n=\pm1\right]}{
            \left(\sum_{k=1}^N{\delta_k}\right)
            \prod_{j=1}^N{\left(
                \sum_{i=1}^M{\delta_i a_{i,j}} + \sum_{i=M+1}^N{\delta_i}
