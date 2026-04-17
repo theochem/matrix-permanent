@@ -12,6 +12,7 @@ endif
 
 CLEAN_TARGETS :=
 CLEAN_TARGETS += include/permanent/tuning.h
+CLEAN_TARGETS += include/permanent/*.pkl
 CLEAN_TARGETS += build dist _build _generate
 CLEAN_TARGETS += permanent.*egg-info permanent.*so
 CLEAN_TARGETS += compile_commands.json
