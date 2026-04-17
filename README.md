@@ -174,8 +174,8 @@ is with pip.
 ## Using the C++ library
 
   The C++ library can be used by including the
-  (CMake project for `matrix-permanent`)[/CMakeLists.txt] in your own CMake project.
-  The (Makefile)[/Makefile] also acts as a convenience wrapper around the CMake
+  [CMake project for `matrix-permanent`](/CMakeLists.txt) in your own CMake project.
+  The [Makefile](/Makefile) also acts as a convenience wrapper around the CMake
   build for quickly compiling the C++ library.
 
 # License
