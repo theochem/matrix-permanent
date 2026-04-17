@@ -1,82 +1,79 @@
 import sys
-
 import numpy as np
-
 import pandas as pd
-
 from sklearn import svm
 from sklearn.metrics import accuracy_score
 
-
 CSV_FILE = sys.argv[1]
-
 HEADER_FILE = sys.argv[2]
-
 
 # Read output from tuning program
 tuning = pd.read_csv(CSV_FILE, usecols=["M/N", "N", "Fastest"])
 
+# Split data into two parts based on N=13
+tuning_small = tuning[tuning["N"] <= 13].copy()
+tuning_large = tuning[tuning["N"] > 13].copy()
+
 # Update label columns for ML
-tuning.rename(columns={"N": "x", "M/N": "y", "Fastest": "target"}, inplace=True)
+tuning_small.rename(columns={"N": "x", "M/N": "y", "Fastest": "target"}, inplace=True)
+tuning_large.rename(columns={"N": "x", "M/N": "y", "Fastest": "target"}, inplace=True)
 
-# Find Ryser limit and update to dual class for SVM
-# Locate rows where column value matches specified value
-matching_row = tuning.loc[tuning["target"] == 0, "x"]
+# Find Combinatoric Square limit
+matching_row = tuning["Fastest"] == 1
+combn_limit = tuning.loc[matching_row, "N"].iloc[-1] if matching_row.any() else 0
 
-if not matching_row.empty:
-    # Pull out specific column value from the last matching row
-    ryser_limit = matching_row.iloc[-1].copy()
-else:
-    ryser_limit = 0
+# Update classes for first SVM (N <= 13, all three algorithms)
+update_ryser = tuning_small["target"] == 0
+tuning_small.loc[update_ryser, "target"] = -1
+update_glynn = tuning_small["target"] == 2
+tuning_small.loc[update_glynn, "target"] = -1
 
-update_target = tuning["target"] == 0
-tuning.loc[update_target, "target"] = -1
+# Update classes for second SVM (N > 13, Glynn vs Ryser)
+tuning_large["target"] = np.where(tuning_large["target"] == 0, -1, 1)
 
-# Update classes to -1/1, Combn = 1
-update_glynn = tuning["target"] == 2
-tuning.loc[update_glynn, "target"] = -1
+# Train first SVM (N <= 13)
+features_small = tuning_small[["x", "y"]]
+label_small = tuning_small["target"]
+size_small = tuning_small.shape[0]
+test_size_small = int(np.round(size_small * 0.1, 0))
 
-features = tuning[["x", "y"]]
-label = tuning["target"]
-value_counts = tuning["target"].value_counts()
+x_train_small = features_small[:-test_size_small].values
+y_train_small = label_small[:-test_size_small].values
+x_test_small = features_small[-test_size_small:].values
+y_test_small = label_small[-test_size_small:].values
 
-# Create train/test split
-size = tuning.shape[0]
-test_size = int(np.round(size * 0.1, 0))
+linear_model_small = svm.SVC(kernel="linear", C=100.0)
+linear_model_small.fit(x_train_small, y_train_small)
 
-# Split dataset into training and testing sets
-x_train = features[:-test_size].values
-y_train = label[:-test_size].values
-x_test = features[-test_size:].values
-y_test = label[-test_size:].values
+# Train second SVM (N > 13)
+features_large = tuning_large[["x", "y"]]
+label_large = tuning_large["target"]
+size_large = tuning_large.shape[0]
+test_size_large = int(np.round(size_large * 0.1, 0))
 
-### Train a linear model - add a hard margin
-linear_model = svm.SVC(kernel="linear", C=100.0)
-linear_model.fit(x_train, y_train)
+x_train_large = features_large[:-test_size_large].values
+y_train_large = label_large[:-test_size_large].values
+x_test_large = features_large[-test_size_large:].values
+y_test_large = label_large[-test_size_large:].values
 
-# Create grid to evaluate model
-xx = np.linspace(-1, max(features["x"]) + 1, len(x_train))
-yy = np.linspace(0, max(features["y"]) + 1, len(y_train))
-YY, XX = np.meshgrid(yy, xx)
-xy = np.vstack([XX.ravel(), YY.ravel()]).T
-train_size = len(features[:-test_size]["x"])
+linear_model_large = svm.SVC(kernel="linear", C=100.0)
+linear_model_large.fit(x_train_large, y_train_large)
 
-# Get the separating hyperplane
-Z = linear_model.decision_function(xy).reshape(XX.shape)
+# Get coefficients and bias for both models
+coefficients_small = linear_model_small.coef_[0]
+bias_small = linear_model_small.intercept_[0]
+coefficients_large = linear_model_large.coef_[0]
+bias_large = linear_model_large.intercept_[0]
 
-# Check the accuracy of the model
-predictions_linear = linear_model.predict(x_test)
-accuracy_linear = accuracy_score(y_test, predictions_linear)
-
-# Get the coefficients and bias
-coefficients = linear_model.coef_[0]
-bias = linear_model.intercept_[0]
-
-# Write a header file with constants defined as macros
-param_1 = coefficients[0]
-param_2 = coefficients[1]
-param_3 = bias
-param_4 = ryser_limit
+# Write header file with all parameters
+param_1 = coefficients_small[0]  # First hyperplane x coefficient
+param_2 = coefficients_small[1]  # First hyperplane y coefficient
+param_3 = bias_small            # First hyperplane bias
+param_4 = combn_limit          # Combinatoric square limit
+param_5 = coefficients_large[0] # Second hyperplane x coefficient
+param_6 = coefficients_large[1] # Second hyperplane y coefficient
+param_7 = bias_large           # Second hyperplane bias
+param_8 = 13.0                 # Combinatorial limit
 
 try:
     with open(HEADER_FILE, "w") as file_ptr:
@@ -95,6 +92,10 @@ struct _tuning_params_t
   static constexpr double PARAM_2 = {param_2:+16.9e};
   static constexpr double PARAM_3 = {param_3:+16.9e};
   static constexpr double PARAM_4 = {param_4:+16.9e};
+  static constexpr double PARAM_5 = {param_5:+16.9e};
+  static constexpr double PARAM_6 = {param_6:+16.9e};
+  static constexpr double PARAM_7 = {param_7:+16.9e};
+  static constexpr double PARAM_8 = {param_8:+16.9e};
 }};
 
 template<typename Type, typename IntType = void>
@@ -108,6 +109,18 @@ static constexpr double PARAM_3 = _tuning_params_t<Type, IntType>::PARAM_3;
 
 template<typename Type, typename IntType = void>
 static constexpr double PARAM_4 = _tuning_params_t<Type, IntType>::PARAM_4;
+
+template<typename Type, typename IntType = void>
+static constexpr double PARAM_5 = _tuning_params_t<Type, IntType>::PARAM_5;
+
+template<typename Type, typename IntType = void>
+static constexpr double PARAM_6 = _tuning_params_t<Type, IntType>::PARAM_6;
+
+template<typename Type, typename IntType = void>
+static constexpr double PARAM_7 = _tuning_params_t<Type, IntType>::PARAM_7;
+
+template<typename Type, typename IntType = void>
+static constexpr double PARAM_8 = _tuning_params_t<Type, IntType>::PARAM_8;
 
 }}  // namespace permanent
 
