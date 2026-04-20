@@ -49,7 +49,7 @@ Installing manually
 
    .. code:: bash
 
-      pip install `.[doc,tune,test]`
+      pip install '.[doc,tune,test]'
 
 If you want to generate a machine-specific tuning header, preface the
 ``pip`` command with the corresponding environment variable like so:

@@ -158,7 +158,7 @@ is with pip.
    Optionally, install dependencies for building documentation (`doc`), running the tuning
    algorithm (`tune`), and/or running the tests (`test`) by specifying them in square brackets:
    ```bash
-   pip install `.[doc,tune,test]`
+   pip install '.[doc,tune,test]'
    ```
 
   If you want to generate a machine-specific tuning header, preface the `pip` command with the
