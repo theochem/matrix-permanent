@@ -128,8 +128,6 @@ result_t<T, I> ryser_rectangular(const size_t m, const size_t n, const T *ptr)
   }
 
   return out;
-
-  return out;
 }
 
 template <typename T, typename I = void>
