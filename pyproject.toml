@@ -6,7 +6,7 @@ build-backend = "scikit_build_core.build"
 name = "qc-permanent"
 description = "Extension module for computing permanents of square and rectangular matrices."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [{name = "QC-Devs", email = "qcdevs@gmail.com"}]
 keywords = ["math", "linear algebra", "combinatorics", "permanent"]
 classifiers = [
