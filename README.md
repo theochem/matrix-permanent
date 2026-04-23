@@ -143,7 +143,7 @@ is with pip.
 
    ```bash
    python -m venv permanents
-   source permanents/bin/activate  
+   source permanents/bin/activate
    ```
 
 2. Install Python dependencies:
@@ -166,9 +166,7 @@ is with pip.
 
   If you want to generate a machine-specific tuning header for building the library, you must first install with tuning dependencies, and then build with tuning enabled:
    ```bash
-   pip install '.[tune]'
-   make clean
-   PERMANENT_TUNE=1 PERMANENT_PYTHON=1 make
+   PERMANENT_TUNE=ON pip install '.[tune]'
    ```
 
   This compiles the code with machine specific tuning for algorithm swapping.
