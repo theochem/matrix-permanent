@@ -17,14 +17,14 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, macos-14, windows-2022]
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13"  # Use latest Python to install cibuildwheel
 
@@ -58,7 +58,7 @@ jobs:
         run: ls -lh wheelhouse/
 
       - name: Upload built wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: qc-permanent-${{ github.event.pull_request.number }}-${{ matrix.os }}-py${{ matrix.python-version }}
           path: wheelhouse/*.whl
