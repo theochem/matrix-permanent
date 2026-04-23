@@ -28,9 +28,9 @@ constexpr char CSV_HEADER[] = "M/N,N,Combn,Glynn,Ryser,Fastest";
 
 constexpr size_t NUM_TRIALS = 5;
 
-constexpr size_t MAX_ROWS = 35;
+constexpr size_t MAX_ROWS = 25;
 
-constexpr size_t MAX_COLS = 35;
+constexpr size_t MAX_COLS = 25;
 
 constexpr size_t DATA_POINTS = MAX_ROWS * MAX_COLS;
 

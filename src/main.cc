@@ -153,74 +153,34 @@ permanent : (np.double|np.complex)
   {                                                                                        \
     int type = PyArray_TYPE(MATRIX);                                                       \
     if (type == NPY_INT8) {                                                                \
-      if (std::abs<ptrdiff_t>(static_cast<ptrdiff_t>(m) - n) > 20) {                       \
-        PyErr_SetString(PyExc_ValueError,                                                  \
-                        "Difference between # cols and # rows cannot exceed 20");          \
-        return nullptr;                                                                    \
-      }                                                                                    \
       const std::int8_t *ptr =                                                             \
           reinterpret_cast<const std::int8_t *>(PyArray_GETPTR2(MATRIX, 0, 0));            \
       return PyLong_FromSsize_t(FN<std::int8_t, Py_ssize_t>(m, n, ptr));                   \
     } else if (type == NPY_INT16) {                                                        \
-      if (std::abs<ptrdiff_t>(static_cast<ptrdiff_t>(m) - n) > 20) {                       \
-        PyErr_SetString(PyExc_ValueError,                                                  \
-                        "Difference between # cols and # rows cannot exceed 20");          \
-        return nullptr;                                                                    \
-      }                                                                                    \
       const std::int16_t *ptr =                                                            \
           reinterpret_cast<const std::int16_t *>(PyArray_GETPTR2(MATRIX, 0, 0));           \
       return PyLong_FromSsize_t(FN<std::int16_t, Py_ssize_t>(m, n, ptr));                  \
     } else if (type == NPY_INT32) {                                                        \
-      if (std::abs<ptrdiff_t>(static_cast<ptrdiff_t>(m) - n) > 20) {                       \
-        PyErr_SetString(PyExc_ValueError,                                                  \
-                        "Difference between # cols and # rows cannot exceed 20");          \
-        return nullptr;                                                                    \
-      }                                                                                    \
       const std::int32_t *ptr =                                                            \
           reinterpret_cast<const std::int32_t *>(PyArray_GETPTR2(MATRIX, 0, 0));           \
       return PyLong_FromSsize_t(FN<std::int32_t, Py_ssize_t>(m, n, ptr));                  \
     } else if (type == NPY_INT64) {                                                        \
-      if (std::abs<ptrdiff_t>(static_cast<ptrdiff_t>(m) - n) > 20) {                       \
-        PyErr_SetString(PyExc_ValueError,                                                  \
-                        "Difference between # cols and # rows cannot exceed 20");          \
-        return nullptr;                                                                    \
-      }                                                                                    \
       const std::int64_t *ptr =                                                            \
           reinterpret_cast<const std::int64_t *>(PyArray_GETPTR2(MATRIX, 0, 0));           \
       return PyLong_FromSsize_t(FN<std::int64_t, Py_ssize_t>(m, n, ptr));                  \
     } else if (type == NPY_UINT8) {                                                        \
-      if (std::abs<ptrdiff_t>(static_cast<ptrdiff_t>(m) - n) > 20) {                       \
-        PyErr_SetString(PyExc_ValueError,                                                  \
-                        "Difference between # cols and # rows cannot exceed 20");          \
-        return nullptr;                                                                    \
-      }                                                                                    \
       const std::uint8_t *ptr =                                                            \
           reinterpret_cast<const std::uint8_t *>(PyArray_GETPTR2(MATRIX, 0, 0));           \
       return PyLong_FromSsize_t(FN<std::uint8_t, Py_ssize_t>(m, n, ptr));                  \
     } else if (type == NPY_UINT16) {                                                       \
-      if (std::abs<ptrdiff_t>(static_cast<ptrdiff_t>(m) - n) > 20) {                       \
-        PyErr_SetString(PyExc_ValueError,                                                  \
-                        "Difference between # cols and # rows cannot exceed 20");          \
-        return nullptr;                                                                    \
-      }                                                                                    \
       const std::uint16_t *ptr =                                                           \
           reinterpret_cast<const std::uint16_t *>(PyArray_GETPTR2(MATRIX, 0, 0));          \
       return PyLong_FromSsize_t(FN<std::uint16_t, Py_ssize_t>(m, n, ptr));                 \
     } else if (type == NPY_UINT32) {                                                       \
-      if (std::abs<ptrdiff_t>(static_cast<ptrdiff_t>(m) - n) > 20) {                       \
-        PyErr_SetString(PyExc_ValueError,                                                  \
-                        "Difference between # cols and # rows cannot exceed 20");          \
-        return nullptr;                                                                    \
-      }                                                                                    \
       const std::uint32_t *ptr =                                                           \
           reinterpret_cast<const std::uint32_t *>(PyArray_GETPTR2(MATRIX, 0, 0));          \
       return PyLong_FromSsize_t(FN<std::uint32_t, Py_ssize_t>(m, n, ptr));                 \
     } else if (type == NPY_UINT64) {                                                       \
-      if (std::abs<ptrdiff_t>(static_cast<ptrdiff_t>(m) - n) > 20) {                       \
-        PyErr_SetString(PyExc_ValueError,                                                  \
-                        "Difference between # cols and # rows cannot exceed 20");          \
-        return nullptr;                                                                    \
-      }                                                                                    \
       const std::uint64_t *ptr =                                                           \
           reinterpret_cast<const std::uint64_t *>(PyArray_GETPTR2(MATRIX, 0, 0));          \
       return PyLong_FromSsize_t(FN<std::uint64_t, Py_ssize_t>(m, n, ptr));                 \

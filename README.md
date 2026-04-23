@@ -161,10 +161,11 @@ is with pip.
    pip install '.[doc,tune,test]'
    ```
 
-  If you want to generate a machine-specific tuning header, preface the `pip` command with the
-  corresponding environment variable like so:
+  If you want to generate a machine-specific tuning header for building the library, you must first install with tuning dependencies, and then build with tuning enabled:
    ```bash
-  PERMANENT_TUNE=ON pip install '.[tune]'
+   pip install '.[tune]'
+   make clean
+   PERMANENT_TUNE=1 PERMANENT_PYTHON=1 make
    ```
 
   This compiles the code with machine specific tuning for algorithm swapping.

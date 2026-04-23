@@ -15,28 +15,14 @@ MODEL_FILE = HEADER_FILE.replace('.h', '_poly.pkl')
 # Read output from tuning program
 df = pd.read_csv(CSV_FILE)
 
-# Group by M, N and find fastest algorithm for each configuration
-grouped = df.groupby(['M', 'N'])
-tuning_data = []
+# CSV has columns: M/N, N, Combn, Glynn, Ryser, Fastest
+# Fastest column: 0 = Ryser, 1 = Combinatoric, 2 = Glynn
+# We only want to use Ryser (0) and Glynn (2) data
+# Filter out Combinatoric (1)
+tuning = df[df['Fastest'].isin([0, 2])].copy()
 
-for (m, n), group in grouped:
-    fastest_idx = group['mean_time'].idxmin()
-    fastest_algo = group.loc[fastest_idx, 'algorithm']
-    tuning_data.append({
-        'N': n,
-        'M/N': m / n,
-        'Fastest': fastest_algo
-    })
-
-tuning = pd.DataFrame(tuning_data)
-
-# Convert algorithm names to integer labels
-# Only use Ryser (0) and Glynn (1) - exclude Combinatoric
-algo_to_label = {'ryser': 0, 'glynn': 1}
-tuning['Fastest'] = tuning['Fastest'].map(algo_to_label)
-
-# Filter out any combinatoric entries
-tuning = tuning.dropna()
+# Remap Fastest: 0 (Ryser) stays 0, 2 (Glynn) becomes 1
+tuning['Fastest'] = tuning['Fastest'].replace({2: 1})
 
 print(f"Total configurations: {len(tuning)}")
 print(f"Algorithm distribution:")
