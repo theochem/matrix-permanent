@@ -62,7 +62,7 @@ $$
 $$
 
 **Additional Information:**
-The original formula has been generalized here to work with $M$-by-$N$ rectangular permanents with
+The original formula has been generalized here to work with $M$ by $N$ rectangular permanents with
 $M \leq N$ by use of the following identity (shown here for $M \geq N$):
 
 $$
