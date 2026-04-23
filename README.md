@@ -182,4 +182,4 @@ is with pip.
 # License
 
 This code is distributed under the GNU General Public License version 3 (GPLv3).
-See <http://www.gnu.org/licenses/> for more information.
+See <https://www.gnu.org/licenses/> for more information.
