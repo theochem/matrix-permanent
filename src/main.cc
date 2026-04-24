@@ -222,6 +222,9 @@ static PyObject *py_opt(PyObject *module, PyObject *object)
   if (m > 64 || n > 64) {
     PyErr_SetString(PyExc_ValueError, "Argument array must have <=64 rows and columns");
     return nullptr;
+  } else if (abs((int)m - (int)n) > 20) {
+    PyErr_SetString(PyExc_ValueError, "Argument array must have |rows - columns| <= 20)");
+    return nullptr;
   } else if (m > n) {
     return py_opt(module, PyArray_Transpose(matrix, nullptr));
   }
@@ -244,6 +247,9 @@ static PyObject *py_combinatoric(PyObject *module, PyObject *object)
   size_t n = PyArray_DIMS(matrix)[1];
   if (m > 64 || n > 64) {
     PyErr_SetString(PyExc_ValueError, "Argument array must have <=64 rows and columns");
+    return nullptr;
+  } else if (abs((int)m - (int)n) > 20) {
+    PyErr_SetString(PyExc_ValueError, "Argument array must have |rows - columns| <= 20)");
     return nullptr;
   } else if (m > n) {
     return py_combinatoric(module, PyArray_Transpose(matrix, nullptr));
@@ -268,6 +274,9 @@ static PyObject *py_glynn(PyObject *module, PyObject *object)
   if (m > 64 || n > 64) {
     PyErr_SetString(PyExc_ValueError, "Argument array must have <=64 rows and columns");
     return nullptr;
+  } else if (abs((int)m - (int)n) > 20) {
+    PyErr_SetString(PyExc_ValueError, "Argument array must have |rows - columns| <= 20)");
+    return nullptr;
   } else if (m > n) {
     return py_glynn(module, PyArray_Transpose(matrix, nullptr));
   }
@@ -288,6 +297,9 @@ static PyObject *py_ryser(PyObject *module, PyObject *object)
   size_t n = PyArray_DIMS(matrix)[1];
   if (m > 64 || n > 64) {
     PyErr_SetString(PyExc_ValueError, "Argument array must have <=64 rows and columns");
+    return nullptr;
+  } else if (abs((int)m - (int)n) > 20) {
+    PyErr_SetString(PyExc_ValueError, "Argument array must have |rows - columns| <= 20)");
     return nullptr;
   } else if (m > n) {
     return py_ryser(module, PyArray_Transpose(matrix, nullptr));
@@ -374,4 +386,3 @@ PyMODINIT_FUNC PyInit_permanent(void)
 #undef PERMANENT_GIT_COMMIT_BRANCH
 #undef PERMANENT_BUILD_TIME
 #undef PERMANENT_COMPILER_VERSION
-
